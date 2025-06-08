@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Selenide Test Suite">
+    <listeners>
+        <listener class-name="utils.reportManager.AllureDirectorySetter"/>
+        <listener class-name="utils.testListener.TestListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <test name="Sample Tests">
+        <classes>
+            <class name="testcases.youtubetest.YoutubeTest" />
+        </classes>
+    </test>
+</suite>
