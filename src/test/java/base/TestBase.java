@@ -5,6 +5,7 @@ import org.testng.SkipException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+import utils.DriverFactory;
 import utils.RunConfigReader;
 
 import java.io.File;
@@ -34,7 +35,7 @@ public class TestBase {
     @BeforeMethod(alwaysRun = true)
     public void beforeMethod(Object[] testArgs) {
         System.out.println("Before Method - Start");
-        Configuration.browser = "chrome";
+        DriverFactory.initDriver();
 
         runTypeConfig = RunConfigReader.get("runType");
         if ((testArgs.length > 0) && (testArgs[0] instanceof Hashtable)) {
@@ -63,16 +64,13 @@ public class TestBase {
         timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String baseDir = System.getProperty("user.dir");
         htmlReportPath = baseDir + "/extentV5/" + timestamp + "/"+timestamp+".html";
-        allureResultsPath = baseDir + "/allure-reports/" + timestamp;
+//        allureResultsPath = baseDir + "/allure-reports/" + timestamp;
 
         // Create directories if not exist
         new File(htmlReportPath).getParentFile().mkdirs();
-        new File(allureResultsPath).mkdirs();
+//        new File(allureResultsPath).mkdirs();
 
         System.setProperty("extent.report.path", htmlReportPath);
-        System.setProperty("allure.results.directory", allureResultsPath);
-
-        Configuration.browser = RunConfigReader.get("browserType");
-        Configuration.timeout = Long.parseLong(RunConfigReader.get("timeout"));
+//        System.setProperty("allure.results.directory", allureResultsPath);
     }
 }

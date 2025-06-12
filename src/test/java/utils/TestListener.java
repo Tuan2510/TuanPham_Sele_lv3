@@ -1,4 +1,4 @@
-package utils.testListener;
+package utils;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -6,8 +6,6 @@ import com.aventstack.extentreports.Status;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-
-import utils.reportManager.ExtentManager;
 
 public class TestListener implements ITestListener{
     private static final ThreadLocal<ExtentTest> testThread = new ThreadLocal<>();

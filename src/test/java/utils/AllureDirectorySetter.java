@@ -1,4 +1,4 @@
-package utils.reportManager;
+package utils;
 
 import org.testng.IExecutionListener;
 import java.text.SimpleDateFormat;

@@ -3,9 +3,9 @@ package testcases.youtubetest;
 import base.TestBase;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-import utils.retryStrategy.RetryAnalyzer;
-import utils.dataProvider.TestDataProvider;
-import utils.testListener.TestListener;
+import utils.RetryAnalyzer;
+import utils.TestDataProvider;
+import utils.TestListener;
 
 import java.util.Hashtable;
 
