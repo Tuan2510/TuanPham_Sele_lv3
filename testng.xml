@@ -8,7 +8,7 @@
 
     <test name="Sample Tests">
         <classes>
-            <class name="testcases.youtubetest.YoutubeTest" />
+            <class name="testcases.SampleYTTest.YoutubeTest" />
         </classes>
     </test>
 </suite>

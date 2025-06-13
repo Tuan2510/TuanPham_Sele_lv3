@@ -1,6 +1,7 @@
 package base;
 
-import com.codeborne.selenide.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.SkipException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -9,14 +10,12 @@ import utils.DriverFactory;
 import utils.RunConfigReader;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 
-import static com.codeborne.selenide.Selenide.closeWebDriver;
-
 public class TestBase {
-
+    private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
     protected String runTypeConfig;
     public static String timestamp;
     public static String htmlReportPath;
@@ -34,7 +33,7 @@ public class TestBase {
 
     @BeforeMethod(alwaysRun = true)
     public void beforeMethod(Object[] testArgs) {
-        System.out.println("Before Method - Start");
+        logger.info("Before Method - Start");
         DriverFactory.initDriver();
 
         runTypeConfig = RunConfigReader.get("runType");
@@ -42,35 +41,36 @@ public class TestBase {
             Hashtable<String, String> data = (Hashtable<String, String>) testArgs[0];
             String runTypeFromData = data.get("RunType");
             if (!"ALL".equalsIgnoreCase(runTypeConfig) && !runTypeFromData.equalsIgnoreCase(runTypeConfig)) {
-                System.out.println("Skipping test due to mismatched RunType. Expected: " + runTypeConfig + ", Found: " + runTypeFromData);
+                logger.info("Skipping test due to mismatched RunType. Expected: {}, Found: {}", runTypeConfig, runTypeFromData);
                 throw new SkipException("Skipping test due to mismatched RunType. Expected: " + runTypeConfig + ", Found: " + runTypeFromData);
             }
         }
 
-        System.out.println("Before Method - End");
+        logger.info("Before Method - End");
     }
 
     @AfterMethod(alwaysRun = true)
     public void afterMethod() {
-        System.out.println("After Method - Start");
+        logger.info("After Method - Start");
 
-        System.out.println("--------------------------------------------------");
-        closeWebDriver();
+        logger.info("--------------------------------------------------");
+        DriverFactory.quitDriver();
 
-        System.out.println("After Method - End");
+        logger.info("After Method - End");
     }
 
     private static void initReportPaths(){
-        timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
         String baseDir = System.getProperty("user.dir");
-        htmlReportPath = baseDir + "/extentV5/" + timestamp + "/"+timestamp+".html";
-//        allureResultsPath = baseDir + "/allure-reports/" + timestamp;
+        htmlReportPath = baseDir + "/extentV5/" + timestamp + "/" + timestamp + ".html";
+        // allureResultsPath = baseDir + "/allure-reports/" + timestamp;
 
         // Create directories if not exist
         new File(htmlReportPath).getParentFile().mkdirs();
-//        new File(allureResultsPath).mkdirs();
+        // new File(allureResultsPath).mkdirs();
 
         System.setProperty("extent.report.path", htmlReportPath);
-//        System.setProperty("allure.results.directory", allureResultsPath);
+        // System.setProperty("allure.results.directory", allureResultsPath);
     }
 }

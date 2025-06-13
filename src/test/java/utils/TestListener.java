@@ -24,12 +24,20 @@ public class TestListener implements ITestListener{
 
     @Override
     public void onTestFailure(ITestResult result) {
-        testThread.get().log(Status.FAIL, "Test failed: " + result.getThrowable());
+        if (result!=null) {
+            testThread.get().log(Status.FAIL, "Test failed: " + result.getThrowable() );
+        } else {
+            testThread.get().log(Status.FAIL, "Test failed: ");
+        }
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        testThread.get().log(Status.SKIP, "Test skipped: " + result.getThrowable());
+        if (result!=null) {
+            testThread.get().log(Status.SKIP, "Test failed: " + result.getThrowable() );
+        } else {
+            testThread.get().log(Status.SKIP, "Test failed: ");
+        }
     }
 
     @Override

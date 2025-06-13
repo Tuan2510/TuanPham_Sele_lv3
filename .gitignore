@@ -1,8 +1,9 @@
-/.idea
+/.idea/
 /shelf/
-/workspace.xml
+/workspace.xml/
 
 /extentV5/
 /.allure/
 /allure-results/
 /target/
+/build/
