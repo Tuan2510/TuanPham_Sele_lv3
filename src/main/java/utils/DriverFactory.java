@@ -1,18 +1,9 @@
 package utils;
 
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.WebDriverRunner;
-import org.openqa.selenium.MutableCapabilities;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import commons.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import utils.RunConfigReader;
-
-import java.net.URL;
 
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 
@@ -25,7 +16,7 @@ public class DriverFactory {
 
     public static void initDriver() {
         logger.info("initDriver - Start");
-        Configuration.timeout = Long.parseLong(RunConfigReader.get("timeout"));
+        Configuration.timeout = Constants.ELEMENT_WAIT_MS;
         Configuration.browser = RunConfigReader.get("browser").toLowerCase();
         logger.info("initDriver - End");
     }

@@ -2,42 +2,73 @@ package utils;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.Status;
+import com.codeborne.selenide.Selenide;
+import org.testng.IExecutionListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+import reportManager.ExtentManager;
+import reportManager.ReportPathsInitializer;
 
-public class TestListener implements ITestListener{
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class TestListener implements ITestListener, IExecutionListener {
+    private static final ExtentReports extent = ExtentManager.getInstance();
     private static final ThreadLocal<ExtentTest> testThread = new ThreadLocal<>();
-    private static ExtentReports extent = ExtentManager.getInstance();
+
+    private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private final Map<String, ExtentTest> parents = new ConcurrentHashMap<>();
+    private final ThreadLocal<ExtentTest> currentNode = new ThreadLocal<>();
+
+    @Override
+    public void onExecutionStart() {
+        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
+    }
+    @Override public void onExecutionFinish() {}
 
     @Override
     public void onTestStart(ITestResult result) {
-        ExtentTest test = extent.createTest(result.getMethod().getMethodName());
-        testThread.set(test);
+        String className  = result.getTestClass().getRealClass().getSimpleName();
+        String methodName = result.getMethod().getMethodName();
+
+        @SuppressWarnings("unchecked")
+        Map<String,String> data = (Map<String,String>) result.getParameters()[0];
+        String testName = className + "." + methodName;
+
+        ExtentTest parent = parents.computeIfAbsent(testName,
+                extent::createTest
+        );
+
+        ExtentTest node = parent.createNode("DataNo=" + data.get("dataNo") + ": "+ data.get("TestPurpose"));
+        currentNode.set(node);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        testThread.get().log(Status.PASS, "Test passed");
+        currentNode.get().pass("Test passed");
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        if (result!=null) {
-            testThread.get().log(Status.FAIL, "Test failed: " + result.getThrowable() );
-        } else {
-            testThread.get().log(Status.FAIL, "Test failed: ");
-        }
+        ExtentTest node = currentNode.get();
+
+        // attempt a Selenide screenshot (swallow errors)
+        try {
+            String ts   = TS_FMT.format(LocalDateTime.now());
+            String shot = result.getMethod().getMethodName() + "_" + ts;
+            String path = Selenide.screenshot(shot) + ".png";
+            node.addScreenCaptureFromPath(path);
+        } catch (Exception ignored) {}
+
+        node.fail(result.getThrowable());
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        if (result!=null) {
-            testThread.get().log(Status.SKIP, "Test failed: " + result.getThrowable() );
-        } else {
-            testThread.get().log(Status.SKIP, "Test failed: ");
-        }
+        currentNode.get().skip(result.getThrowable());
     }
 
     @Override
@@ -45,4 +76,7 @@ public class TestListener implements ITestListener{
         extent.flush();
     }
 
+    public void addStep(String stepDesc){
+        currentNode.get().info(stepDesc);
+    }
 }

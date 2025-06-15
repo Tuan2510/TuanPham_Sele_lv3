@@ -1,33 +1,40 @@
 package base;
 
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.SkipException;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+import reportManager.ReportPathsInitializer;
 import utils.DriverFactory;
 import utils.RunConfigReader;
-
-import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Hashtable;
 
 public class TestBase {
     private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
     protected String runTypeConfig;
-    public static String timestamp;
-    public static String htmlReportPath;
-    public static String allureResultsPath;
 
     static {
         RunConfigReader.loadConfiguration();
-        initReportPaths();
     }
 
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite() {
+        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
+
+        SelenideLogger.addListener("Allure",
+                new AllureSelenide()
+                        .screenshots(true)      // capture on failure
+                        .savePageSource(false)
+        );
+    }
+
+    @BeforeClass
+    public void beforeClass() {
 
     }
 
@@ -36,15 +43,15 @@ public class TestBase {
         logger.info("Before Method - Start");
         DriverFactory.initDriver();
 
-        runTypeConfig = RunConfigReader.get("runType");
-        if ((testArgs.length > 0) && (testArgs[0] instanceof Hashtable)) {
-            Hashtable<String, String> data = (Hashtable<String, String>) testArgs[0];
-            String runTypeFromData = data.get("RunType");
-            if (!"ALL".equalsIgnoreCase(runTypeConfig) && !runTypeFromData.equalsIgnoreCase(runTypeConfig)) {
-                logger.info("Skipping test due to mismatched RunType. Expected: {}, Found: {}", runTypeConfig, runTypeFromData);
-                throw new SkipException("Skipping test due to mismatched RunType. Expected: " + runTypeConfig + ", Found: " + runTypeFromData);
-            }
-        }
+//        runTypeConfig = RunConfigReader.get("runType");
+//        if ((testArgs.length > 0) && (testArgs[0] instanceof Hashtable)) {
+//            Hashtable<String, String> data = (Hashtable<String, String>) testArgs[0];
+//            String runTypeFromData = data.get("RunType");
+//            if (!"ALL".equalsIgnoreCase(runTypeConfig) && !runTypeFromData.equalsIgnoreCase(runTypeConfig)) {
+//                logger.info("Skipping test due to mismatched RunType. Expected: {}, Found: {}", runTypeConfig, runTypeFromData);
+//                throw new SkipException("Skipping test due to mismatched RunType. Expected: " + runTypeConfig + ", Found: " + runTypeFromData);
+//            }
+//        }
 
         logger.info("Before Method - End");
     }
@@ -59,18 +66,13 @@ public class TestBase {
         logger.info("After Method - End");
     }
 
-    private static void initReportPaths(){
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+    @AfterClass
+    public void afterClass() {
 
-        String baseDir = System.getProperty("user.dir");
-        htmlReportPath = baseDir + "/extentV5/" + timestamp + "/" + timestamp + ".html";
-        // allureResultsPath = baseDir + "/allure-reports/" + timestamp;
+    }
 
-        // Create directories if not exist
-        new File(htmlReportPath).getParentFile().mkdirs();
-        // new File(allureResultsPath).mkdirs();
+    @AfterSuite
+    public void afterSuite() {
 
-        System.setProperty("extent.report.path", htmlReportPath);
-        // System.setProperty("allure.results.directory", allureResultsPath);
     }
 }

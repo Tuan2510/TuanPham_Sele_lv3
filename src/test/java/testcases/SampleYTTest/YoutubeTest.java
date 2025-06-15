@@ -17,7 +17,7 @@ public class YoutubeTest extends TestBase {
     private static final Logger logger = LoggerFactory.getLogger(YoutubeTest.class);
     YouTubeHomePage youTubeHomePage = new YouTubeHomePage();
 
-    @Test(dataProvider = "getData", dataProviderClass = TestDataProvider.class, retryAnalyzer = RetryAnalyzer.class)
+    @Test(dataProvider = "getData", dataProviderClass = TestDataProvider.class, retryAnalyzer = RetryAnalyzer.class, groups = "Regression")
     public void TC01(Hashtable<String, String> data) {
         logger.info("[INFO] RunType: {}", data.get("RunType"));
 

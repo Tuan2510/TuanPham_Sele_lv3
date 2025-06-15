@@ -1,0 +1,31 @@
+{
+  "TC01": [
+    {
+      "dataNo": "01",
+      "TestPurpose": "Verify user can search for 'Selenide tutorial' videos",
+      "RunType": "Regression",
+      "query": "Selenide tutorial"
+    },
+    {
+      "dataNo": "02",
+      "TestPurpose": "Verify user can search for 'Selenide tutorial' videos",
+      "RunType": "Smoke",
+      "query": "TestNG DataProvider"
+
+    },
+    {
+      "dataNo": "03",
+      "TestPurpose": "Verify user can search for 'Selenide tutorial' videos",
+      "RunType": "BVT",
+      "query": "Allure reports Java"
+    }
+  ],
+  "TC02": [
+    {
+      "dataNo": "01",
+      "TestPurpose": "test test",
+      "RunType": "TEST",
+      "query": "Selenide test"
+    }
+  ]
+}
