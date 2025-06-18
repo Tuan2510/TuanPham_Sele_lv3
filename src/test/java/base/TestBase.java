@@ -12,25 +12,28 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import reportManager.ReportPathsInitializer;
 import utils.DriverFactory;
+import utils.LogHelper;
 import utils.RunConfigReader;
+import utils.TestListener;
 
 public class TestBase {
     private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
-    protected String runTypeConfig;
+    protected final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
 
     static {
         RunConfigReader.loadConfiguration();
-    }
-
-    @BeforeSuite(alwaysRun = true)
-    public void beforeSuite() {
+//        ReportPathsInitializer.createReportFolders();
         System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
-
         SelenideLogger.addListener("Allure",
                 new AllureSelenide()
                         .screenshots(true)      // capture on failure
                         .savePageSource(false)
         );
+    }
+
+    @BeforeSuite(alwaysRun = true)
+    public void beforeSuite() {
+
     }
 
     @BeforeClass
@@ -42,16 +45,6 @@ public class TestBase {
     public void beforeMethod(Object[] testArgs) {
         logger.info("Before Method - Start");
         DriverFactory.initDriver();
-
-//        runTypeConfig = RunConfigReader.get("runType");
-//        if ((testArgs.length > 0) && (testArgs[0] instanceof Hashtable)) {
-//            Hashtable<String, String> data = (Hashtable<String, String>) testArgs[0];
-//            String runTypeFromData = data.get("RunType");
-//            if (!"ALL".equalsIgnoreCase(runTypeConfig) && !runTypeFromData.equalsIgnoreCase(runTypeConfig)) {
-//                logger.info("Skipping test due to mismatched RunType. Expected: {}, Found: {}", runTypeConfig, runTypeFromData);
-//                throw new SkipException("Skipping test due to mismatched RunType. Expected: " + runTypeConfig + ", Found: " + runTypeFromData);
-//            }
-//        }
 
         logger.info("Before Method - End");
     }

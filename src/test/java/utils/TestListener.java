@@ -16,33 +16,32 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TestListener implements ITestListener, IExecutionListener {
+    public static final TestListener INSTANCE = new TestListener();
+
     private static final ExtentReports extent = ExtentManager.getInstance();
-    private static final ThreadLocal<ExtentTest> testThread = new ThreadLocal<>();
+    private static final ThreadLocal<ExtentTest> currentNode = new ThreadLocal<>();
 
     private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private final Map<String, ExtentTest> parents = new ConcurrentHashMap<>();
-    private final ThreadLocal<ExtentTest> currentNode = new ThreadLocal<>();
 
     @Override
     public void onExecutionStart() {
-        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
+//        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
     }
     @Override public void onExecutionFinish() {}
 
     @Override
     public void onTestStart(ITestResult result) {
-        String className  = result.getTestClass().getRealClass().getSimpleName();
+        String className = result.getTestClass().getRealClass().getSimpleName();
         String methodName = result.getMethod().getMethodName();
 
         @SuppressWarnings("unchecked")
-        Map<String,String> data = (Map<String,String>) result.getParameters()[0];
+        Map<String, String> data = (Map<String, String>) result.getParameters()[0];
         String testName = className + "." + methodName;
 
-        ExtentTest parent = parents.computeIfAbsent(testName,
-                extent::createTest
-        );
+        ExtentTest parent = parents.computeIfAbsent(testName, extent::createTest);
+        ExtentTest node = parent.createNode("DataNo=" + data.get("dataNo") + ": " + data.get("TestPurpose"));
 
-        ExtentTest node = parent.createNode("DataNo=" + data.get("dataNo") + ": "+ data.get("TestPurpose"));
         currentNode.set(node);
     }
 

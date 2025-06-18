@@ -11,6 +11,7 @@ import utils.TestDataProvider;
 import utils.TestListener;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 @Listeners({TestListener.class})
 public class YoutubeTest extends TestBase {
@@ -18,13 +19,14 @@ public class YoutubeTest extends TestBase {
     YouTubeHomePage youTubeHomePage = new YouTubeHomePage();
 
     @Test(dataProvider = "getData", dataProviderClass = TestDataProvider.class, retryAnalyzer = RetryAnalyzer.class, groups = "Regression")
-    public void TC01(Hashtable<String, String> data) {
-        logger.info("[INFO] RunType: {}", data.get("RunType"));
-
+    public void TC01(Map<String, String> data) {
+        logHelper.logStep("Step #1: Navigate to YouTube");
         youTubeHomePage.openHome();
+
+        logHelper.logStep("Step #2: Search for " + data.get("query"));
         youTubeHomePage.search(data.get("query"));
 
-        logger.info("[INFO] Key Sent: {}", data.get("query"));
+        logHelper.logStep("Step #3: Check for result");
         youTubeHomePage.verifyResultsVisible();
     }
 

@@ -18,13 +18,20 @@ public class TestDataProvider {
     //get test data from resources [className].json with [methodName]
     @DataProvider(name = "getData")
     public static Object[][] getData(Method method) throws Exception {
+        // Prepare the data path
+        Class<?> testClass = method.getDeclaringClass();
+        String packagePath = testClass.getPackage().getName()
+                .replace('.', '/')
+                .replaceFirst("^testcases/", ""); // remove base package prefix if needed
+        String className = testClass.getSimpleName();
+        String resourcePath = "testdata/" + packagePath + "/" + className + ".json";
+
         // Load JSON file from resources
-        String className = method.getDeclaringClass().getSimpleName();
-
         try (InputStreamReader reader = new InputStreamReader(
-                Objects.requireNonNull(TestDataProvider.class.getClassLoader()
-                        .getResourceAsStream("testdata/" + className + ".json")), StandardCharsets.UTF_8)) {
-
+                Objects.requireNonNull(
+                        TestDataProvider.class.getClassLoader().getResourceAsStream(resourcePath),
+                        "Test data file not found: " + resourcePath), StandardCharsets.UTF_8))
+        {
             Gson gson = new Gson();
             Type mapType = new TypeToken<Map<String, List<Map<String, String>>>>() {}.getType();
             Map<String, List<Map<String, String>>> jsonData = gson.fromJson(reader, mapType);
@@ -32,15 +39,14 @@ public class TestDataProvider {
             // Load the data with method name
             List<Map<String, String>> dataList = jsonData.get(method.getName());
 
-            //convert to Object
-            Object[][] result = new Object[dataList.size()][1];
-
-            for (int i = 0; i < dataList.size(); i++) {
-                Hashtable<String, String> table = new Hashtable<>(dataList.get(i));
-                result[i][0] = table;
+            if (dataList == null || dataList.isEmpty()) {
+                throw new RuntimeException("No data found for test method: " + method.getName());
             }
 
-            return result;
+            //use stream to create object
+            return dataList.stream()
+                    .map(data -> new Object[]{ new Hashtable<>(data) })
+                    .toArray(Object[][]::new);
         }
     }
 
