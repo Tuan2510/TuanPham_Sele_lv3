@@ -26,12 +26,6 @@ public class TestBase {
         RunConfigReader.loadConfiguration();
 //        ReportPathsInitializer.createReportFolders();
 //        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
-        SelenideLogger.addListener("Allure",
-                new AllureSelenide()
-                        .screenshots(true)      // capture on failure
-                        .savePageSource(false)
-                        .includeSelenideSteps(true)
-        );
     }
 
     @BeforeSuite(alwaysRun = true)
@@ -69,6 +63,6 @@ public class TestBase {
 
     @AfterSuite
     public void afterSuite() throws IOException, InterruptedException{
-        AllureReportHelper.moveAllureResultsAndGenerateReport();
+//        AllureReportHelper.moveAllureResultsAndGenerateReport();
     }
 }
