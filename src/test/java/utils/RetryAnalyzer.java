@@ -14,6 +14,9 @@ public class RetryAnalyzer implements IRetryAnalyzer{
     public boolean retry(ITestResult result) {
         if (attempt < MAX_RETRIES) {
             attempt++;
+            String retryName = String.format("Retry_Attempt(%d)_%s", attempt, result.getMethod().getMethodName());
+            result.setAttribute("retryAttempt", attempt);
+            result.setAttribute("retryName", retryName);
             return true;
         }
         return false;

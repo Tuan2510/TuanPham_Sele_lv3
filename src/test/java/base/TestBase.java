@@ -10,11 +10,13 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
-import reportManager.ReportPathsInitializer;
+import reportManager.AllureReportHelper;
 import utils.DriverFactory;
 import utils.LogHelper;
 import utils.RunConfigReader;
 import utils.TestListener;
+
+import java.io.IOException;
 
 public class TestBase {
     private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
@@ -23,11 +25,12 @@ public class TestBase {
     static {
         RunConfigReader.loadConfiguration();
 //        ReportPathsInitializer.createReportFolders();
-        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
+//        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
         SelenideLogger.addListener("Allure",
                 new AllureSelenide()
                         .screenshots(true)      // capture on failure
                         .savePageSource(false)
+                        .includeSelenideSteps(true)
         );
     }
 
@@ -65,7 +68,7 @@ public class TestBase {
     }
 
     @AfterSuite
-    public void afterSuite() {
-
+    public void afterSuite() throws IOException, InterruptedException{
+        AllureReportHelper.moveAllureResultsAndGenerateReport();
     }
 }

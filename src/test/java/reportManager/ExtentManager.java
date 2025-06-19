@@ -2,13 +2,14 @@ package reportManager;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import com.aventstack.extentreports.reporter.configuration.Theme;
 
 public class ExtentManager {
     private static ExtentReports extent;
 
     public static synchronized ExtentReports getInstance() {
         if (extent == null) {
-            ExtentSparkReporter spark = new ExtentSparkReporter(ReportPathsInitializer.EXTENT_DIR);
+            ExtentSparkReporter spark = new ExtentSparkReporter(ReportPathsInitializer.EXTENT_REPORT_FILE);
             spark.config().setReportName("Selenide Test Report");
 
             extent = new ExtentReports();

@@ -2,7 +2,6 @@ package utils;
 
 import com.codeborne.selenide.Configuration;
 import commons.Constants;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -50,15 +49,15 @@ public class DriverFactory {
                 throw new RuntimeException("Failed to setup remote driver", e);
             }
         } else {
-            // Local driver setup with WebDriverManager
+            // Local driver setup
             switch (browser.toLowerCase()) {
                 case "edge":
-                    WebDriverManager.edgedriver().setup();
+//                    WebDriverManager.edgedriver().setup();
                     Configuration.browser = "edge";
                     break;
                 case "chrome":
                 default:
-                    WebDriverManager.chromedriver().setup();
+//                    WebDriverManager.chromedriver().setup();
                     Configuration.browser = "chrome";
                     break;
             }

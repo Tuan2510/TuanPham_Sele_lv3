@@ -26,7 +26,8 @@ public class TestListener implements ITestListener, IExecutionListener {
 
     @Override
     public void onExecutionStart() {
-//        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
+        ReportPathsInitializer.createReportFolders();
+        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
     }
     @Override public void onExecutionFinish() {}
 
@@ -40,7 +41,21 @@ public class TestListener implements ITestListener, IExecutionListener {
         String testName = className + "." + methodName;
 
         ExtentTest parent = parents.computeIfAbsent(testName, extent::createTest);
-        ExtentTest node = parent.createNode("DataNo=" + data.get("dataNo") + ": " + data.get("TestPurpose"));
+
+        Object retryName = result.getAttribute("retryName");
+        String nodeName = retryName != null
+                ? retryName.toString()
+                : "DataNo=" + data.get("dataNo") + ": " + data.get("TestPurpose");
+
+        ExtentTest node = parent.createNode(nodeName);
+
+        if (retryName != null) {
+            String uuid = (String) result.getAttribute("ALLURE_UUID");
+            if (uuid != null) {
+                io.qameta.allure.Allure.getLifecycle()
+                        .updateTestCase(uuid, tr -> tr.setName(nodeName));
+            }
+        }
 
         currentNode.set(node);
     }
