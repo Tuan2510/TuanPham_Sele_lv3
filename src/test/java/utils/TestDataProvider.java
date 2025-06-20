@@ -14,7 +14,7 @@ import java.util.Objects;
 public class TestDataProvider {
 
     @DataProvider(name = "getData")
-    public static TestData[] getData(Method method) throws Exception {
+    public static Object[][] getData(Method method) throws Exception {
         String className = method.getDeclaringClass().getSimpleName();
         String packagePath = method.getDeclaringClass().getPackage().getName()
                 .replace('.', '/')
@@ -28,7 +28,14 @@ public class TestDataProvider {
             jsonObject = gson.fromJson(reader, JsonObject.class);
 
             JsonArray jsonArray = jsonObject.getAsJsonArray(method.getName());
-            return gson.fromJson(jsonArray, TestData[].class);
+            TestData[] dataArray = gson.fromJson(jsonArray, TestData[].class);
+
+            Object[][] result = new Object[dataArray.length][1];
+            for (int i = 0; i < dataArray.length; i++) {
+                result[i][0] = dataArray[i];
+            }
+            return result;
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to load test data from: " + resourcePath, e);
         }

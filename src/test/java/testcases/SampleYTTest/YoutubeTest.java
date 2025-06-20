@@ -19,17 +19,15 @@ public class YoutubeTest extends TestBase {
     YouTubeHomePage youTubeHomePage = new YouTubeHomePage();
 
     @Test(dataProvider = "getData", dataProviderClass = TestDataProvider.class, retryAnalyzer = RetryAnalyzer.class, groups = "Regression")
-    public void TC01(TestData[] data) {
-        for ( TestData testData : data) {
-            logHelper.logStep("Step #1: Navigate to YouTube");
-            youTubeHomePage.openHome();
+    public void TC01(TestData testData) {
+        logHelper.logStep("Step #1: Navigate to YouTube");
+        youTubeHomePage.openHome();
 
-            logHelper.logStep("Step #2: Search for " + testData.getQuery());
-            youTubeHomePage.search(testData.getQuery());
+        logHelper.logStep("Step #2: Search for " + testData.getQuery());
+        youTubeHomePage.search(testData.getQuery());
 
-            logHelper.logStep("Step #3: Check for result");
-            youTubeHomePage.verifyResultsVisible();
-        }
+        logHelper.logStep("Step #3: Check for result");
+        youTubeHomePage.verifyResultsVisible();
     }
 
 }
