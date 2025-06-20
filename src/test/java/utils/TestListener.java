@@ -44,6 +44,12 @@ public class TestListener implements ITestListener, IExecutionListener {
     @Override
     public void onTestStart(ITestResult result) {
         String testName = result.getMethod().getMethodName();
+
+        Object[] params = result.getParameters();
+        if (params != null && params.length > 0 && params[0] instanceof TestData data) {
+            testName = testName + "---" + data.getDataNo() + ": " + data.getTestPurpose();
+        }
+
         ExtentTest test = extent.createTest(testName);
         currentNode.set(test);
     }
