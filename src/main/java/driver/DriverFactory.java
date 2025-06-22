@@ -1,9 +1,10 @@
-package utils;
+package driver;
 
 import com.codeborne.selenide.Configuration;
 import commons.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.RunConfigReader;
 
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 

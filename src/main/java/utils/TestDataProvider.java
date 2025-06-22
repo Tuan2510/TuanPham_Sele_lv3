@@ -3,7 +3,7 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.testng.annotations.DataProvider;
+import testDataObject.DataObject;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,8 +13,7 @@ import java.util.Objects;
 
 public class TestDataProvider {
 
-    @DataProvider(name = "getData")
-    public static Object[][] getData(Method method) throws Exception {
+    public static Object[][] getDataByMethodName(Method method) throws Exception {
         String className = method.getDeclaringClass().getSimpleName();
         String packagePath = method.getDeclaringClass().getPackage().getName()
                 .replace('.', '/')
@@ -28,7 +27,7 @@ public class TestDataProvider {
             jsonObject = gson.fromJson(reader, JsonObject.class);
 
             JsonArray jsonArray = jsonObject.getAsJsonArray(method.getName());
-            TestData[] dataArray = gson.fromJson(jsonArray, TestData[].class);
+            DataObject[] dataArray = gson.fromJson(jsonArray, DataObject[].class);
 
             Object[][] result = new Object[dataArray.length][1];
             for (int i = 0; i < dataArray.length; i++) {

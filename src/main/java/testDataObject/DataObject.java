@@ -1,6 +1,6 @@
-package utils;
+package testDataObject;
 
-public class TestData {
+public class DataObject {
     private String dataNo;
     private String TestPurpose;
     private String RunType;

@@ -8,7 +8,6 @@ import java.util.Properties;
 
 public class RunConfigReader {
 
-
     private static final Properties props = new Properties();
 
     public static void loadConfiguration() {

@@ -2,7 +2,6 @@ package reportManager;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
-import com.aventstack.extentreports.reporter.configuration.Theme;
 
 public class ExtentManager {
     private static ExtentReports extent;
