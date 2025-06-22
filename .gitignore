@@ -5,6 +5,7 @@
 /extentV5/
 /.allure/
 /allure-results/
+extent-reports
 /target/
 /build/
-/reports/
+/logs/

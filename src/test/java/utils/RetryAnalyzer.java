@@ -12,7 +12,7 @@ public class RetryAnalyzer implements IRetryAnalyzer{
 
     @Override
     public boolean retry(ITestResult result) {
-        if (attempt < MAX_RETRIES) {
+        if ("immediate".equalsIgnoreCase(RETRY_STRATEGY) && attempt < MAX_RETRIES) {
             attempt++;
             String retryName = String.format("Retry_Attempt(%d)_%s", attempt, result.getMethod().getMethodName());
             result.setAttribute("retryAttempt", attempt);

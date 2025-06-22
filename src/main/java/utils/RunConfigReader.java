@@ -27,4 +27,26 @@ public class RunConfigReader {
         }
         return props.getProperty(key);
     }
+
+    public static String getOrDefault(String key, String defaultValue) {
+        String value = get(key);
+        return value != null ? value : defaultValue;
+    }
+
+    public static String getBaseUrl() {
+        String env = get("env");
+        if (env == null || env.isBlank()) {
+            env = "dev";
+        }
+
+        switch (env.toLowerCase()) {
+            case "test":
+                return get("test.baseUrl");
+            case "stg":
+                return get("stg.baseUrl");
+            case "dev":
+            default:
+                return get("dev.baseUrl");
+        }
+    }
 }

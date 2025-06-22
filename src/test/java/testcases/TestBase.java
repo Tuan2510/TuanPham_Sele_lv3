@@ -61,6 +61,5 @@ public class TestBase {
 
     @AfterSuite
     public void afterSuite() throws IOException, InterruptedException{
-//        AllureManager.moveAllureResultsAndGenerateReport();
     }
 }

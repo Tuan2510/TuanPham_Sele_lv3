@@ -3,19 +3,25 @@ package utils;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.codeborne.selenide.Selenide;
+import commons.Constants;
 import org.testng.IExecutionListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+import org.testng.TestNG;
 import reportManager.AllureManager;
 import reportManager.ExtentManager;
 import reportManager.ReportPathsInitializer;
 import testDataObject.DataObject;
 
+import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 
 public class TestListener implements ITestListener, IExecutionListener {
     public static final TestListener INSTANCE = new TestListener();
+
+    private static boolean rerunInProgress = false;
 
     private static final ExtentReports extent = ExtentManager.getInstance();
     private static final ThreadLocal<ExtentTest> currentNode = new ThreadLocal<>();
@@ -24,7 +30,6 @@ public class TestListener implements ITestListener, IExecutionListener {
 
     @Override
     public void onExecutionStart() {
-//        System.setProperty("allure.results.directory", ReportPathsInitializer.ALLURE_RESULTS_DIR);
     }
 
     @Override
@@ -79,7 +84,44 @@ public class TestListener implements ITestListener, IExecutionListener {
         extent.flush();
     }
 
-    @Override public void onExecutionFinish() {}
+    @Override
+    public void onExecutionFinish() {
+        if (rerunInProgress || !"afterDone".equalsIgnoreCase(Constants.RETRY_STRATEGY)) {
+            return;
+        }
+
+        for (int i = 0; i < Constants.MAX_RETRY; i++) {
+            String failedSuite = locateFailedSuite();
+            if (failedSuite == null) {
+                break;
+            }
+            TestNG testng = new TestNG();
+            testng.setTestSuites(Collections.singletonList(failedSuite));
+            testng.addListener(TestListener.INSTANCE);
+            testng.addListener(new io.qameta.allure.testng.AllureTestNg());
+            rerunInProgress = true;
+            try {
+                testng.run();
+            } finally {
+                rerunInProgress = false;
+            }
+        }
+    }
+
+    private String locateFailedSuite() {
+        String[] paths = {
+                "target/surefire-reports/testng-failed.xml",
+                "test-output/testng-failed.xml"
+        };
+        for (String p : paths) {
+            File f = new File(p);
+            if (f.exists()) {
+                return f.getAbsolutePath();
+            }
+        }
+        return null;
+    }
+
 
     public void addStep(String stepDesc){
         currentNode.get().info(stepDesc);
