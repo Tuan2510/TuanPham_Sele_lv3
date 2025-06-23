@@ -11,7 +11,8 @@ import org.testng.ITestResult;
 import org.testng.TestNG;
 import reportManager.AllureManager;
 import reportManager.ExtentManager;
-import testDataObject.SampleDataObject;
+import reportManager.ReportPathsInitializer;
+import testDataObject.DataObject;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +42,7 @@ public class TestListener implements ITestListener, IExecutionListener {
         String testName = result.getMethod().getMethodName();
 
         Object[] params = result.getParameters();
-        if (params != null && params.length > 0 && params[0] instanceof SampleDataObject data) {
+        if (params != null && params.length > 0 && params[0] instanceof DataObject data) {
             testName = testName + "---" + data.getDataNo() + ": " + data.getTestPurpose();
         }
 

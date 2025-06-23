@@ -1,6 +1,6 @@
 package testDataObject;
 
-public class SampleDataObject {
+public class DataObject {
     private String dataNo;
     private String TestPurpose;
     private String RunType;

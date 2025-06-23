@@ -3,7 +3,7 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import testDataObject.SampleDataObject;
+import testDataObject.DataObject;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,7 +27,7 @@ public class TestDataProvider {
             jsonObject = gson.fromJson(reader, JsonObject.class);
 
             JsonArray jsonArray = jsonObject.getAsJsonArray(method.getName());
-            SampleDataObject[] dataArray = gson.fromJson(jsonArray, SampleDataObject[].class);
+            DataObject[] dataArray = gson.fromJson(jsonArray, DataObject[].class);
 
             Object[][] result = new Object[dataArray.length][1];
             for (int i = 0; i < dataArray.length; i++) {
