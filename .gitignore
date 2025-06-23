@@ -1,0 +1,11 @@
+/.idea/
+/shelf/
+/workspace.xml/
+
+/extentV5/
+/.allure/
+/allure-results/
+extent-reports
+/target/
+/build/
+/logs/
