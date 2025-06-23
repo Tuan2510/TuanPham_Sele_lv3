@@ -13,7 +13,6 @@ public class Constants {
         RunConfigReader.loadConfiguration();
     }
 
-    public static final long ELEMENT_WAIT_MS = Long.parseLong(RunConfigReader.getOrDefault("element.wait.ms", "20000"));
     public static final int MAX_RETRY = Integer.parseInt(RunConfigReader.getOrDefault("retry.count", "1"));
     public static final String RETRY_STRATEGY = RunConfigReader.getOrDefault("retry.mode", "afterDone");
     public static final String TIMESTAMP = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));

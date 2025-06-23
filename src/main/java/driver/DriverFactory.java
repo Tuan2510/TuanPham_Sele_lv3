@@ -18,7 +18,6 @@ public class DriverFactory {
 
     public static void initDriver() {
         logger.info("initDriver - Start");
-        Configuration.timeout = Constants.ELEMENT_WAIT_MS;
 
         logger.info("initDriver - End");
     }
