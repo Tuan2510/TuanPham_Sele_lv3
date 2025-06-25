@@ -1,8 +1,8 @@
 {
   "TC01": [
     {
-      "departmentLocation": "Ho Chi Minh",
-      "destinationLocation": "Ha Noi",
+      "departmentLocation": "Ho Chi Minh ( SGN )",
+      "destinationLocation": "Ha Noi ( HAN )",
       "departAfterDays": 1,
       "returnAfterDays": 3,
       "flightPassengerDataObject": {
