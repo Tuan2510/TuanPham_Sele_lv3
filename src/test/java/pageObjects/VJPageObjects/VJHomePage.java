@@ -58,36 +58,36 @@ public class VJHomePage {
 
     @Step("Select departure location for flight")
     public void selectDepartureLocation(String DepartAddress){
-        SelenideElement shadowLocationHCM = $x(shadowLocationXpath.formatted(DepartAddress));
+        SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DepartAddress));
 
-        if (!shadowLocationHCM.isDisplayed()) {
+        if (!shadowLocationAddress.isDisplayed()) {
             departmentInput.click();
-            shadowLocationHCM.should(appear);
+            shadowLocationAddress.should(appear);
         }
 
-        shadowLocationHCM.click();
+        shadowLocationAddress.click();
     }
 
     @Step("Select destination location for flight")
     public void selectDestinationLocation(String DesAddress){
-        SelenideElement shadowLocationHN = $x(shadowLocationXpath.formatted(DesAddress));
+        SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DesAddress));
 
-        if (!shadowLocationHN.isDisplayed()) {
+        if (!shadowLocationAddress.isDisplayed()) {
             destinationInput.click();
-            shadowLocationHN.should(appear);
+            shadowLocationAddress.should(appear);
         }
 
-        shadowLocationHN.click();
+        shadowLocationAddress.click();
     }
 
     @Step("Select departure date and return date for round trip flight")
-    public void selectRoundTripDate(int DepartDays, int ReturnDays){
-        LocalDate departureDate = LocalDate.now().plusDays(DepartDays);
-        LocalDate returnDate = departureDate.plusDays(ReturnDays);
+    public void selectRoundTripDate(int departAfterDays, int returnAfterDays){
+        LocalDate departDate = LocalDate.now().plusDays(departAfterDays);
+        LocalDate returnDate = departDate.plusDays(returnAfterDays);
 
 
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
-                departureDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH), departureDate.getDayOfMonth()));
+                departDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH), departDate.getDayOfMonth()));
 
         SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
                 returnDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH), returnDate.getDayOfMonth()));

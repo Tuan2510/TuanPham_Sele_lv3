@@ -1,0 +1,15 @@
+{
+  "TC01": [
+    {
+      "departmentLocation": "Ho Chi Minh",
+      "destinationLocation": "Ha Noi",
+      "departAfterDays": 1,
+      "returnAfterDays": 3,
+      "flightPassengerDataObject": {
+        "adults": 2,
+        "children": 0,
+        "infants": 0
+      }
+    }
+  ]
+}

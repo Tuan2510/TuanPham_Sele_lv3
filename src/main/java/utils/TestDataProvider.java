@@ -3,10 +3,10 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import testDataObject.SampleDataObject;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -27,7 +27,9 @@ public class TestDataProvider {
             jsonObject = gson.fromJson(reader, JsonObject.class);
 
             JsonArray jsonArray = jsonObject.getAsJsonArray(method.getName());
-            SampleDataObject[] dataArray = gson.fromJson(jsonArray, SampleDataObject[].class);
+
+            Class<?> paramType = method.getParameterTypes().length > 0 ? method.getParameterTypes()[0] : Object.class;
+            Object[] dataArray = (Object[]) gson.fromJson(jsonArray, Array.newInstance(paramType, 0).getClass());
 
             Object[][] result = new Object[dataArray.length][1];
             for (int i = 0; i < dataArray.length; i++) {
