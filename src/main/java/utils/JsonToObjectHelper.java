@@ -13,6 +13,9 @@ import java.util.Objects;
 
 public class JsonToObjectHelper {
 
+    /**
+     * Load data from json file, filter for current method
+     */
     public static Object[][] getDataByMethodName(Method method) throws Exception {
         String className = method.getDeclaringClass().getSimpleName();
         String packagePath = method.getDeclaringClass().getPackage().getName()

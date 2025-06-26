@@ -1,11 +1,15 @@
 package pageObjects.VJPageObjects;
 
-import static com.codeborne.selenide.WebDriverRunner.url;
-import static org.testng.Assert.assertTrue;
+import static com.codeborne.selenide.Selenide.webdriver;
+import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 
 public class VJPassengerInputPage {
 
     public void verifyTravelOptionPageDisplayed(){
-        assertTrue(url().contains("/passenger"), "Passenger page is not displayed.");
+        //check the url
+        webdriver().shouldHave(urlContaining("/select-flight"));
     }
+
+
+
 }

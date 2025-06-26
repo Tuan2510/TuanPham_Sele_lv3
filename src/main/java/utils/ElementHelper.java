@@ -59,6 +59,13 @@ public class ElementHelper {
     }
 
     /**
+     * Scroll the page to the top using JavaScript.
+     */
+    public static void scrollToPageTop() {
+        executeJavaScript("window.scrollTo(0, 0);");
+    }
+
+    /**
      * Scroll the page by the specified pixel amount (positive = down, negative = up).
      * @param x Horizontal scroll
      * @param y Vertical scroll
