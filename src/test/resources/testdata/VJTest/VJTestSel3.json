@@ -1,0 +1,19 @@
+{
+  "TC01": [
+    {
+      "flightType": "roundTrip",
+      "flightTypeCode": "RETURN",
+      "departmentLocation": "Ho Chi Minh",
+      "departmentLocationCode": " ( SGN )",
+      "destinationLocation": "Ha Noi",
+      "destinationLocationCode": " ( HAN )",
+      "departAfterDays": 1,
+      "returnAfterDays": 3,
+      "flightPassengerDataObject": {
+        "adults": 2,
+        "children": 0,
+        "infants": 0
+      }
+    }
+  ]
+}

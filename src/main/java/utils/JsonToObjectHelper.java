@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-public class TestDataProvider {
+public class JsonToObjectHelper {
 
     public static Object[][] getDataByMethodName(Method method) throws Exception {
         String className = method.getDeclaringClass().getSimpleName();

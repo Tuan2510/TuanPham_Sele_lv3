@@ -22,12 +22,12 @@ public class VJTestSel3 extends TestBase{
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
 
-        logHelper.logStep("Step #2: Close banners if present");
+        logHelper.logStep("Step #2: Close banners and alert if present");
         homePage.closeCookiesBanner();
         homePage.closeOfferAlert();
 
-        logHelper.logStep("Step #3: Fill search form");
-        homePage.chooseFlightType("roundTrip");
+        logHelper.logStep("Step #3: Fill search form and search for ticket");
+        homePage.chooseFlightType(data.getFlightType());
         homePage.selectDepartureLocation(data.getDepartmentLocation());
         homePage.selectDestinationLocation(data.getDestinationLocation());
         homePage.selectRoundTripDate(data.getDepartAfterDays(), data.getReturnAfterDays());
@@ -37,9 +37,15 @@ public class VJTestSel3 extends TestBase{
                 data.getFlightPassengerDataObject().getInfants());
         homePage.findTicket();
 
-        logHelper.logStep("Step #4: Verify travel options page");
+        logHelper.logStep("Step #4: Close banners and alert if present");
+        selectTicketPage.closeOfferAlert();
+        selectTicketPage.closeAdPanelButton();
 
+        logHelper.logStep("Step #5: Verify travel options page displayed");
+        selectTicketPage.verifyTravelOptionPageDisplayed();
 
+        logHelper.logStep("Step #6: Verify flight information");
+        selectTicketPage.verifyFlightInfo(data);
 
 
     }

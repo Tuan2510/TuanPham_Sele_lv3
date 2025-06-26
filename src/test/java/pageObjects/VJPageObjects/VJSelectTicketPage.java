@@ -1,8 +1,12 @@
 package pageObjects.VJPageObjects;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
+import testDataObject.VJTest.FlightDataObject;
 import testDataObject.VJTest.FlightPassengerDataObject;
+import utils.ElementHelper;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -11,19 +15,19 @@ import java.util.Locale;
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$$;
-import static com.codeborne.selenide.Selenide.$$x;
-import static com.codeborne.selenide.Selenide.$x;
-import static com.codeborne.selenide.WebDriverRunner.url;
-import static org.testng.Assert.assertTrue;
+import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.NumberHelper.getDayOfMonthSuffix;
+import static utils.NumberHelper.parsePrice;
 
 public class VJSelectTicketPage {
     //locators
+    private final SelenideElement alertOfferIframe = $x("//iframe[@id='preview-notification-frame']");
+    private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
     private final SelenideElement closeAdPanelButton = $x("//button[contains(@class, 'MuiButtonBase-root') and @aria-label='close']");
     private final ElementsCollection flightInfoCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(@class, 'MuiTypography-root') and @variantmd='h3']");
     private final ElementsCollection soldOutTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), 'Sold out')]");
-    private final ElementsCollection availableTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), '000 VND')]");
+    private final ElementsCollection availableTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), '000 VND')]/preceding-sibling::p");
 
     private final SelenideElement selectingDate = $x("//div[contains(@class, 'lick-current')]//p[@weight='Bold']");
     private final SelenideElement lowestTicket = $x("");
@@ -31,14 +35,27 @@ public class VJSelectTicketPage {
 
 
     //methods
+    @Step("Close offer alert if displayed")
+    public void closeOfferAlert() {
+        if (alertOfferIframe.isDisplayed()) {
+            ElementHelper.switchToIframe(alertOfferIframe);
+
+            if (alertOfferLaterBtn.isDisplayed()) {
+                alertOfferLaterBtn.click();
+            }
+
+            ElementHelper.switchToDefault();
+        }
+    }
+
     public void closeAdPanelButton(){
-        if(closeAdPanelButton.isDisplayed()){
-            closeAdPanelButton.click();
+        if(closeAdPanelButton.isDisplayed() ){
+            ElementHelper.clickWhenReady(closeAdPanelButton);
         }
     }
 
     public void verifyTravelOptionPageDisplayed(){
-        assertTrue(url().contains("/select-flight"), "Select Travel Options page is not displayed.");
+        webdriver().shouldHave(urlContaining("/select-flight"));
     }
 
     public void verifyCurrencyIsVND() {
@@ -55,13 +72,13 @@ public class VJSelectTicketPage {
             String text = flightInfoCollection.get(i).getText().trim();
 
             // Check for "From" and get next span as departure city
-            if (text.equalsIgnoreCase("From") && (i + 1) < flightInfoCollection.size()) {
-                departureCity = flightInfoCollection.get(i + 1).getText().trim();
+            if (text.toLowerCase().contains("from")) {
+                departureCity = text.trim();
             }
 
             // Check for "To" and get next span as destination city
-            if (text.equalsIgnoreCase("To") && (i + 1) < flightInfoCollection.size()) {
-                destinationCity = flightInfoCollection.get(i + 1).getText().trim();
+            if (text.toLowerCase().contains("to")) {
+                destinationCity = text.trim();
             }
         }
 
@@ -85,30 +102,59 @@ public class VJSelectTicketPage {
             }
         }
 
-        if (!expectedFlightTypeAndPassenger.equalsIgnoreCase(flightTypeAndPassenger)) {
+        if (!flightTypeAndPassenger.contains(expectedFlightTypeAndPassenger)) {
             throw new AssertionError("Flight type mismatch: Expected " + expectedFlightTypeAndPassenger + " but got " + flightTypeAndPassenger);
         }
+    }
+
+    public void selectCheapestTicket(){
+        SelenideElement lowest = availableTicketCollection.get(0);
+        int lowestPrice = parsePrice(availableTicketCollection.get(0).getText().trim());
+        for (int i = 1; i < availableTicketCollection.size(); i++) {
+            int price = parsePrice(availableTicketCollection.get(i).getText().trim());
+            if(price < lowestPrice) {
+                lowest = availableTicketCollection.get(i);
+                lowestPrice = price;
+            }
+        }
+
+
+        lowest.click();
     }
 
     public void verifyFlightDate(String expectedDate){
         selectingDate.getText().equalsIgnoreCase(expectedDate);
     }
 
-    public void verifyFlightInfo(String expectedFlightType, FlightPassengerDataObject expectedPassenger, String expectedDepartCity, String expectedDestinationCity, int departAfterDays){
+    public void verifyFlightInfo(FlightDataObject data){
         verifyTravelOptionPageDisplayed();
 
         verifyCurrencyIsVND();
 
-        verifyFlightLocation(expectedDepartCity, expectedDestinationCity);
+        String expectedDepartAddress = data.getDepartmentLocation() + data.getDepartmentLocationCode();
+        String expectedDestinationAddress = data.getDestinationLocation() + data.getDestinationLocationCode();
+        verifyFlightLocation(expectedDepartAddress, expectedDestinationAddress);
 
-        String expectedFlightTypeAndPassenger = expectedFlightType + " | " + expectedPassenger.getStringFlightPassenger();
+        String expectedFlightTypeAndPassenger = data.getFlightTypeCode() + " | " + data.getFlightPassengerDataObject().getStringFlightPassenger();
         verifyFlightTypeAndPassenger(expectedFlightTypeAndPassenger);
 
-        LocalDate expectedLocalDate = LocalDate.now().plusDays(departAfterDays);
-        String expectedDate = expectedLocalDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " +
-                expectedLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedLocalDate.getDayOfMonth());
-        verifyFlightDate(expectedDate);
+        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        String expectedDepartDate = expectedDepartLocalDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " +
+                expectedDepartLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedDepartLocalDate.getDayOfMonth());
+        verifyFlightDate(expectedDepartDate);
 
+        selectCheapestTicket();
+
+        continueButton.click();
+
+        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
+        String expectedReturnDate = expectedReturnLocalDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " +
+                expectedReturnLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedReturnLocalDate.getDayOfMonth());
+        verifyFlightDate(expectedReturnDate);
+
+        selectCheapestTicket();
+
+        continueButton.click();
     }
 
 }

@@ -9,7 +9,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
-import reportManager.AllureManager;
 import driver.DriverFactory;
 import reportManager.ReportPathsInitializer;
 import utils.LogHelper;
@@ -19,7 +18,7 @@ import utils.TestListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import static utils.TestDataProvider.getDataByMethodName;
+import static utils.JsonToObjectHelper.getDataByMethodName;
 
 public class TestBase {
     private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
