@@ -80,6 +80,7 @@ public class ElementHelper {
      */
     public static void scrollToElement(SelenideElement element) {
         element.scrollIntoView(true);
+        element.shouldBe(Condition.visible, Duration.ofSeconds(5));
     }
 
     /**

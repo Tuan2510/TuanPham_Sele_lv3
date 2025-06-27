@@ -4,9 +4,8 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import testDataObject.VJTest.FlightDataObject;
-import testDataObject.VJTest.FlightInfo;
-import testDataObject.VJTest.TicketDataHolder;
-import utils.ElementHelper;
+import testDataObject.VJTest.FlightCardInfo;
+import testDataObject.VJTest.FlightCardDataHolder;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -19,8 +18,6 @@ import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.ElementHelper.clickWhenReady;
 import static utils.ElementHelper.scrollToElement;
-import static utils.ElementHelper.scrollToPageBottom;
-import static utils.ElementHelper.scrollToPageTop;
 import static utils.ElementHelper.switchToDefault;
 import static utils.ElementHelper.switchToIframe;
 import static utils.NumberHelper.getDayOfMonthSuffix;
@@ -36,11 +33,11 @@ public class VJSelectTicketPage {
     private final ElementsCollection availableTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), '000 VND')]/preceding-sibling::p");
 
     private final SelenideElement selectingDate = $x("//div[contains(@class, 'lick-current')]//p[@weight='Bold']");
-    private final SelenideElement lowestTicket = $x("");
     private final SelenideElement continueButton = $x("//button[contains(@class, 'MuiButtonBase-root MuiButton-root MuiButton-contained')]");
 
     //Variable
-    private final String flightCardAdditionalXpath = "/parent::div/parent::div/parent::div/preceding-sibling::div";
+    private final String flightCardAdditionalXpath = "./parent::div/parent::div/parent::div/preceding-sibling::div";
+    public static final ThreadLocal<FlightCardDataHolder> filghtCardDataHolderThreadLocal = ThreadLocal.withInitial(FlightCardDataHolder::new);
 
     //methods
     @Step("Close offer alert if displayed")
@@ -137,20 +134,16 @@ public class VJSelectTicketPage {
         selectingDate.getText().equalsIgnoreCase(expectedDate);
     }
 
-    public FlightInfo extractFlightInfo(SelenideElement ticketElement){
-        SelenideElement temp = ticketElement.$x("/div//span[contains(text(), 'VJ')]/ancestor::div[1]");
-        System.out.println(temp.getText());
+    public FlightCardInfo extractFlightInfo(SelenideElement ticketElement){
+        String flightId = ticketElement.$x("./div//span[contains(text(), 'VJ')]/ancestor::div[1]").getText();
+        String time  = ticketElement.$x("./div//span[contains(text(), 'To')]/ancestor::div[1]").getText();
+        String plane  = ticketElement.$x("./div//span[contains(text(), '-')]/parent::span").getText();
 
-        String flightId = ticketElement.$x("/div//span[contains(text(), 'VJ')]/ancestor::div[1]").getText();
-        String time  = ticketElement.$x("/div//span[contains(text(), 'To')]/ancestor::div[1]").getText();
-        String plane  = ticketElement.$x("/div//span[contains(text(), '-')]/parent::span").getText();
-
-        return new FlightInfo(flightId, time, plane);
+        return new FlightCardInfo(flightId, time, plane);
     }
 
     public void verifyFlightInfo(FlightDataObject data){
         verifyTravelOptionPageDisplayed();
-        TicketDataHolder ticketDataHolder = new TicketDataHolder();
 
         //verify currency
         verifyCurrencyIsVND();
@@ -170,10 +163,10 @@ public class VJSelectTicketPage {
                 expectedDepartLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedDepartLocalDate.getDayOfMonth());
         verifyFlightDate(expectedDepartDate);
 
-        //select lowest ticket
+        //select lowest ticket and save the flight card info
         SelenideElement lowestDepart = findCheapestTicket();
         SelenideElement departFlightCard = lowestDepart.$x(flightCardAdditionalXpath);
-        ticketDataHolder.setDepartFlight(extractFlightInfo(departFlightCard));
+        filghtCardDataHolderThreadLocal.get().setDepartFlight(extractFlightInfo(departFlightCard));
         selectCheapestTicket(lowestDepart);
 
         continueButton.click();
@@ -184,14 +177,16 @@ public class VJSelectTicketPage {
                 expectedReturnLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedReturnLocalDate.getDayOfMonth());
         verifyFlightDate(expectedReturnDate);
 
-        //select lowest ticket
+        //select lowest ticket and save the flight card info
         SelenideElement lowestReturn = findCheapestTicket();
         SelenideElement returnFlightCard = lowestReturn.$x(flightCardAdditionalXpath);
-        ticketDataHolder.setReturnFlight(extractFlightInfo(returnFlightCard));
+        filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard));
         selectCheapestTicket(lowestReturn);
+    }
 
+    public void continueToPassengerPage(){
         //continue to passenger info page
-        continueButton.click();
+        clickWhenReady(continueButton);
     }
 
 }

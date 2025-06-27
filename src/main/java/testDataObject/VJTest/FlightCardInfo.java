@@ -1,14 +1,14 @@
 package testDataObject.VJTest;
 
-public class FlightInfo {
+public class FlightCardInfo {
     private String flightId;
     private String time;
     private String plane;
 
-    public FlightInfo() {
+    public FlightCardInfo() {
     }
 
-    public FlightInfo(String flightId, String time, String plane) {
+    public FlightCardInfo(String flightId, String time, String plane) {
         this.flightId = flightId;
         this.time = time;
         this.plane = plane;
