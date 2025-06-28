@@ -3,15 +3,15 @@ package testDataObject.VJTest;
 public class FlightCardInfo {
     private String flightId;
     private String time;
-    private String plane;
+    private String price;
 
     public FlightCardInfo() {
     }
 
-    public FlightCardInfo(String flightId, String time, String plane) {
+    public FlightCardInfo(String flightId, String time, String price) {
         this.flightId = flightId;
         this.time = time;
-        this.plane = plane;
+        this.price = price;
     }
 
     public String getFlightId() {
@@ -30,11 +30,11 @@ public class FlightCardInfo {
         this.time = time;
     }
 
-    public String getPlane() {
-        return plane;
+    public String getPrice() {
+        return price;
     }
 
-    public void setPlane(String plane) {
-        this.plane = plane;
+    public void setPrice(String price) {
+        this.price = price;
     }
 }

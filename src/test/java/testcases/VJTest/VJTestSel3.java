@@ -54,7 +54,8 @@ public class VJTestSel3 extends TestBase{
         passengerInputPage.verifyTravelOptionPageDisplayed();
 
         logHelper.logStep("Step #9: Verify flight ticket info correct");
-        passengerInputPage.verifyTicketInfo();
+        passengerInputPage.verifyTicketInfo(data.getDepartmentLocation(), data.getDestinationLocation(),
+                data.getDepartAfterDays(), data.getReturnAfterDays());
 
         System.out.println("debug");
     }

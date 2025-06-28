@@ -24,7 +24,7 @@ import static utils.NumberHelper.getDayOfMonthSuffix;
 import static utils.NumberHelper.parsePrice;
 
 public class VJSelectTicketPage {
-    //locators
+    //Locators
     private final SelenideElement alertOfferIframe = $x("//iframe[@id='preview-notification-frame']");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
     private final SelenideElement closeAdPanelButton = $x("//button[contains(@class, 'MuiButtonBase-root') and @aria-label='close']");
@@ -34,6 +34,9 @@ public class VJSelectTicketPage {
 
     private final SelenideElement selectingDate = $x("//div[contains(@class, 'lick-current')]//p[@weight='Bold']");
     private final SelenideElement continueButton = $x("//button[contains(@class, 'MuiButtonBase-root MuiButton-root MuiButton-contained')]");
+
+    //Dynamic Locators
+    private final String flightPrice = "//p[contains(text(),'%s')]/parent::div//h4";
 
     //Variable
     private final String flightCardAdditionalXpath = "./parent::div/parent::div/parent::div/preceding-sibling::div";
@@ -61,9 +64,9 @@ public class VJSelectTicketPage {
         webdriver().shouldHave(urlContaining("/select-flight"));
     }
 
-    public void verifyCurrencyIsVND() {
+    public void verifyCurrency(String currentcy) {
         // Locate any element that contains the text "VND"
-        $$("p.MuiTypography-root").findBy(text("VND")).shouldBe(visible);
+        $$("p.MuiTypography-root").findBy(text(currentcy)).shouldBe(visible);
         availableTicketCollection.shouldHave(sizeGreaterThan(0));
     }
 
@@ -134,19 +137,20 @@ public class VJSelectTicketPage {
         selectingDate.getText().equalsIgnoreCase(expectedDate);
     }
 
-    public FlightCardInfo extractFlightInfo(SelenideElement ticketElement){
+    public FlightCardInfo extractFlightInfo(SelenideElement ticketElement, String flightType){
         String flightId = ticketElement.$x("./div//span[contains(text(), 'VJ')]/ancestor::div[1]").getText();
         String time  = ticketElement.$x("./div//span[contains(text(), 'To')]/ancestor::div[1]").getText();
-        String plane  = ticketElement.$x("./div//span[contains(text(), '-')]/parent::span").getText();
+//        String plane  = ticketElement.$x("./div//span[contains(text(), '-')]/parent::span").getText();
+        String price = $x(flightPrice.formatted(flightType)).getText();
 
-        return new FlightCardInfo(flightId, time, plane);
+        return new FlightCardInfo(flightId, time, price);
     }
 
     public void verifyFlightInfo(FlightDataObject data){
         verifyTravelOptionPageDisplayed();
 
         //verify currency
-        verifyCurrencyIsVND();
+        verifyCurrency("VND");
 
         //verify flight depart and return address
         String expectedDepartAddress = data.getDepartmentLocation() + data.getDepartmentLocationCode();
@@ -166,8 +170,8 @@ public class VJSelectTicketPage {
         //select lowest ticket and save the flight card info
         SelenideElement lowestDepart = findCheapestTicket();
         SelenideElement departFlightCard = lowestDepart.$x(flightCardAdditionalXpath);
-        filghtCardDataHolderThreadLocal.get().setDepartFlight(extractFlightInfo(departFlightCard));
         selectCheapestTicket(lowestDepart);
+        filghtCardDataHolderThreadLocal.get().setDepartFlight(extractFlightInfo(departFlightCard, "Depart"));
 
         continueButton.click();
 
@@ -180,8 +184,8 @@ public class VJSelectTicketPage {
         //select lowest ticket and save the flight card info
         SelenideElement lowestReturn = findCheapestTicket();
         SelenideElement returnFlightCard = lowestReturn.$x(flightCardAdditionalXpath);
-        filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard));
         selectCheapestTicket(lowestReturn);
+        filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, "Return"));
     }
 
     public void continueToPassengerPage(){
