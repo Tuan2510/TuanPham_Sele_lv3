@@ -4,6 +4,7 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.ElementHelper;
+import utils.LanguageManager;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -15,19 +16,19 @@ import static com.codeborne.selenide.Selenide.$x;
 
 public class VJHomePage {
     // Locators
-    private final SelenideElement acceptCookiesBtn = $x("//div[@id='popup-dialog-description']/following-sibling::div/button");
-    private final SelenideElement alertOfferIframe = $x("//iframe[@id='preview-notification-frame']");
+    private final SelenideElement acceptCookiesBtn = $("#popup-dialog-description + div button");
+    private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
-    private final SelenideElement roundTripRdb = $x("//span[@class='MuiIconButton-label']/input[@type='radio' and @value='roundTrip']");
-    private final SelenideElement onewayRdb = $x("//span[@class='MuiIconButton-label']/input[@type='radio' and @value='oneway']");
+    private final SelenideElement roundTripRdb = $("span.MuiIconButton-label input[type='radio'][value='roundTrip']");
+    private final SelenideElement onewayRdb = $("span.MuiIconButton-label input[type='radio'][value='oneway']");
 
-    private final SelenideElement departmentInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), 'From')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
-    private final SelenideElement destinationInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), 'To')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
-    private final SelenideElement passengerInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), 'Passenger')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
-    private final SelenideElement departureDateBtn = $x("//p[contains(text(), 'Departure date')]/parent::div//ancestor::div[@role='button']");
-    private final SelenideElement lowestPriceChb = $x("//span[@class='MuiIconButton-label']/input[@type='checkbox' and @value='secondary']");
-    private final SelenideElement letsGoBtn = $x("//button[contains(@class, 'MuiButtonBase-root MuiButton-root MuiButton-contained')]");
-    private final SelenideElement passengerLetsGoBtn = $x("//div[contains(@class,'MuiBox-root')]/following-sibling::div//span[contains(@class, 'MuiTypography-root') and text()=\"Let's go\"]/ancestor::button");
+    private final SelenideElement departmentInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '" + LanguageManager.get("from") + "')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
+    private final SelenideElement destinationInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '" + LanguageManager.get("to") + "')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
+    private final SelenideElement passengerInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '" + LanguageManager.get("passenger") + "')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
+    private final SelenideElement departureDateBtn = $x("//p[contains(text(), '" + LanguageManager.get("departure_date") + "')]/parent::div//ancestor::div[@role='button']");
+    private final SelenideElement lowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='secondary']");
+    private final SelenideElement letsGoBtn = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
+    private final SelenideElement passengerLetsGoBtn = $x("//div[contains(@class,'MuiBox-root')]/following-sibling::div//span[contains(@class, 'MuiTypography-root') and text()=\"" + LanguageManager.get("lets_go") + "\"]/ancestor::button");
 
     // Dynamic Locators
     private final String shadowLocationXpath = "//div[contains(@class, 'MuiBox-root')]//div[contains(text(), '%s')]";
@@ -126,9 +127,9 @@ public class VJHomePage {
 
     @Step("Select number of Adult(s) in a flight")
     public void selectAdultPassengerNumber(int numOfAdults){
-        SelenideElement adultsPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted("Adults"));
-        SelenideElement adultsPassengerNumber = $x(shadowPassengerNumber.formatted("Adults"));
-        SelenideElement adultsPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted("Adults"));
+        SelenideElement adultsPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get("adults")));
+        SelenideElement adultsPassengerNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get("adults")));
+        SelenideElement adultsPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get("adults")));
 
         if (!adultsPassengerMinusBtn.isDisplayed()) {
             passengerInput.click();
@@ -146,9 +147,9 @@ public class VJHomePage {
 
     @Step("Select number of Children(s) in a flight")
     public void selectChildrenPassengerNumber(int numOfChildrens){
-        SelenideElement childrensPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted("Childrens"));
-        SelenideElement childrensPassengerNumber = $x(shadowPassengerNumber.formatted("Childrens"));
-        SelenideElement childrensPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted("Childrens"));
+        SelenideElement childrensPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get("children")));
+        SelenideElement childrensPassengerNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get("children")));
+        SelenideElement childrensPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get("children")));
 
         if (!childrensPassengerMinusBtn.isDisplayed()) {
             passengerInput.click();
@@ -165,9 +166,9 @@ public class VJHomePage {
 
     @Step("Select number of Infant(s) in a flight")
     public void selectInfantsPassengerNumber(int numOfInfants){
-        SelenideElement infantsPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted("Infants"));
-        SelenideElement infantsPassengerNumber = $x(shadowPassengerNumber.formatted("Infants"));
-        SelenideElement infantsPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted("Infants"));
+        SelenideElement infantsPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get("infants")));
+        SelenideElement infantsPassengerNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get("infants")));
+        SelenideElement infantsPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get("infants")));
 
         if (!infantsPassengerMinusBtn.isDisplayed()) {
             passengerInput.click();

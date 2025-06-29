@@ -39,14 +39,10 @@ public class RunConfigReader {
             env = "dev";
         }
 
-        switch (env.toLowerCase()) {
-            case "test":
-                return get("test.baseUrl");
-            case "stg":
-                return get("stg.baseUrl");
-            case "dev":
-            default:
-                return get("dev.baseUrl");
-        }
+        return switch (env.toLowerCase()) {
+            case "test" -> get("test.baseUrl");
+            case "stg" -> get("stg.baseUrl");
+            default -> get("dev.baseUrl");
+        };
     }
 }

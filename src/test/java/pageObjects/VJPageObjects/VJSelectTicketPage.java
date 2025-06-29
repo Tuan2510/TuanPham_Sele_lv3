@@ -25,15 +25,15 @@ import static utils.NumberHelper.parsePrice;
 
 public class VJSelectTicketPage {
     //Locators
-    private final SelenideElement alertOfferIframe = $x("//iframe[@id='preview-notification-frame']");
+    private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
-    private final SelenideElement closeAdPanelButton = $x("//button[contains(@class, 'MuiButtonBase-root') and @aria-label='close']");
+    private final SelenideElement closeAdPanelButton = $("button.MuiButtonBase-root[aria-label='close']");
     private final ElementsCollection flightInfoCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(@class, 'MuiTypography-root') and @variantmd='h3']");
     private final ElementsCollection soldOutTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), 'Sold out')]");
     private final ElementsCollection availableTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), '000 VND')]/preceding-sibling::p");
 
-    private final SelenideElement selectingDate = $x("//div[contains(@class, 'lick-current')]//p[@weight='Bold']");
-    private final SelenideElement continueButton = $x("//button[contains(@class, 'MuiButtonBase-root MuiButton-root MuiButton-contained')]");
+    private final SelenideElement selectingDate = $("div[class*='lick-current'] p[weight='Bold']");
+    private final SelenideElement continueButton = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
 
     //Dynamic Locators
     private final String flightPrice = "//p[contains(text(),'%s')]/parent::div//h4";
