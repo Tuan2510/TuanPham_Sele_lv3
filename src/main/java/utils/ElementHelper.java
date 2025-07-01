@@ -2,13 +2,15 @@ package utils;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
 import static com.codeborne.selenide.Selenide.*;
 
 public class ElementHelper {
-
+    private static final Logger logger = LoggerFactory.getLogger(ElementHelper.class);
     /**
      * Switch to an iframe contents
      */
@@ -34,12 +36,15 @@ public class ElementHelper {
      */
     public static void clickWhenReady(SelenideElement selector, int timeoutSeconds) {
         try {
+//            sleep(500);
+            selector.scrollIntoView(true);
+            executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", selector);
             selector.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds))
                     .shouldBe(Condition.enabled, Duration.ofSeconds(timeoutSeconds));
-            selector.scrollIntoView(true).click();
+            selector.click();
         } catch (Exception e) {
             // Fallback to JS click if standard click fails
-            System.out.println("Standard click failed, trying JavaScript click. Reason: " + e.getMessage());
+            logger.warn("Standard click failed, trying JavaScript click. Reason: {}", e.getMessage());
             executeJavaScript("arguments[0].click();", selector);
         }
     }

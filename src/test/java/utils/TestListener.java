@@ -4,6 +4,8 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.codeborne.selenide.Selenide;
 import commons.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.IExecutionListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
@@ -20,6 +22,7 @@ import java.util.Collections;
 public class TestListener implements ITestListener, IExecutionListener {
     public static final TestListener INSTANCE = new TestListener();
 
+    private static final Logger logger = LoggerFactory.getLogger(TestListener.class);
     private static boolean rerunInProgress = false;
 
     private static final ExtentReports extent = ExtentManager.getInstance();
@@ -64,7 +67,7 @@ public class TestListener implements ITestListener, IExecutionListener {
                 node.fail(result.getThrowable());
             } else {
                 // fallback log if node not initialized
-                System.out.println("ExtentTest node was null on failure of: " + result.getName());
+                logger.warn("ExtentTest node was null on failure of: {}", result.getName());
             }
         } catch (Exception ignored) {}
     }
@@ -74,7 +77,7 @@ public class TestListener implements ITestListener, IExecutionListener {
         if (currentNode.get() != null) {
             currentNode.get().skip(result.getThrowable());
         } else {
-            System.out.println("ExtentTest node was null on skip of: " + result.getName());
+            logger.warn("ExtentTest node was null on skip of: {}", result.getName());
         }
     }
 

@@ -1,8 +1,8 @@
 package pageObjects.VJPageObjects;
 
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import utils.ElementHelper;
+import utils.LanguageManager;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -68,14 +68,14 @@ public class VJPassengerInputPage {
 
         verifyDepartAndReturnLocation(departLocation, returnLocation);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd/MM/yyyy", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd/MM/yyyy", getLocale());
         LocalDate departLocalDate = LocalDate.now().plusDays(departAfterDays);
         String departDate = LocalDate.now().plusDays(departAfterDays).format(formatter);
         String returnDate = departLocalDate.plusDays(returnAfterDate).format(formatter);
         verifyFlightDate(departDate, returnDate);
 
         String departFlightId = filghtCardDataHolderThreadLocal.get().getDepartFlight().getFlightId();
-        String departTime = filghtCardDataHolderThreadLocal.get().getDepartFlight().getTime().replace("To", "-");;
+        String departTime = filghtCardDataHolderThreadLocal.get().getDepartFlight().getTime().replace("To", "-");
         String returnFlightId = filghtCardDataHolderThreadLocal.get().getReturnFlight().getFlightId();
         String returnTime = filghtCardDataHolderThreadLocal.get().getReturnFlight().getTime().replace("To", "-");
         verifyFlightIdAndTime(departFlightId, departTime, returnFlightId, returnTime);
@@ -84,6 +84,14 @@ public class VJPassengerInputPage {
         String returnPrice = filghtCardDataHolderThreadLocal.get().getReturnFlight().getPrice();
         verifyFlightPrice(departPrice, returnPrice);
 
+    }
+
+    private Locale getLocale(){
+        return switch (LanguageManager.getLanguage().toLowerCase()) {
+            case "vi-vn" -> Locale.of("vi", "VN");
+            case "en-us" -> Locale.ENGLISH;
+            default -> Locale.ENGLISH;
+        };
     }
 
 }

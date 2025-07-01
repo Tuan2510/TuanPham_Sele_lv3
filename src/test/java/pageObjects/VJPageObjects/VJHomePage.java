@@ -5,6 +5,8 @@ import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.ElementHelper;
 import utils.LanguageManager;
+import testDataObject.VJTest.FlightType;
+import testDataObject.VJTest.FlightDataObject;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -22,13 +24,13 @@ public class VJHomePage {
     private final SelenideElement roundTripRdb = $("span.MuiIconButton-label input[type='radio'][value='roundTrip']");
     private final SelenideElement onewayRdb = $("span.MuiIconButton-label input[type='radio'][value='oneway']");
 
-    private final SelenideElement departmentInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '" + LanguageManager.get("from") + "')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
-    private final SelenideElement destinationInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '" + LanguageManager.get("to") + "')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
-    private final SelenideElement passengerInput = $x("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '" + LanguageManager.get("passenger") + "')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input");
-    private final SelenideElement departureDateBtn = $x("//p[contains(text(), '" + LanguageManager.get("departure_date") + "')]/parent::div//ancestor::div[@role='button']");
+    private final SelenideElement departmentInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input", LanguageManager.get("from")));
+    private final SelenideElement destinationInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input", LanguageManager.get("to")));
+    private final SelenideElement passengerInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input", LanguageManager.get("passenger")));
+    private final SelenideElement departureDateBtn = $x(String.format("//p[contains(text(), '%s')]/parent::div//ancestor::div[@role='button']", LanguageManager.get("departure_date")));
     private final SelenideElement lowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='secondary']");
     private final SelenideElement letsGoBtn = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
-    private final SelenideElement passengerLetsGoBtn = $x("//div[contains(@class,'MuiBox-root')]/following-sibling::div//span[contains(@class, 'MuiTypography-root') and text()=\"" + LanguageManager.get("lets_go") + "\"]/ancestor::button");
+    private final SelenideElement passengerLetsGoBtn = $x(String.format("//div[contains(@class,'MuiBox-root')]/following-sibling::div//span[contains(@class, 'MuiTypography-root') and text()=\"%s\"]/ancestor::button", LanguageManager.get("lets_go")));
 
     // Dynamic Locators
     private final String shadowLocationXpath = "//div[contains(@class, 'MuiBox-root')]//div[contains(text(), '%s')]";
@@ -59,10 +61,10 @@ public class VJHomePage {
     }
 
     @Step("Select flight type")
-    public void chooseFlightType(String type){
-        if (type.equalsIgnoreCase("roundTrip")){
+    public void chooseFlightType(FlightType type){
+        if (type == FlightType.ROUND_TRIP){
             roundTripRdb.click();
-        } else if (type.equalsIgnoreCase("oneway")){
+        } else if (type == FlightType.ONE_WAY){
             onewayRdb.click();
         }
     }
@@ -100,10 +102,10 @@ public class VJHomePage {
 
 
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
-                departDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH), departDate.getDayOfMonth()));
+                departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
 
         SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
-                returnDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH), returnDate.getDayOfMonth()));
+                returnDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), returnDate.getDayOfMonth()));
 
         if (departDateBtn.isDisplayed()) {
             departureDateBtn.click();
@@ -120,66 +122,42 @@ public class VJHomePage {
             passengerInput.click();
         }
 
-        selectAdultPassengerNumber(numOfAdults);
-        selectChildrenPassengerNumber(numOfChildrens);
-        selectInfantsPassengerNumber(numOfInfants);
+        adjustPassengerNumber("adults", numOfAdults);
+        adjustPassengerNumber("children", numOfChildrens);
+        adjustPassengerNumber("infants", numOfInfants);
     }
 
     @Step("Select number of Adult(s) in a flight")
     public void selectAdultPassengerNumber(int numOfAdults){
-        SelenideElement adultsPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get("adults")));
-        SelenideElement adultsPassengerNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get("adults")));
-        SelenideElement adultsPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get("adults")));
-
-        if (!adultsPassengerMinusBtn.isDisplayed()) {
-            passengerInput.click();
-        }
-
-        while (Integer.parseInt(adultsPassengerNumber.getText()) < numOfAdults){
-            adultsPassengerPlusBtn.click();
-        }
-
-        while (Integer.parseInt(adultsPassengerNumber.getText()) > numOfAdults){
-            adultsPassengerMinusBtn.click();
-        }
+        adjustPassengerNumber("adults", numOfAdults);
 
     }
 
     @Step("Select number of Children(s) in a flight")
     public void selectChildrenPassengerNumber(int numOfChildrens){
-        SelenideElement childrensPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get("children")));
-        SelenideElement childrensPassengerNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get("children")));
-        SelenideElement childrensPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get("children")));
-
-        if (!childrensPassengerMinusBtn.isDisplayed()) {
-            passengerInput.click();
-        }
-
-        while (Integer.parseInt(childrensPassengerNumber.getText()) < numOfChildrens){
-            childrensPassengerPlusBtn.click();
-        }
-
-        while (Integer.parseInt(childrensPassengerNumber.getText()) > numOfChildrens){
-            childrensPassengerMinusBtn.click();
-        }
+        adjustPassengerNumber("children", numOfChildrens);
     }
 
     @Step("Select number of Infant(s) in a flight")
     public void selectInfantsPassengerNumber(int numOfInfants){
-        SelenideElement infantsPassengerMinusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get("infants")));
-        SelenideElement infantsPassengerNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get("infants")));
-        SelenideElement infantsPassengerPlusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get("infants")));
+        adjustPassengerNumber("infants", numOfInfants);
+    }
 
-        if (!infantsPassengerMinusBtn.isDisplayed()) {
+    private void adjustPassengerNumber(String passengerKey, int target){
+        SelenideElement minusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get(passengerKey)));
+        SelenideElement currentNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get(passengerKey)));
+        SelenideElement plusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get(passengerKey)));
+
+        if (!minusBtn.isDisplayed()) {
             passengerInput.click();
         }
 
-        while (Integer.parseInt(infantsPassengerNumber.getText()) < numOfInfants){
-            infantsPassengerPlusBtn.click();
+        while (Integer.parseInt(currentNumber.getText()) < target){
+            plusBtn.click();
         }
 
-        while (Integer.parseInt(infantsPassengerNumber.getText()) > numOfInfants){
-            infantsPassengerMinusBtn.click();
+        while (Integer.parseInt(currentNumber.getText()) > target){
+            minusBtn.click();
         }
     }
 
@@ -189,6 +167,27 @@ public class VJHomePage {
         } else{
             letsGoBtn.click();
         }
+    }
+
+    @Step("Search for tickets")
+    public void searchTicket(FlightDataObject data){
+        chooseFlightType(data.getFlightType());
+        selectDepartureLocation(data.getDepartmentLocation());
+        selectDestinationLocation(data.getDestinationLocation());
+        selectRoundTripDate(data.getDepartAfterDays(), data.getReturnAfterDays());
+        selectPassengerNumber(
+                data.getFlightPassengerDataObject().getAdults(),
+                data.getFlightPassengerDataObject().getChildren(),
+                data.getFlightPassengerDataObject().getInfants());
+        findTicket();
+    }
+
+    private Locale getLocale(){
+        return switch (LanguageManager.getLanguage().toLowerCase()) {
+            case "vi-vn" -> Locale.of("vi", "VN");
+            case "en-us" -> Locale.ENGLISH;
+            default -> Locale.ENGLISH;
+        };
     }
 
 }

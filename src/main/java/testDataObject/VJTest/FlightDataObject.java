@@ -2,7 +2,7 @@ package testDataObject.VJTest;
 
 public class FlightDataObject {
 
-    private String flightType;
+    private FlightType flightType;
     private String flightTypeCode;
     private String departmentLocation;
     private String departmentLocationCode;
@@ -15,7 +15,10 @@ public class FlightDataObject {
     public FlightDataObject() {
     }
 
-    public FlightDataObject(String flightType,String flightTypeCode, FlightPassengerDataObject flightPassengerDataObject, int returnAfterDays, int departAfterDays, String destinationLocation, String departmentLocation) {
+    public FlightDataObject(FlightType flightType, String flightTypeCode,
+                            FlightPassengerDataObject flightPassengerDataObject,
+                            int returnAfterDays, int departAfterDays,
+                            String destinationLocation, String departmentLocation) {
         this.flightType = flightType;
         this.flightTypeCode = flightTypeCode;
         this.flightPassengerDataObject = flightPassengerDataObject;
@@ -25,11 +28,11 @@ public class FlightDataObject {
         this.departmentLocation = departmentLocation;
     }
 
-    public String getFlightType() {
+    public FlightType getFlightType() {
         return flightType;
     }
 
-    public void setFlightType(String flightType) {
+    public void setFlightType(FlightType flightType) {
         this.flightType = flightType;
     }
 

@@ -27,15 +27,7 @@ public class VJTestSel3 extends TestBase{
         homePage.closeOfferAlert();
 
         logHelper.logStep("Step #3: Fill search form and search for ticket");
-        homePage.chooseFlightType(data.getFlightType());
-        homePage.selectDepartureLocation(data.getDepartmentLocation());
-        homePage.selectDestinationLocation(data.getDestinationLocation());
-        homePage.selectRoundTripDate(data.getDepartAfterDays(), data.getReturnAfterDays());
-        homePage.selectPassengerNumber(
-                data.getFlightPassengerDataObject().getAdults(),
-                data.getFlightPassengerDataObject().getChildren(),
-                data.getFlightPassengerDataObject().getInfants());
-        homePage.findTicket();
+        homePage.searchTicket(data);
 
         logHelper.logStep("Step #4: Close banners and alert if present");
         selectTicketPage.closeOfferAlert();

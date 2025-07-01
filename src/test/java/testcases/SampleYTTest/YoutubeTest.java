@@ -18,7 +18,7 @@ public class YoutubeTest extends TestBase {
         logHelper.logStep("Step #1: Navigate to YouTube");
         DriverFactory.openHomePage();
 
-        logHelper.logStep("Step #2: Search for " + testData.getQuery());
+        logHelper.logStep(String.format("Step #2: Search for %s", testData.getQuery()));
         youTubeHomePage.search(testData.getQuery());
 
         logHelper.logStep("Step #3: Check for result");

@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Constants {
     public static final String RESOURCE_TEST_DATA_PATH = "src/test/resources/testdata/";
-    public static final String CONFIG_FILE = "config/RunConfiguration.properties";
+    public static final String CONFIG_FILE = "RunConfiguration.properties";
 
     static {
         RunConfigReader.loadConfiguration();

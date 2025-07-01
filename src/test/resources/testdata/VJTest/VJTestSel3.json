@@ -1,7 +1,7 @@
 {
   "TC01": [
     {
-      "flightType": "roundTrip",
+      "flightType": "ROUND_TRIP",
       "flightTypeCode": "RETURN",
       "departmentLocation": "Ho Chi Minh",
       "departmentLocationCode": " ( SGN )",

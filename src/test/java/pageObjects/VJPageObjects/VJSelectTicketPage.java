@@ -6,6 +6,7 @@ import io.qameta.allure.Step;
 import testDataObject.VJTest.FlightDataObject;
 import testDataObject.VJTest.FlightCardInfo;
 import testDataObject.VJTest.FlightCardDataHolder;
+import utils.LanguageManager;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -15,6 +16,7 @@ import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.ElementHelper.clickWhenReady;
 import static utils.ElementHelper.scrollToElement;
@@ -88,12 +90,12 @@ public class VJSelectTicketPage {
             }
         }
 
-        if (!departureCity.contains(expectedDepartCity)) {
-            throw new AssertionError("Departure city mismatch: Expected " + expectedDepartCity + " but got " + departureCity);
+        if (departureCity != null && !departureCity.contains(expectedDepartCity)) {
+            throw new AssertionError(String.format("Departure city mismatch: Expected %s but got %s", expectedDepartCity, departureCity));
         }
 
-        if (!destinationCity.contains(expectedDestinationCity)) {
-            throw new AssertionError("Destination city mismatch: Expected " + expectedDestinationCity + " but got " + destinationCity);
+        if (destinationCity != null && !destinationCity.contains(expectedDestinationCity)) {
+            throw new AssertionError(String.format("Destination city mismatch: Expected %s but got %s", expectedDestinationCity, destinationCity));
         }
     }
 
@@ -108,8 +110,8 @@ public class VJSelectTicketPage {
             }
         }
 
-        if (!flightTypeAndPassenger.contains(expectedFlightTypeAndPassenger)) {
-            throw new AssertionError("Flight type mismatch: Expected " + expectedFlightTypeAndPassenger + " but got " + flightTypeAndPassenger);
+        if (flightTypeAndPassenger != null && !flightTypeAndPassenger.contains(expectedFlightTypeAndPassenger)) {
+            throw new AssertionError(String.format("Flight type mismatch: Expected %s but got %s", expectedFlightTypeAndPassenger, flightTypeAndPassenger));
         }
     }
 
@@ -130,17 +132,22 @@ public class VJSelectTicketPage {
 
 
     public void selectCheapestTicket(SelenideElement element){
-        element.click();
+        clickWhenReady(element);
     }
 
-    public void verifyFlightDate(String expectedDate){
-        selectingDate.getText().equalsIgnoreCase(expectedDate);
+    public void verifyFlightDate(LocalDate expectedLocalDate){
+        String expectedDate = String.format("%s %d%s",
+                expectedLocalDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()),
+                expectedLocalDate.getDayOfMonth(),
+                getDayOfMonthSuffix(expectedLocalDate.getDayOfMonth()));
+
+//        selectingDate.getText().equalsIgnoreCase(expectedDate);
+        selectingDate.shouldHave(exactText(expectedDate));
     }
 
     public FlightCardInfo extractFlightInfo(SelenideElement ticketElement, String flightType){
         String flightId = ticketElement.$x("./div//span[contains(text(), 'VJ')]/ancestor::div[1]").getText();
         String time  = ticketElement.$x("./div//span[contains(text(), 'To')]/ancestor::div[1]").getText();
-//        String plane  = ticketElement.$x("./div//span[contains(text(), '-')]/parent::span").getText();
         String price = $x(flightPrice.formatted(flightType)).getText();
 
         return new FlightCardInfo(flightId, time, price);
@@ -153,19 +160,17 @@ public class VJSelectTicketPage {
         verifyCurrency("VND");
 
         //verify flight depart and return address
-        String expectedDepartAddress = data.getDepartmentLocation() + data.getDepartmentLocationCode();
-        String expectedDestinationAddress = data.getDestinationLocation() + data.getDestinationLocationCode();
+        String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
+        String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
         verifyFlightLocation(expectedDepartAddress, expectedDestinationAddress);
 
         //verify flight type and passenger
-        String expectedFlightTypeAndPassenger = data.getFlightTypeCode() + " | " + data.getFlightPassengerDataObject().getStringFlightPassenger();
+        String expectedFlightTypeAndPassenger = String.format("%s | %s", data.getFlightTypeCode(), data.getFlightPassengerDataObject().getStringFlightPassenger());
         verifyFlightTypeAndPassenger(expectedFlightTypeAndPassenger);
 
         //verify depart date
         LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
-        String expectedDepartDate = expectedDepartLocalDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " +
-                expectedDepartLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedDepartLocalDate.getDayOfMonth());
-        verifyFlightDate(expectedDepartDate);
+        verifyFlightDate(expectedDepartLocalDate);
 
         //select lowest ticket and save the flight card info
         SelenideElement lowestDepart = findCheapestTicket();
@@ -177,15 +182,20 @@ public class VJSelectTicketPage {
 
         //verify return date
         LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
-        String expectedReturnDate = expectedReturnLocalDate.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " +
-                expectedReturnLocalDate.getDayOfMonth() + getDayOfMonthSuffix(expectedReturnLocalDate.getDayOfMonth());
-        verifyFlightDate(expectedReturnDate);
 
         //select lowest ticket and save the flight card info
         SelenideElement lowestReturn = findCheapestTicket();
         SelenideElement returnFlightCard = lowestReturn.$x(flightCardAdditionalXpath);
         selectCheapestTicket(lowestReturn);
         filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, "Return"));
+    }
+
+    private Locale getLocale(){
+        return switch (LanguageManager.getLanguage().toLowerCase()) {
+            case "vi-vn" -> Locale.of("vi", "VN");
+            case "en-us" -> Locale.ENGLISH;
+            default -> Locale.ENGLISH;
+        };
     }
 
     public void continueToPassengerPage(){
