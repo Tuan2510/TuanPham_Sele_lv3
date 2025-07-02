@@ -6,11 +6,9 @@ import io.qameta.allure.Step;
 import testDataObject.VJTest.FlightDataObject;
 import testDataObject.VJTest.FlightCardInfo;
 import testDataObject.VJTest.FlightCardDataHolder;
-import utils.LanguageManager;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Locale;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
@@ -22,8 +20,9 @@ import static utils.ElementHelper.clickWhenReady;
 import static utils.ElementHelper.scrollToElement;
 import static utils.ElementHelper.switchToDefault;
 import static utils.ElementHelper.switchToIframe;
-import static utils.NumberHelper.getDayOfMonthSuffix;
+import static utils.NumberHelper.getNumberSuffix;
 import static utils.NumberHelper.parsePrice;
+import static utils.LanguageManager.getLocale;
 
 public class VJSelectTicketPage {
     //Locators
@@ -139,7 +138,7 @@ public class VJSelectTicketPage {
         String expectedDate = String.format("%s %d%s",
                 expectedLocalDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()),
                 expectedLocalDate.getDayOfMonth(),
-                getDayOfMonthSuffix(expectedLocalDate.getDayOfMonth()));
+                getNumberSuffix(expectedLocalDate.getDayOfMonth()));
 
 //        selectingDate.getText().equalsIgnoreCase(expectedDate);
         selectingDate.shouldHave(exactText(expectedDate));
@@ -188,14 +187,6 @@ public class VJSelectTicketPage {
         SelenideElement returnFlightCard = lowestReturn.$x(flightCardAdditionalXpath);
         selectCheapestTicket(lowestReturn);
         filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, "Return"));
-    }
-
-    private Locale getLocale(){
-        return switch (LanguageManager.getLanguage().toLowerCase()) {
-            case "vi-vn" -> Locale.of("vi", "VN");
-            case "en-us" -> Locale.ENGLISH;
-            default -> Locale.ENGLISH;
-        };
     }
 
     public void continueToPassengerPage(){

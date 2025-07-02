@@ -1,11 +1,15 @@
 package utils;
 
+import lombok.Getter;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
 
 public class LanguageManager {
     private static final Properties langProps = new Properties();
+    @Getter
     private static final String language;
 
     static {
@@ -42,8 +46,12 @@ public class LanguageManager {
         return langProps.getProperty(key, key);
     }
 
-    public static String getLanguage() {
-        return language;
+    public static Locale getLocale(){
+        return switch (LanguageManager.getLanguage().toLowerCase()) {
+            case "vi-vn" -> Locale.of("vi", "VN");
+            case "en-us" -> Locale.ENGLISH;
+            default -> Locale.ENGLISH;
+        };
     }
 
     public static String getLanguagePath() {

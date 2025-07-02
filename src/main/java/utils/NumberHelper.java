@@ -25,7 +25,7 @@ public class NumberHelper {
     /**
      * Get the suffix for the day of month
      */
-    public static String getDayOfMonthSuffix(int n) {
+    public static String getNumberSuffix(int n) {
         if (n >= 11 && n <= 13) {
             return "th";
         }

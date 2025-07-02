@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import utils.LanguageManager;
 
 @Getter
 @Setter
@@ -16,16 +17,16 @@ public class FlightPassengerDataObject {
     private int infants;
 
     public String getStringAdults(){
-        return this.adults + " Adults";
+        return "%s %s".formatted(this.adults, LanguageManager.get("adults"));
     }
 
     public String getStringChildren(){
-        if (this.children > 0) return this.children + " Childrens";
+        if (this.children > 0) return "%s %s".formatted(this.children, LanguageManager.get("children"));
         else return "";
     }
 
     public String getStringInfants(){
-        if (this.infants > 0) return this.infants + " Infants";
+        if (this.infants > 0) return "%s %s".formatted(this.infants, LanguageManager.get("infants"));
         else return "";
     }
 

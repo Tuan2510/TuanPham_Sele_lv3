@@ -5,16 +5,17 @@ import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.ElementHelper;
 import utils.LanguageManager;
+import utils.DateHelper;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.appear;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
+import static utils.LanguageManager.getLocale;
 
 public class VJHomePage {
     // Locators
@@ -63,9 +64,9 @@ public class VJHomePage {
     @Step("Select flight type")
     public void chooseFlightType(FlightType type){
         if (type == FlightType.ROUND_TRIP){
-            roundTripRdb.click();
+            roundTripRdb.setSelected(true);
         } else if (type == FlightType.ONE_WAY){
-            onewayRdb.click();
+            onewayRdb.setSelected(true);
         }
     }
 
@@ -75,7 +76,7 @@ public class VJHomePage {
 
         if (!shadowLocationAddress.isDisplayed()) {
             departmentInput.click();
-            departmentInput.setValue("Ho Chi Minh");
+            departmentInput.setValue(DepartAddress);
             shadowLocationAddress.should(appear);
         }
 
@@ -88,7 +89,7 @@ public class VJHomePage {
 
         if (!shadowLocationAddress.isDisplayed()) {
             destinationInput.click();
-            destinationInput.setValue("Ha Noi");
+            destinationInput.setValue(DesAddress);
             shadowLocationAddress.should(appear);
         }
 
@@ -100,6 +101,29 @@ public class VJHomePage {
         LocalDate departDate = LocalDate.now().plusDays(departAfterDays);
         LocalDate returnDate = departDate.plusDays(returnAfterDays);
 
+
+        SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
+                departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
+
+        SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
+                returnDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), returnDate.getDayOfMonth()));
+
+        if (departDateBtn.isDisplayed()) {
+            departureDateBtn.click();
+        }
+
+        departDateBtn.shouldBe(Condition.visible).click();
+        returnDayBtn.shouldBe(Condition.visible).click();
+    }
+
+    /**
+     * Select departure and return dates using human friendly descriptors.
+     * Examples of descriptors: "next monday", "next weekend", "next month".
+     */
+    @Step("Select departure date and return date for round trip flight (human friendly date descriptions)")
+    public void selectRoundTripDate(String departDescriptor, String returnDescriptor){
+        LocalDate departDate = DateHelper.parseFriendly(departDescriptor);
+        LocalDate returnDate = DateHelper.parseFriendly(returnDescriptor);
 
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
                 departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
@@ -180,14 +204,6 @@ public class VJHomePage {
                 data.getFlightPassengerDataObject().getChildren(),
                 data.getFlightPassengerDataObject().getInfants());
         findTicket();
-    }
-
-    private Locale getLocale(){
-        return switch (LanguageManager.getLanguage().toLowerCase()) {
-            case "vi-vn" -> Locale.of("vi", "VN");
-            case "en-us" -> Locale.ENGLISH;
-            default -> Locale.ENGLISH;
-        };
     }
 
 }

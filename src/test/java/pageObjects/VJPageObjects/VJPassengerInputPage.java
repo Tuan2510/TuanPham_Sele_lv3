@@ -13,6 +13,7 @@ import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static pageObjects.VJPageObjects.VJSelectTicketPage.filghtCardDataHolderThreadLocal;
+import static utils.LanguageManager.getLocale;
 
 public class VJPassengerInputPage {
 
@@ -84,14 +85,6 @@ public class VJPassengerInputPage {
         String returnPrice = filghtCardDataHolderThreadLocal.get().getReturnFlight().getPrice();
         verifyFlightPrice(departPrice, returnPrice);
 
-    }
-
-    private Locale getLocale(){
-        return switch (LanguageManager.getLanguage().toLowerCase()) {
-            case "vi-vn" -> Locale.of("vi", "VN");
-            case "en-us" -> Locale.ENGLISH;
-            default -> Locale.ENGLISH;
-        };
     }
 
 }
