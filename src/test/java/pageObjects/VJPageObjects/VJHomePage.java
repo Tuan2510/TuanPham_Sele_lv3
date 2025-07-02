@@ -64,9 +64,13 @@ public class VJHomePage {
     @Step("Select flight type")
     public void chooseFlightType(FlightType type){
         if (type == FlightType.ROUND_TRIP){
-            roundTripRdb.setSelected(true);
+            if(!roundTripRdb.isSelected()) {
+                roundTripRdb.setSelected(true);
+            }
         } else if (type == FlightType.ONE_WAY){
-            onewayRdb.setSelected(true);
+            if(!onewayRdb.isSelected()) {
+                onewayRdb.setSelected(true);
+            }
         }
     }
 
