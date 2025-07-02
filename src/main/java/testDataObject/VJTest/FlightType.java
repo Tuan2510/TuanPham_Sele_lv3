@@ -1,5 +1,8 @@
 package testDataObject.VJTest;
 
+import lombok.Getter;
+
+@Getter
 public enum FlightType {
     ROUND_TRIP("roundTrip"),
     ONE_WAY("oneway");
@@ -8,9 +11,5 @@ public enum FlightType {
 
     FlightType(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 }
