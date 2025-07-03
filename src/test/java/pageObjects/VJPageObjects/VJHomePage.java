@@ -101,34 +101,7 @@ public class VJHomePage {
     }
 
     @Step("Select departure date and return date for round trip flight")
-    public void selectRoundTripDate(int departAfterDays, int returnAfterDays){
-        LocalDate departDate = LocalDate.now().plusDays(departAfterDays);
-        LocalDate returnDate = departDate.plusDays(returnAfterDays);
-
-
-        SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
-                departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
-
-        SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
-                returnDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), returnDate.getDayOfMonth()));
-
-        if (departDateBtn.isDisplayed()) {
-            departureDateBtn.click();
-        }
-
-        departDateBtn.shouldBe(Condition.visible).click();
-        returnDayBtn.shouldBe(Condition.visible).click();
-    }
-
-    /**
-     * Select departure and return dates using human friendly descriptors.
-     * Examples of descriptors: "next monday", "next weekend", "next month".
-     */
-    @Step("Select departure date and return date for round trip flight (human friendly date descriptions)")
-    public void selectRoundTripDate(String departDescriptor, String returnDescriptor){
-        LocalDate departDate = DateHelper.parseFriendly(departDescriptor);
-        LocalDate returnDate = DateHelper.parseFriendly(returnDescriptor);
-
+    public void selectRoundTripDate(LocalDate departDate, LocalDate returnDate){
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
                 departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
 
@@ -202,7 +175,12 @@ public class VJHomePage {
         chooseFlightType(data.getFlightType());
         selectDepartureLocation(data.getDepartmentLocation());
         selectDestinationLocation(data.getDestinationLocation());
-        selectRoundTripDate(data.getDepartAfterDays(), data.getReturnAfterDays());
+
+        LocalDate departLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        LocalDate returnLocalDate = departLocalDate.plusDays(data.getReturnAfterDays());
+
+        selectRoundTripDate(departLocalDate, returnLocalDate);
+
         selectPassengerNumber(
                 data.getFlightPassengerDataObject().getAdults(),
                 data.getFlightPassengerDataObject().getChildren(),

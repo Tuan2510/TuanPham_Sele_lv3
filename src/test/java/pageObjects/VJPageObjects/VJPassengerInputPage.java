@@ -38,7 +38,11 @@ public class VJPassengerInputPage {
         flightReturnLocations.shouldHave(text(returnLocation));
     }
 
-    public void verifyFlightDate(String departDate, String returnDate){
+    public void verifyFlightDate(LocalDate departLocalDate, LocalDate returnLocalDate){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd/MM/yyyy", getLocale());
+        String departDate = departLocalDate.format(formatter);
+        String returnDate = returnLocalDate.format(formatter);
+
         SelenideElement flightDepartDate = $x(flightDateXpath.formatted("Depart"));
         flightDepartDate.shouldHave(text(departDate));
 
@@ -69,11 +73,9 @@ public class VJPassengerInputPage {
 
         verifyDepartAndReturnLocation(departLocation, returnLocation);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd/MM/yyyy", getLocale());
         LocalDate departLocalDate = LocalDate.now().plusDays(departAfterDays);
-        String departDate = LocalDate.now().plusDays(departAfterDays).format(formatter);
-        String returnDate = departLocalDate.plusDays(returnAfterDate).format(formatter);
-        verifyFlightDate(departDate, returnDate);
+        LocalDate returnLocalDate = departLocalDate.plusDays(returnAfterDate);
+        verifyFlightDate(departLocalDate, returnLocalDate);
 
         String departFlightId = filghtCardDataHolderThreadLocal.get().getDepartFlight().getFlightId();
         String departTime = filghtCardDataHolderThreadLocal.get().getDepartFlight().getTime().replace("To", "-");
