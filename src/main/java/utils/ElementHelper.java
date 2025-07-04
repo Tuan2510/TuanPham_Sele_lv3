@@ -101,6 +101,16 @@ public class ElementHelper {
         }
     }
 
+    public static boolean isElementDisplayed(SelenideElement element, int timeoutSeconds) {
+        try {
+            element.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-
+    public static boolean isElementDisplayed(SelenideElement element){
+        return isElementDisplayed(element, 10);
+    }
 }

@@ -5,16 +5,19 @@ import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.ElementHelper;
 import utils.LanguageManager;
-import utils.DateHelper;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 
 import static com.codeborne.selenide.Condition.appear;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
+import static utils.ElementHelper.isElementDisplayed;
 import static utils.LanguageManager.getLocale;
 
 public class VJHomePage {
@@ -24,6 +27,10 @@ public class VJHomePage {
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
     private final SelenideElement roundTripRdb = $("span.MuiIconButton-label input[type='radio'][value='roundTrip']");
     private final SelenideElement onewayRdb = $("span.MuiIconButton-label input[type='radio'][value='oneway']");
+
+    SelenideElement currentMonthLabel = $$x("//div[contains(@class, 'rdrMonthName')]").first();
+    private final SelenideElement nextButton = $x("//button[contains(@class, 'rdrNextButton')]");
+    private final SelenideElement prevButton = $x("//button[contains(@class, 'rdrPprevButton')]");
 
     private final SelenideElement departmentInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input", LanguageManager.get("from")));
     private final SelenideElement destinationInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/following-sibling::div[contains(@class, 'MuiInputBase-root')]/input", LanguageManager.get("to")));
@@ -108,12 +115,38 @@ public class VJHomePage {
         SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
                 returnDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), returnDate.getDayOfMonth()));
 
-        if (departDateBtn.isDisplayed()) {
+        if (!isElementDisplayed(currentMonthLabel)) {
             departureDateBtn.click();
         }
 
+        navigateToTargetMonth(departDate);
         departDateBtn.shouldBe(Condition.visible).click();
+
+        navigateToTargetMonth(returnDate);
         returnDayBtn.shouldBe(Condition.visible).click();
+    }
+
+    private void navigateToTargetMonth(LocalDate targetDate){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", getLocale());
+
+        YearMonth target = YearMonth.from(targetDate);
+
+        for (int i = 0; i < 24; i++) { // avoid infinite loop
+            String displayedText = currentMonthLabel.getText().trim();
+            YearMonth current = YearMonth.parse(displayedText, formatter);
+
+            if (current.equals(target)) break;
+
+            if (current.isBefore(target)) {
+                nextButton.shouldBe(Condition.visible).click();
+            } else {
+                prevButton.shouldBe(Condition.visible).click();
+            }
+
+            currentMonthLabel.shouldHave(Condition.text(
+                    targetDate.getMonth().getDisplayName(TextStyle.FULL, getLocale())
+            ));
+        }
     }
 
     @Step("Select number of passenger in a flight")
