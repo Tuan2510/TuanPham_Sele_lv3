@@ -6,6 +6,7 @@ import io.qameta.allure.Step;
 import testDataObject.VJTest.FlightDataObject;
 import testDataObject.VJTest.FlightCardInfo;
 import testDataObject.VJTest.FlightCardDataHolder;
+import utils.LanguageManager;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -29,12 +30,12 @@ public class VJSelectTicketPage {
     private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
     private final SelenideElement closeAdPanelButton = $("button.MuiButtonBase-root[aria-label='close']");
-    private final ElementsCollection flightInfoCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(@class, 'MuiTypography-root') and @variantmd='h3']");
-    private final ElementsCollection soldOutTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), 'Sold out')]");
-    private final ElementsCollection availableTicketCollection = $$x("//div[contains(@class, 'MuiBox-root')]//p[contains(text(), '000 VND')]/preceding-sibling::p");
+    private final ElementsCollection flightInfoCollection = $$x("//p[contains(@class, 'MuiTypography-root') and @variantmd='h3']");
+    private final ElementsCollection soldOutTicketCollection = $$x("//p[contains(text(), 'Sold out')]");
+    private final ElementsCollection availableTicketCollection = $$x("//p[contains(text(), '000 VND')]/preceding-sibling::p");
 
     private final SelenideElement selectingDate = $("div[class*='lick-current'] p[weight='Bold']");
-    private final SelenideElement continueButton = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
+    private final SelenideElement continueButton = $x("//button[.//span[text()='Continue']]");
 
     //Dynamic Locators
     private final String flightPrice = "//p[contains(text(),'%s')]/parent::div//h4";
@@ -57,21 +58,25 @@ public class VJSelectTicketPage {
         }
     }
 
+    @Step("Select flight type")
     public void closeAdPanelButton(){
         clickWhenReady(closeAdPanelButton);
     }
 
+    @Step("Verify that the travel options page is displayed")
     public void verifyTravelOptionPageDisplayed(){
         webdriver().shouldHave(urlContaining("/select-flight"));
     }
 
-    public void verifyCurrency(String currentcy) {
+    @Step("Verify currency on the travel options page")
+    private void verifyCurrency(String currentcy) {
         // Locate any element that contains the text "VND"
         $$("p.MuiTypography-root").findBy(text(currentcy)).shouldBe(visible);
         availableTicketCollection.shouldHave(sizeGreaterThan(0));
     }
 
-    public void verifyFlightLocation(String expectedDepartCity, String expectedDestinationCity){
+    @Step("Verify flight location")
+    private void verifyFlightLocation(String expectedDepartCity, String expectedDestinationCity){
         String departureCity = null;
         String destinationCity = null;
 
@@ -98,7 +103,8 @@ public class VJSelectTicketPage {
         }
     }
 
-    public void verifyFlightTypeAndPassenger(String expectedFlightTypeAndPassenger){
+    @Step("Verify flight type and passenger information")
+    private void verifyFlightTypeAndPassenger(String expectedFlightTypeAndPassenger){
         String flightTypeAndPassenger = null;
 
         for (int i = 0; i < flightInfoCollection.size(); i++) {
@@ -114,7 +120,8 @@ public class VJSelectTicketPage {
         }
     }
 
-    public SelenideElement findCheapestTicket(){
+    @Step("Verify that there are no sold out tickets")
+    private SelenideElement findCheapestTicket(){
         SelenideElement lowest = availableTicketCollection.get(0);
         int lowestPrice = parsePrice(availableTicketCollection.get(0).getText().trim());
         for (int i = 1; i < availableTicketCollection.size(); i++) {
@@ -129,22 +136,23 @@ public class VJSelectTicketPage {
         return lowest;
     }
 
-
-    public void selectCheapestTicket(SelenideElement element){
+    @Step("Select the lowest ticket")
+    private void selectTicket(SelenideElement element){
         clickWhenReady(element);
     }
 
-    public void verifyFlightDate(LocalDate expectedLocalDate){
+    @Step("Verify flight date on the travel options page")
+    private void verifyFlightDate(LocalDate expectedLocalDate){
         String expectedDate = String.format("%s %d%s",
                 expectedLocalDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()),
                 expectedLocalDate.getDayOfMonth(),
                 getNumberSuffix(expectedLocalDate.getDayOfMonth()));
 
-//        selectingDate.getText().equalsIgnoreCase(expectedDate);
         selectingDate.shouldHave(exactText(expectedDate));
     }
 
-    public FlightCardInfo extractFlightInfo(SelenideElement ticketElement, String flightType){
+    @Step("Extract flight information from the ticket element")
+    private FlightCardInfo extractFlightInfo(SelenideElement ticketElement, String flightType){
         String flightId = ticketElement.$x("./div//span[contains(text(), 'VJ')]/ancestor::div[1]").getText();
         String time  = ticketElement.$x("./div//span[contains(text(), 'To')]/ancestor::div[1]").getText();
         String price = $x(flightPrice.formatted(flightType)).getText();
@@ -152,6 +160,7 @@ public class VJSelectTicketPage {
         return new FlightCardInfo(flightId, time, price);
     }
 
+    @Step("Verify flight information on the travel options page")
     public void verifyFlightInfo(FlightDataObject data){
         verifyTravelOptionPageDisplayed();
 
@@ -164,7 +173,8 @@ public class VJSelectTicketPage {
         verifyFlightLocation(expectedDepartAddress, expectedDestinationAddress);
 
         //verify flight type and passenger
-        String expectedFlightTypeAndPassenger = String.format("%s | %s", data.getFlightTypeCode(), data.getFlightPassengerDataObject().getStringFlightPassenger());
+        String expectedFlightTypeAndPassenger = String.format("%s | %s", data.getFlightTypeCode(),
+                data.getFlightPassengerDataObject().getStringFlightPassenger());
         verifyFlightTypeAndPassenger(expectedFlightTypeAndPassenger);
 
         //verify depart date
@@ -174,21 +184,23 @@ public class VJSelectTicketPage {
         //select lowest ticket and save the flight card info
         SelenideElement lowestDepart = findCheapestTicket();
         SelenideElement departFlightCard = lowestDepart.$x(flightCardAdditionalXpath);
-        selectCheapestTicket(lowestDepart);
-        filghtCardDataHolderThreadLocal.get().setDepartFlight(extractFlightInfo(departFlightCard, "Depart"));
+        selectTicket(lowestDepart);
+        filghtCardDataHolderThreadLocal.get().setDepartFlight(extractFlightInfo(departFlightCard, LanguageManager.get("departure_flight")));
 
         continueButton.click();
 
         //verify return date
         LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
+        verifyFlightDate(expectedReturnLocalDate);
 
         //select lowest ticket and save the flight card info
         SelenideElement lowestReturn = findCheapestTicket();
         SelenideElement returnFlightCard = lowestReturn.$x(flightCardAdditionalXpath);
-        selectCheapestTicket(lowestReturn);
-        filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, "Return"));
+        selectTicket(lowestReturn);
+        filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, LanguageManager.get("return_flight")));
     }
 
+    @Step("Continue to passenger info page")
     public void continueToPassengerPage(){
         //continue to passenger info page
         clickWhenReady(continueButton);

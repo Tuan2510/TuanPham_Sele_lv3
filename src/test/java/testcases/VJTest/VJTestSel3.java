@@ -17,7 +17,7 @@ public class VJTestSel3 extends TestBase{
     VJSelectTicketPage selectTicketPage = new VJSelectTicketPage();
     VJPassengerInputPage passengerInputPage = new VJPassengerInputPage();
 
-    @Test(dataProvider = "getData", retryAnalyzer = RetryAnalyzer.class, groups = "VJRegression, FullRegression")
+    @Test(dataProvider = "getData", retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
     public void TC01(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
@@ -43,7 +43,7 @@ public class VJTestSel3 extends TestBase{
         selectTicketPage.continueToPassengerPage();
 
         logHelper.logStep("Step #8: Verify passenger info page displayed");
-        passengerInputPage.verifyTravelOptionPageDisplayed();
+        passengerInputPage.verifyPassengerPageDisplayed();
 
         logHelper.logStep("Step #9: Verify flight ticket info correct");
         passengerInputPage.verifyTicketInfo(data.getDepartmentLocation(), data.getDestinationLocation(),
