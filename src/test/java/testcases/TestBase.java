@@ -11,6 +11,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 import driver.DriverFactory;
 import reportManager.ReportPathsInitializer;
+import reportManager.AllureManager;
 import utils.LogHelper;
 import utils.RunConfigReader;
 import utils.TestListener;
@@ -45,7 +46,6 @@ public class TestBase {
 
     @BeforeMethod()
     public void beforeMethod(Object[] testArgs) {
-//        DriverFactory.initDriver();
     }
 
     @AfterMethod(alwaysRun = true)
@@ -60,5 +60,6 @@ public class TestBase {
 
     @AfterSuite
     public void afterSuite() throws IOException, InterruptedException{
+//        AllureManager.generateAllureReport();
     }
 }

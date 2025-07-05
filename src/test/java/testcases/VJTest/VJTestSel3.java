@@ -10,6 +10,7 @@ import testDataObject.VJTest.FlightDataObject;
 import testcases.TestBase;
 import utils.RetryAnalyzer;
 import utils.TestListener;
+import io.qameta.allure.Description;
 
 @Listeners({TestListener.class})
 public class VJTestSel3 extends TestBase{
@@ -17,6 +18,10 @@ public class VJTestSel3 extends TestBase{
     VJSelectTicketPage selectTicketPage = new VJSelectTicketPage();
     VJPassengerInputPage passengerInputPage = new VJPassengerInputPage();
 
+    /**
+     * Verify that user can search and select VietJet flights using provided data.
+     */
+    @Description("Validate flight booking flow on VietJet")
     @Test(dataProvider = "getData", retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
     public void TC01(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");

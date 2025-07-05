@@ -84,6 +84,14 @@ public class VJPassengerInputPage {
         flightReturnPrice.shouldHave(text(returnPrice));
     }
 
+    /**
+     * Validate that ticket information displayed to the user matches previously selected data.
+     *
+     * @param departLocation   expected departure location
+     * @param returnLocation   expected return location
+     * @param departAfterDays  days from now for departure
+     * @param returnAfterDate  days between depart and return
+     */
     @Step("Verify the ticket information on the passenger input page")
     public void verifyTicketInfo(String departLocation, String returnLocation, int departAfterDays, int returnAfterDate){
         ElementHelper.scrollToPageTop();

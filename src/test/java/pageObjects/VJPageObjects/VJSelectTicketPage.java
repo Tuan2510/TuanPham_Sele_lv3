@@ -160,6 +160,10 @@ public class VJSelectTicketPage {
         return new FlightCardInfo(flightId, time, price);
     }
 
+    /**
+     * Verify information displayed on the flight selection page matches expected data.
+     * @param data flight data used to verify UI
+     */
     @Step("Verify flight information on the travel options page")
     public void verifyFlightInfo(FlightDataObject data){
         verifyTravelOptionPageDisplayed();
@@ -200,6 +204,9 @@ public class VJSelectTicketPage {
         filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, LanguageManager.get("return_flight")));
     }
 
+    /**
+     * Proceed to the passenger information page after selecting flights.
+     */
     @Step("Continue to passenger info page")
     public void continueToPassengerPage(){
         //continue to passenger info page

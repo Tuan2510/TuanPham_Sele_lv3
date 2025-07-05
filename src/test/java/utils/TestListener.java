@@ -27,7 +27,7 @@ public class TestListener implements ITestListener, IExecutionListener {
 
     private static final ExtentReports extent = ExtentManager.getInstance();
     private static final ThreadLocal<ExtentTest> currentNode = new ThreadLocal<>();
-
+    private static final java.util.Map<String, ExtentTest> classNodes = new java.util.concurrent.ConcurrentHashMap<>();
     private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     @Override
@@ -41,15 +41,17 @@ public class TestListener implements ITestListener, IExecutionListener {
 
     @Override
     public void onTestStart(ITestResult result) {
-        String testName = result.getMethod().getMethodName();
+        String className = result.getTestClass().getRealClass().getSimpleName();
+        ExtentTest classNode = classNodes.computeIfAbsent(className, extent::createTest);
 
+        String methodName = result.getMethod().getMethodName();
         Object[] params = result.getParameters();
         if (params != null && params.length > 0 && params[0] instanceof SampleDataObject data) {
-            testName = testName + "---" + data.getDataNo() + ": " + data.getTestPurpose();
+            methodName = methodName + "-" + data.getDataNo();
         }
 
-        ExtentTest test = extent.createTest(testName);
-        currentNode.set(test);
+        ExtentTest node = classNode.createNode(methodName);
+        currentNode.set(node);
     }
 
     @Override

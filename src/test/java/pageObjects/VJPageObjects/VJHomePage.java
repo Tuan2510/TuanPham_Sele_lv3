@@ -181,6 +181,9 @@ public class VJHomePage {
         }
     }
 
+    /**
+     * Clicks the button to search for tickets based on the current form values.
+     */
     @Step("Find ticket button click")
     public void findTicket(){
         if(passengerLetsGoBtn.isDisplayed()) {
@@ -190,6 +193,10 @@ public class VJHomePage {
         }
     }
 
+    /**
+     * Fill in the search form with provided flight data and trigger the search.
+     * @param data flight information
+     */
     @Step("Search for tickets")
     public void searchTicket(FlightDataObject data){
         chooseFlightType(data.getFlightType());
