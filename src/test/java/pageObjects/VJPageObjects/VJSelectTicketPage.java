@@ -30,18 +30,18 @@ public class VJSelectTicketPage {
     private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
     private final SelenideElement closeAdPanelButton = $("button.MuiButtonBase-root[aria-label='close']");
-    private final ElementsCollection flightInfoCollection = $$x("//p[contains(@class, 'MuiTypography-root') and @variantmd='h3']");
+    private final ElementsCollection flightInfoCollection = $$x("//p[contains(@class, 'MuiTypography-root')][@variantmd='h3']");
     private final ElementsCollection soldOutTicketCollection = $$x("//p[contains(text(), 'Sold out')]");
-    private final ElementsCollection availableTicketCollection = $$x("//p[contains(text(), '000 VND')]/preceding-sibling::p");
+    private final ElementsCollection availableTicketCollection = $$x("//div[p[contains(text(), '000 VND')]]/p[contains(@class, 'MuiTypography-h4')]");
 
     private final SelenideElement selectingDate = $("div[class*='lick-current'] p[weight='Bold']");
     private final SelenideElement continueButton = $x("//button[.//span[text()='Continue']]");
 
     //Dynamic Locators
-    private final String flightPrice = "//p[contains(text(),'%s')]/parent::div//h4";
+    private final String flightPrice = "//div[p[contains(text(),'%s')]]//h4";
 
     //Variable
-    private final String flightCardAdditionalXpath = "./parent::div/parent::div/parent::div/preceding-sibling::div";
+    private final String flightCardAdditionalXpath = "ancestor::div[3]/preceding-sibling::div";
     public static final ThreadLocal<FlightCardDataHolder> filghtCardDataHolderThreadLocal = ThreadLocal.withInitial(FlightCardDataHolder::new);
 
     //methods

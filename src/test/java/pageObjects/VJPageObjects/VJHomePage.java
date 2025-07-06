@@ -32,22 +32,25 @@ public class VJHomePage {
     private final SelenideElement nextButton = $x("//button[contains(@class, 'rdrNextButton')]");
     private final SelenideElement prevButton = $x("//button[contains(@class, 'rdrPprevButton')]");
 
-    private final SelenideElement departmentInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/..//input", LanguageManager.get("from")));
-    private final SelenideElement destinationInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/..//input", LanguageManager.get("to")));
-    private final SelenideElement passengerInput = $x(String.format("//label[contains(@class, 'MuiFormLabel-root') and contains(text(), '%s')]/..//input", LanguageManager.get("passenger")));
     private final SelenideElement departureDateBtn = $x(String.format("//div[@role='button'][.//p[contains(text(), '%s')]]", LanguageManager.get("departure_date")));
     private final SelenideElement lowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='secondary']");
     private final SelenideElement letsGoBtn = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
-    private final SelenideElement passengerLetsGoBtn = $x(String.format("//span[contains(@class, 'MuiTypography-root') and text()=\"%s\"]/ancestor::button", LanguageManager.get("lets_go")));
+    private final SelenideElement passengerLetsGoBtn = $x(String.format("//button[span/span[text()=\"%s\"]]", LanguageManager.get("lets_go")));
 
     // Dynamic Locators
+    private final String TicketInput = "//div[./label[contains(@class, 'MuiFormLabel-root')][contains(text(), '%s')]]//input";
     private final String shadowLocationXpath = "//div[contains(@class, 'MuiBox-root')]//div[contains(text(), '%s')]";
-    private final String shadowDateButtonXpath = "//div[contains(text(), '%s')]/..//button[.//span[text()='%s'] and not(contains(@class, 'rdrDayDisabled'))]";
-    private final String shadowPassengerMinusBtn = "//p[text()='%s']/ancestor::div[contains(@class,'MuiBox-root')][3]//button[1]";
-    private final String shadowPassengerNumber = "//p[text()='%s']/ancestor::div[contains(@class,'MuiBox-root')][3]/div/span";
-    private final String shadowPassengerPlusBtn = "//p[text()='%s']/ancestor::div[contains(@class,'MuiBox-root')][3]//button[2]";
+    private final String shadowDateButtonXpath = "//div[./div[contains(text(), '%s')]]//button[.//span[text()='%s']][not(contains(@class, 'rdrDayDisabled'))]";
+    private final String shadowPassengerMinusBtn = "//div[div/div/p[text()='%s']]//button[1]";
+    private final String shadowPassengerNumber = "//div[div/div/p[text()='%s']]/div/span";
+    private final String shadowPassengerPlusBtn = "//div[div/div/p[text()='%s']]//button[2]";
 
     // Methods
+    @Step("Get flight input section for type: {type}")
+    private SelenideElement getFlightInputSection(String dynamicValue) {
+        return $x(TicketInput.formatted(dynamicValue));
+    }
+
     @Step("Close cookies banner if displayed")
     public void closeCookiesBanner() {
         if (acceptCookiesBtn.isDisplayed()) {
@@ -86,8 +89,8 @@ public class VJHomePage {
         SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DepartAddress));
 
         if (!shadowLocationAddress.isDisplayed()) {
-            departmentInput.click();
-            departmentInput.setValue(DepartAddress);
+            getFlightInputSection(LanguageManager.get("from")).click();
+            getFlightInputSection(LanguageManager.get("from")).setValue(DepartAddress);
             shadowLocationAddress.should(appear);
         }
 
@@ -99,8 +102,8 @@ public class VJHomePage {
         SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DesAddress));
 
         if (!shadowLocationAddress.isDisplayed()) {
-            destinationInput.click();
-            destinationInput.setValue(DesAddress);
+            $x(TicketInput.formatted(LanguageManager.get("to"))).click();
+            $x(TicketInput.formatted(LanguageManager.get("to"))).setValue(DesAddress);
             shadowLocationAddress.should(appear);
         }
 
@@ -153,8 +156,8 @@ public class VJHomePage {
     @Step("Select number of passenger in a flight")
     private void selectPassengerNumber(int numOfAdults, int numOfChildrens, int numOfInfants){
 
-        if (passengerInput.isDisplayed()) {
-            passengerInput.click();
+        if ($x(TicketInput.formatted(LanguageManager.get("passenger"))).isDisplayed()) {
+            $x(TicketInput.formatted(LanguageManager.get("passenger"))).click();
         }
 
         adjustPassengerNumber("adults", numOfAdults);
@@ -169,7 +172,7 @@ public class VJHomePage {
         SelenideElement plusBtn = $x(shadowPassengerPlusBtn.formatted(LanguageManager.get(passengerKey)));
 
         if (!minusBtn.isDisplayed()) {
-            passengerInput.click();
+            $x(TicketInput.formatted(LanguageManager.get("passenger"))).click();
         }
 
         while (Integer.parseInt(currentNumber.getText()) < target){

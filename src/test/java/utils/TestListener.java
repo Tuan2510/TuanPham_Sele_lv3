@@ -4,6 +4,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.codeborne.selenide.Selenide;
 import commons.Constants;
+import io.qameta.allure.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.IExecutionListener;
@@ -44,10 +45,22 @@ public class TestListener implements ITestListener, IExecutionListener {
         String className = result.getTestClass().getRealClass().getSimpleName();
         ExtentTest classNode = classNodes.computeIfAbsent(className, extent::createTest);
 
+        //create a node for the test method with getDataNo in the name
         String methodName = result.getMethod().getMethodName();
         Object[] params = result.getParameters();
-        if (params != null && params.length > 0 && params[0] instanceof SampleDataObject data) {
-            methodName = methodName + "-" + data.getDataNo();
+        if (params != null && params.length > 0) {
+            for (Object param : params) {
+                try {
+                    java.lang.reflect.Method getter = param.getClass().getMethod("getDataNo");
+                    Object val = getter.invoke(param);
+                    if (val != null) {
+                        methodName = methodName + "-" + val.toString();
+                        break;
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException ignored) {
+                    // ignore if param does not have getDataNo method
+                }
+            }
         }
 
         ExtentTest node = classNode.createNode(methodName);

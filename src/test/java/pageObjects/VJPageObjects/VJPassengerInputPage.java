@@ -20,9 +20,9 @@ public class VJPassengerInputPage {
 
 
     // Dynamic Locators
-    private final String flightLocationXpath = "//div[./p[contains(text(),'%s')]]/following-sibling::div//img/ancestor::div[1]";
-    private final String flightDateXpath = "//div[./p[contains(text(),'%s')]]/following-sibling::div//h5[not(@variantlg='h4')]";
-    private final String flightPrice = "//div[./p[contains(text(),'%s')]]//h4";
+    private final String flightLocationXpath = "//div[div/p[contains(text(),'%s')]]//div[span/img]";
+    private final String flightDateXpath = "//div[div/p[contains(text(),'%s')]]//h5[not(@variantlg='h4')]";
+    private final String flightPrice = "//div[p[contains(text(),'%s')]]//h4";
 
     /**
      * Returns the SelenideElement representing the flight date section (Depart or Return)
