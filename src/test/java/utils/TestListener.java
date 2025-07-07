@@ -4,6 +4,9 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.codeborne.selenide.Selenide;
 import commons.Constants;
+import io.qameta.allure.Description;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.IExecutionListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
@@ -11,8 +14,7 @@ import org.testng.ITestResult;
 import org.testng.TestNG;
 import reportManager.AllureManager;
 import reportManager.ExtentManager;
-import reportManager.ReportPathsInitializer;
-import testDataObject.DataObject;
+import testDataObject.SampleDataObject;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
@@ -21,11 +23,12 @@ import java.util.Collections;
 public class TestListener implements ITestListener, IExecutionListener {
     public static final TestListener INSTANCE = new TestListener();
 
+    private static final Logger logger = LoggerFactory.getLogger(TestListener.class);
     private static boolean rerunInProgress = false;
 
     private static final ExtentReports extent = ExtentManager.getInstance();
     private static final ThreadLocal<ExtentTest> currentNode = new ThreadLocal<>();
-
+    private static final java.util.Map<String, ExtentTest> classNodes = new java.util.concurrent.ConcurrentHashMap<>();
     private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     @Override
@@ -39,15 +42,29 @@ public class TestListener implements ITestListener, IExecutionListener {
 
     @Override
     public void onTestStart(ITestResult result) {
-        String testName = result.getMethod().getMethodName();
+        String className = result.getTestClass().getRealClass().getSimpleName();
+        ExtentTest classNode = classNodes.computeIfAbsent(className, extent::createTest);
 
+        //create a node for the test method with getDataNo in the name
+        String methodName = result.getMethod().getMethodName();
         Object[] params = result.getParameters();
-        if (params != null && params.length > 0 && params[0] instanceof DataObject data) {
-            testName = testName + "---" + data.getDataNo() + ": " + data.getTestPurpose();
+        if (params != null && params.length > 0) {
+            for (Object param : params) {
+                try {
+                    java.lang.reflect.Method getter = param.getClass().getMethod("getDataNo");
+                    Object val = getter.invoke(param);
+                    if (val != null) {
+                        methodName = methodName + "-" + val.toString();
+                        break;
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException ignored) {
+                    // ignore if param does not have getDataNo method
+                }
+            }
         }
 
-        ExtentTest test = extent.createTest(testName);
-        currentNode.set(test);
+        ExtentTest node = classNode.createNode(methodName);
+        currentNode.set(node);
     }
 
     @Override
@@ -65,7 +82,7 @@ public class TestListener implements ITestListener, IExecutionListener {
                 node.fail(result.getThrowable());
             } else {
                 // fallback log if node not initialized
-                System.out.println("ExtentTest node was null on failure of: " + result.getName());
+                logger.warn("ExtentTest node was null on failure of: {}", result.getName());
             }
         } catch (Exception ignored) {}
     }
@@ -75,7 +92,7 @@ public class TestListener implements ITestListener, IExecutionListener {
         if (currentNode.get() != null) {
             currentNode.get().skip(result.getThrowable());
         } else {
-            System.out.println("ExtentTest node was null on skip of: " + result.getName());
+            logger.warn("ExtentTest node was null on skip of: {}", result.getName());
         }
     }
 

@@ -3,16 +3,19 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import testDataObject.DataObject;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-public class TestDataProvider {
+public class JsonToObjectHelper {
 
+    /**
+     * Load data from json file, filter for current method
+     */
     public static Object[][] getDataByMethodName(Method method) throws Exception {
         String className = method.getDeclaringClass().getSimpleName();
         String packagePath = method.getDeclaringClass().getPackage().getName()
@@ -27,7 +30,9 @@ public class TestDataProvider {
             jsonObject = gson.fromJson(reader, JsonObject.class);
 
             JsonArray jsonArray = jsonObject.getAsJsonArray(method.getName());
-            DataObject[] dataArray = gson.fromJson(jsonArray, DataObject[].class);
+
+            Class<?> paramType = method.getParameterTypes().length > 0 ? method.getParameterTypes()[0] : Object.class;
+            Object[] dataArray = (Object[]) gson.fromJson(jsonArray, Array.newInstance(paramType, 0).getClass());
 
             Object[][] result = new Object[dataArray.length][1];
             for (int i = 0; i < dataArray.length; i++) {
