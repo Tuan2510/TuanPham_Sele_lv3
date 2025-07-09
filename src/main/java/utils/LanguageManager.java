@@ -4,6 +4,8 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -20,7 +22,7 @@ public class LanguageManager {
         try (InputStream input = LanguageManager.class.getClassLoader()
                 .getResourceAsStream(resourcePath)) {
             if (input != null) {
-                langProps.load(input);
+                langProps.load(new InputStreamReader(input, StandardCharsets.UTF_8));
             } else {
                 throw new RuntimeException("Language file not found: " + resourcePath);
             }

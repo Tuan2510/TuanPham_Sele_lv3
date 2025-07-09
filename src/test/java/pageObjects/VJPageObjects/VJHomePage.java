@@ -17,6 +17,9 @@ import static com.codeborne.selenide.Condition.appear;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.webdriver;
+import static com.codeborne.selenide.WebDriverConditions.urlContaining;
+import static utils.DateHelper.getFormattedDate;
 import static utils.ElementHelper.isElementDisplayed;
 import static utils.LanguageManager.getLocale;
 
@@ -46,6 +49,12 @@ public class VJHomePage {
     private final String shadowPassengerPlusBtn = "//div[div/div/p[text()='%s']]//button[2]";
 
     // Methods
+    @Step("Verify home page displayed in Vietnamese")
+    public void verifyPageDisplayInVietnamese(){
+        //check the url
+        webdriver().shouldHave(urlContaining("/vi"));
+    }
+
     @Step("Get flight input section for type: {type}")
     private SelenideElement getFlightInputSection(String dynamicValue) {
         return $x(TicketInput.formatted(dynamicValue));
@@ -113,10 +122,11 @@ public class VJHomePage {
     @Step("Select departure date and return date for round trip flight")
     private void selectRoundTripDate(LocalDate departDate, LocalDate returnDate){
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
-                departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
+                getFormattedDate(departDate, getLocale(), LanguageManager.get("month_format")), departDate.getDayOfMonth()));
+
 
         SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
-                returnDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), returnDate.getDayOfMonth()));
+                getFormattedDate(departDate, getLocale(), LanguageManager.get("month_format")), returnDate.getDayOfMonth()));
 
         if (!isElementDisplayed(currentMonthLabel)) {
             departureDateBtn.click();
@@ -184,6 +194,12 @@ public class VJHomePage {
         }
     }
 
+    private void selectCheapestFlightOption() {
+        if (!lowestPriceChb.isSelected()) {
+            lowestPriceChb.setSelected(true);
+        }
+    }
+
     /**
      * Clicks the button to search for tickets based on the current form values.
      */
@@ -218,4 +234,21 @@ public class VJHomePage {
         findTicket();
     }
 
+    public void searchCheapestTicket(FlightDataObject data) {
+        chooseFlightType(data.getFlightType());
+        selectDepartureLocation(data.getDepartmentLocation());
+        selectDestinationLocation(data.getDestinationLocation());
+
+        LocalDate departLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        LocalDate returnLocalDate = departLocalDate.plusDays(data.getReturnAfterDays());
+
+        selectRoundTripDate(departLocalDate, returnLocalDate);
+
+        selectPassengerNumber(
+                data.getFlightPassengerDataObject().getAdults(),
+                data.getFlightPassengerDataObject().getChildren(),
+                data.getFlightPassengerDataObject().getInfants());
+        selectCheapestFlightOption();
+        findTicket();
+    }
 }
