@@ -5,6 +5,7 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pageObjects.VJPageObjects.VJHomePage;
 import pageObjects.VJPageObjects.VJPassengerInputPage;
+import pageObjects.VJPageObjects.VJSelectFlightCheapPage;
 import pageObjects.VJPageObjects.VJSelectTicketPage;
 import testDataObject.VJTest.FlightDataObject;
 import testcases.TestBase;
@@ -12,11 +13,14 @@ import utils.RetryAnalyzer;
 import utils.TestListener;
 import io.qameta.allure.Description;
 
+import java.time.LocalDate;
+
 @Listeners({TestListener.class})
 public class VJTestSel3 extends TestBase{
     VJHomePage homePage = new VJHomePage();
     VJSelectTicketPage selectTicketPage = new VJSelectTicketPage();
     VJPassengerInputPage passengerInputPage = new VJPassengerInputPage();
+    VJSelectFlightCheapPage selectFlightCheapPage = new VJSelectFlightCheapPage();
 
     /**
      * Verify that user can search and select VietJet flights using provided data.
@@ -73,7 +77,10 @@ public class VJTestSel3 extends TestBase{
         homePage.searchTicketWithLowestOption(data);
 
         logHelper.logStep("Step #5: Verify travel options page displayed");
-//        selectFlightCheapPage.verifyTFlightCheapPageDisplayed();
+        selectFlightCheapPage.verifySelectFlightCheapPageDisplayed();
+
+        logHelper.logStep("Step #6: Select cheapest month flight ticket");
+        selectFlightCheapPage.selectMonthFlight(data.getDepartAfterMonths(), data.getReturnAfterMonths());
 
 
     }

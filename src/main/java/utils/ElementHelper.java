@@ -36,14 +36,12 @@ public class ElementHelper {
      */
     public static void clickWhenReady(SelenideElement selector, int timeoutSeconds) {
         try {
-//            sleep(500);
-            selector.scrollIntoView(true);
-            executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", selector);
+            scrollToElement(selector);
             selector.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds))
                     .shouldBe(Condition.enabled, Duration.ofSeconds(timeoutSeconds));
             selector.click();
         } catch (Exception e) {
-            // Fallback to JS click if standard click fails
+            // If standard click fails, try JavaScript click
             logger.warn("Standard click failed, trying JavaScript click. Reason: {}", e.getMessage());
             executeJavaScript("arguments[0].click();", selector);
         }
@@ -84,8 +82,14 @@ public class ElementHelper {
      * @param element The SelenideElement to scroll to
      */
     public static void scrollToElement(SelenideElement element) {
-        element.scrollIntoView(true);
-        element.shouldBe(Condition.visible, Duration.ofSeconds(5));
+        try {
+            element.scrollIntoView(true);
+            element.shouldBe(Condition.visible, Duration.ofSeconds(5));
+        } catch (Exception e) {
+            // Fallback to JavaScript scroll if standard scroll fails
+            logger.warn("Failed to scroll to element: {}. Reason: {}", element, e.getMessage());
+            executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
+        }
     }
 
     /**
