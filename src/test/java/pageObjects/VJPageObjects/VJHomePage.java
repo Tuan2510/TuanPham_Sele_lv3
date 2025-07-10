@@ -8,12 +8,14 @@ import utils.LanguageManager;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 
 import static com.codeborne.selenide.Condition.appear;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
@@ -37,6 +39,7 @@ public class VJHomePage {
 
     private final SelenideElement departureDateBtn = $x(String.format("//div[@role='button'][.//p[contains(text(), '%s')]]", LanguageManager.get("departure_date")));
     private final SelenideElement lowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='secondary']");
+    private final SelenideElement passengerLowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='primary']");
     private final SelenideElement letsGoBtn = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
     private final SelenideElement passengerLetsGoBtn = $x(String.format("//button[span/span[text()=\"%s\"]]", LanguageManager.get("lets_go")));
 
@@ -133,28 +136,28 @@ public class VJHomePage {
         }
 
         navigateToTargetMonth(departDate);
-        departDateBtn.shouldBe(Condition.visible).click();
+        departDateBtn.shouldBe(visible).click();
 
         navigateToTargetMonth(returnDate);
-        returnDayBtn.shouldBe(Condition.visible).click();
+        returnDayBtn.shouldBe(visible).click();
     }
 
     @Step("Navigate to target month in the calendar")
     private void navigateToTargetMonth(LocalDate targetDate){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", getLocale());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(LanguageManager.get("month_year_format"), getLocale());
 
         YearMonth target = YearMonth.from(targetDate);
 
         for (int i = 0; i < 24; i++) { // avoid infinite loop
-            String displayedText = currentMonthLabel.getText().trim();
+            String displayedText = currentMonthLabel.getText().replace("Tháng", "").trim();
             YearMonth current = YearMonth.parse(displayedText, formatter);
 
             if (current.equals(target)) break;
 
             if (current.isBefore(target)) {
-                nextButton.shouldBe(Condition.visible).click();
+                nextButton.shouldBe(visible).click();
             } else {
-                prevButton.shouldBe(Condition.visible).click();
+                prevButton.shouldBe(visible).click();
             }
 
             currentMonthLabel.shouldHave(Condition.text(
@@ -194,9 +197,11 @@ public class VJHomePage {
         }
     }
 
-    private void selectCheapestFlightOption() {
-        if (!lowestPriceChb.isSelected()) {
-            lowestPriceChb.setSelected(true);
+    private void checkLowestPriceCheckbox() {
+        try {
+            passengerLowestPriceChb.click();
+        } catch (Exception e) {
+            lowestPriceChb.click();
         }
     }
 
@@ -234,21 +239,22 @@ public class VJHomePage {
         findTicket();
     }
 
-    public void searchCheapestTicket(FlightDataObject data) {
+    @Step("Search for tickets with lowest fare option")
+    public void searchTicketWithLowestOption(FlightDataObject data){
         chooseFlightType(data.getFlightType());
         selectDepartureLocation(data.getDepartmentLocation());
         selectDestinationLocation(data.getDestinationLocation());
 
         LocalDate departLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
         LocalDate returnLocalDate = departLocalDate.plusDays(data.getReturnAfterDays());
-
         selectRoundTripDate(departLocalDate, returnLocalDate);
 
         selectPassengerNumber(
                 data.getFlightPassengerDataObject().getAdults(),
                 data.getFlightPassengerDataObject().getChildren(),
                 data.getFlightPassengerDataObject().getInfants());
-        selectCheapestFlightOption();
+
+        checkLowestPriceCheckbox();
         findTicket();
     }
 }

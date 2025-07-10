@@ -123,7 +123,7 @@ public class VJSelectTicketPage {
     @Step("Verify that there are no sold out tickets")
     private SelenideElement findCheapestTicket(){
         SelenideElement lowest = availableTicketCollection.get(0);
-        int lowestPrice = parsePrice(availableTicketCollection.get(0).getText().trim());
+        int lowestPrice = parsePrice(lowest.getText().trim());
         for (int i = 1; i < availableTicketCollection.size(); i++) {
             scrollToElement(availableTicketCollection.get(i));
             int price = parsePrice(availableTicketCollection.get(i).getText().trim());

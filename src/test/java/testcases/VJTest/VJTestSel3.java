@@ -22,7 +22,8 @@ public class VJTestSel3 extends TestBase{
      * Verify that user can search and select VietJet flights using provided data.
      */
     @Description("Validate flight booking flow on VietJet")
-    @Test(dataProvider = "getData", retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
+    @Test(dataProvider = "getData", description = "Search and choose tickets on a specific day successfully",
+            retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
     public void TC01(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
@@ -53,5 +54,27 @@ public class VJTestSel3 extends TestBase{
         logHelper.logStep("Step #9: Verify flight ticket info correct");
         passengerInputPage.verifyTicketInfo(data.getDepartmentLocation(), data.getDestinationLocation(),
                 data.getDepartAfterDays(), data.getReturnAfterDays());
+    }
+
+    @Test(dataProvider = "getData", description = "Search and choose cheapest tickets on next 3 months successfully",
+            retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
+    public void TC02(FlightDataObject data) {
+        logHelper.logStep("Step #1: Navigate to VietJet Air site");
+        DriverFactory.openHomePage();
+
+        logHelper.logStep("Step #2: Navigate to VietJet Air site");
+        homePage.verifyPageDisplayInVietnamese();
+
+        logHelper.logStep("Step #3: Close banners and alert if present");
+        homePage.closeCookiesBanner();
+        homePage.closeOfferAlert();
+
+        logHelper.logStep("Step #4: Fill search form and search for ticket");
+        homePage.searchTicketWithLowestOption(data);
+
+        logHelper.logStep("Step #5: Verify travel options page displayed");
+//        selectFlightCheapPage.verifyTFlightCheapPageDisplayed();
+
+
     }
 }
