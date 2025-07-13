@@ -80,7 +80,22 @@ public class VJTestSel3 extends TestBase{
         selectFlightCheapPage.verifySelectFlightCheapPageDisplayed();
 
         logHelper.logStep("Step #6: Select cheapest month flight ticket");
-        selectFlightCheapPage.selectMonthFlight(data.getDepartAfterMonths(), data.getReturnAfterMonths());
+        selectFlightCheapPage.selectMonthFlight(data.getDepartAfterMonths(), data.getReturnAfterMonths(), data.getReturnAfterDays());
+        selectFlightCheapPage.clickContinueButton();
+
+        logHelper.logStep("Step #5: Verify travel options page displayed");
+        selectTicketPage.verifyTravelOptionPageDisplayed();
+
+        logHelper.logStep("Step #6: Verify flight information");
+        selectTicketPage.verifyFlightInfo(data);
+
+        logHelper.logStep("Step #7: Continue to Passenger page");
+        selectTicketPage.continueToPassengerPage();
+
+        logHelper.logStep("Step #8: Verify passenger info page displayed");
+        passengerInputPage.verifyPassengerPageDisplayed();
+
+        logHelper.logStep("Step #9: Verify flight ticket info correct");
 
 
     }

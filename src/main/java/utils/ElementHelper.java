@@ -1,11 +1,16 @@
 package utils;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Driver;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebElementCondition;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.List;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -117,4 +122,5 @@ public class ElementHelper {
     public static boolean isElementDisplayed(SelenideElement element){
         return isElementDisplayed(element, 10);
     }
+
 }

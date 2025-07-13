@@ -24,8 +24,9 @@
       "departmentLocationCode": " ( SGN )",
       "destinationLocation": "Hà Nội",
       "destinationLocationCode": " ( HAN )",
-      "departAfterMonths": 1,
+      "departAfterMonths": 0,
       "returnAfterMonths": 3,
+      "returnAfterDays": 3,
       "flightPassengerDataObject": {
         "adults": 2,
         "children": 0,

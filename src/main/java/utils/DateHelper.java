@@ -2,6 +2,7 @@ package utils;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -31,5 +32,10 @@ public class DateHelper {
         } catch (IllegalArgumentException | DateTimeException e) {
             throw new RuntimeException("Invalid date format: " + format, e);
         }
+    }
+
+    public static YearMonth parseYearMonth(String text) {
+        String sanitized = text.replaceAll("[^0-9/]", "").trim();
+        return YearMonth.parse(sanitized, DateTimeFormatter.ofPattern("MM/yyyy", Locale.US));
     }
 }
