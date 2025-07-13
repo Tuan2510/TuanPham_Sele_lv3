@@ -47,7 +47,13 @@ public class VJTestSel3 extends TestBase{
         selectTicketPage.verifyTravelOptionPageDisplayed();
 
         logHelper.logStep("Step #6: Verify flight information");
-        selectTicketPage.verifyFlightInfo(data);
+        String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
+        String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
+        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
+
+        selectTicketPage.verifyFlightInfo(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
+                data.getFlightPassengerDataObject(), expectedDepartLocalDate, expectedReturnLocalDate);
 
         logHelper.logStep("Step #7: Continue to Passenger page");
         selectTicketPage.continueToPassengerPage();
@@ -83,19 +89,29 @@ public class VJTestSel3 extends TestBase{
         selectFlightCheapPage.selectMonthFlight(data.getDepartAfterMonths(), data.getReturnAfterMonths(), data.getReturnAfterDays());
         selectFlightCheapPage.clickContinueButton();
 
-        logHelper.logStep("Step #5: Verify travel options page displayed");
+        logHelper.logStep("Step #7: Close banners and alert if present");
+        homePage.closeCookiesBanner();
+        homePage.closeOfferAlert();
+
+        logHelper.logStep("Step #8: Verify travel options page displayed");
         selectTicketPage.verifyTravelOptionPageDisplayed();
 
-        logHelper.logStep("Step #6: Verify flight information");
-        selectTicketPage.verifyFlightInfo(data);
+        logHelper.logStep("Step #9: Verify flight information");
+        String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
+        String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
+        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
 
-        logHelper.logStep("Step #7: Continue to Passenger page");
+        selectTicketPage.verifyFlightInfo(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
+                data.getFlightPassengerDataObject(), expectedDepartLocalDate, expectedReturnLocalDate);
+
+        logHelper.logStep("Step #10: Continue to Passenger page");
         selectTicketPage.continueToPassengerPage();
 
-        logHelper.logStep("Step #8: Verify passenger info page displayed");
+        logHelper.logStep("Step #11: Verify passenger info page displayed");
         passengerInputPage.verifyPassengerPageDisplayed();
 
-        logHelper.logStep("Step #9: Verify flight ticket info correct");
+        logHelper.logStep("Step #12: Verify flight ticket info correct");
 
 
     }

@@ -6,10 +6,13 @@ import io.qameta.allure.Step;
 import testDataObject.VJTest.FlightDataObject;
 import testDataObject.VJTest.FlightCardInfo;
 import testDataObject.VJTest.FlightCardDataHolder;
+import testDataObject.VJTest.FlightPassengerDataObject;
 import utils.LanguageManager;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.Locale;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
@@ -60,7 +63,13 @@ public class VJSelectTicketPage {
 
     @Step("Select flight type")
     public void closeAdPanelButton(){
-        clickWhenReady(closeAdPanelButton);
+        if (alertOfferLaterBtn.isDisplayed()) {
+            switchToIframe(alertOfferLaterBtn);
+            if (closeAdPanelButton.isDisplayed()) {
+                clickWhenReady(closeAdPanelButton);
+            }
+            switchToDefault();
+        }
     }
 
     @Step("Verify that the travel options page is displayed")
@@ -143,10 +152,25 @@ public class VJSelectTicketPage {
 
     @Step("Verify flight date on the travel options page")
     private void verifyFlightDate(LocalDate expectedLocalDate){
-        String expectedDate = String.format("%s %d%s",
-                expectedLocalDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()),
-                expectedLocalDate.getDayOfMonth(),
-                getNumberSuffix(expectedLocalDate.getDayOfMonth()));
+        Locale locale = getLocale();
+        String formatPattern = LanguageManager.get("date_display_format");
+
+        String expectedDate = "";
+        switch (locale.toString().toLowerCase()){
+            case "vi-vn" -> expectedDate = expectedLocalDate.format(DateTimeFormatter.ofPattern(formatPattern, locale));
+            case "en-us" -> {
+                String suffix = getNumberSuffix(expectedLocalDate.getDayOfMonth());
+                String patternWithSuffix = String.format(formatPattern, suffix);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(patternWithSuffix, locale);
+                expectedDate = expectedLocalDate.format(formatter);
+            }
+            default -> { //fallback for other locales is en-us
+                String suffix = getNumberSuffix(expectedLocalDate.getDayOfMonth());
+                String patternWithSuffix = String.format(formatPattern, suffix);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(patternWithSuffix, locale);
+                expectedDate = expectedLocalDate.format(formatter);
+            }
+        }
 
         selectingDate.shouldHave(exactText(expectedDate));
     }
@@ -161,29 +185,39 @@ public class VJSelectTicketPage {
     }
 
     /**
-     * Verify information displayed on the flight selection page matches expected data.
-     * @param data flight data used to verify UI
+     * Verify flight information on the travel options page.
+     *
+     * @param departAddress The departure address.
+     * @param destinationAddress The destination address.
+     * @param flightTypeCode The flight type code (e.g., "One-way", "Return").
+     * @param flightPassengerDataObject The flight passenger data object containing passenger details.
+     * @param departLocalDate The departure date.
+     * @param returnLocalDate The return date (if applicable).
      */
     @Step("Verify flight information on the travel options page")
-    public void verifyFlightInfo(FlightDataObject data){
+    public void verifyFlightInfo(String departAddress, String destinationAddress, String flightTypeCode
+            , FlightPassengerDataObject flightPassengerDataObject, LocalDate departLocalDate, LocalDate returnLocalDate) {
         verifyTravelOptionPageDisplayed();
+
+        //close offer alert if displayed
+        closeOfferAlert();
 
         //verify currency
         verifyCurrency("VND");
 
         //verify flight depart and return address
-        String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
-        String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
-        verifyFlightLocation(expectedDepartAddress, expectedDestinationAddress);
+//        String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
+//        String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
+        verifyFlightLocation(departAddress, destinationAddress);
 
         //verify flight type and passenger
-        String expectedFlightTypeAndPassenger = String.format("%s | %s", data.getFlightTypeCode(),
-                data.getFlightPassengerDataObject().getStringFlightPassenger());
+        String expectedFlightTypeAndPassenger = String.format("%s | %s", flightTypeCode,
+                flightPassengerDataObject.getStringFlightPassenger());
         verifyFlightTypeAndPassenger(expectedFlightTypeAndPassenger);
 
         //verify depart date
-        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
-        verifyFlightDate(expectedDepartLocalDate);
+//        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        verifyFlightDate(departLocalDate);
 
         //select lowest ticket and save the flight card info
         SelenideElement lowestDepart = findCheapestTicket();
@@ -194,8 +228,8 @@ public class VJSelectTicketPage {
         continueButton.click();
 
         //verify return date
-        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
-        verifyFlightDate(expectedReturnLocalDate);
+//        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
+        verifyFlightDate(returnLocalDate);
 
         //select lowest ticket and save the flight card info
         SelenideElement lowestReturn = findCheapestTicket();

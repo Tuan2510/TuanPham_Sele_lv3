@@ -126,12 +126,23 @@ public class VJSelectFlightCheapPage {
         SelenideElement cheapestTicket = ticketCollection.first();
         int lowestPrice = NumberHelper.parsePrice(cheapestTicket.$x(ticketPriceAdditionalXpath).getText());
 
-        for (SelenideElement ticket : ticketCollection) {
-            scrollToElement(ticket);
-            int currentPrice = NumberHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
-            if (currentPrice < lowestPrice) {
-                cheapestTicket = ticket;
-                lowestPrice = currentPrice;
+        for (int i = 0; i < ticketCollection.size(); i++) {
+            int attempts = 0;
+            while (attempts < 2) {
+                try {
+                    SelenideElement ticket = ticketCollection.get(i);
+                    scrollToElement(ticket);
+                    int currentPrice = NumberHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
+                    if (currentPrice < lowestPrice) {
+                        cheapestTicket = ticket;
+                        lowestPrice = currentPrice;
+                    }
+                    break;
+                } catch (StaleElementReferenceException e) {
+                    // re-fetch elements if the DOM has changed
+                    ticketCollection = $$x(availableTicketListXpath.formatted(dynamicValue));
+                    attempts++;
+                }
             }
         }
 
