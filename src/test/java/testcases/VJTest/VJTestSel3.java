@@ -7,6 +7,7 @@ import pageObjects.VJPageObjects.VJHomePage;
 import pageObjects.VJPageObjects.VJPassengerInputPage;
 import pageObjects.VJPageObjects.VJSelectFlightCheapPage;
 import pageObjects.VJPageObjects.VJSelectTicketPage;
+import testDataObject.VJTest.CheapestTicketDate;
 import testDataObject.VJTest.FlightDataObject;
 import testcases.TestBase;
 import utils.RetryAnalyzer;
@@ -63,7 +64,7 @@ public class VJTestSel3 extends TestBase{
 
         logHelper.logStep("Step #9: Verify flight ticket info correct");
         passengerInputPage.verifyTicketInfo(data.getDepartmentLocation(), data.getDestinationLocation(),
-                data.getDepartAfterDays(), data.getReturnAfterDays());
+                expectedDepartLocalDate, expectedReturnLocalDate);
     }
 
     @Test(dataProvider = "getData", description = "Search and choose cheapest tickets on next 3 months successfully",
@@ -86,7 +87,8 @@ public class VJTestSel3 extends TestBase{
         selectFlightCheapPage.verifySelectFlightCheapPageDisplayed();
 
         logHelper.logStep("Step #6: Select cheapest month flight ticket");
-        selectFlightCheapPage.selectMonthFlight(data.getDepartAfterMonths(), data.getReturnAfterMonths(), data.getReturnAfterDays());
+        CheapestTicketDate cheapestDate = selectFlightCheapPage.selectCheapestTicketDates(
+                data.getDepartAfterMonths(), data.getReturnAfterMonths(), data.getReturnAfterDays());
         selectFlightCheapPage.clickContinueButton();
 
         logHelper.logStep("Step #7: Close banners and alert if present");
@@ -99,8 +101,8 @@ public class VJTestSel3 extends TestBase{
         logHelper.logStep("Step #9: Verify flight information");
         String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
         String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
-        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
-        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
+        LocalDate expectedDepartLocalDate = cheapestDate.getDepartDate();
+        LocalDate expectedReturnLocalDate = cheapestDate.getReturnDate();
 
         selectTicketPage.verifyFlightInfo(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
                 data.getFlightPassengerDataObject(), expectedDepartLocalDate, expectedReturnLocalDate);
@@ -112,7 +114,7 @@ public class VJTestSel3 extends TestBase{
         passengerInputPage.verifyPassengerPageDisplayed();
 
         logHelper.logStep("Step #12: Verify flight ticket info correct");
-
-
+        passengerInputPage.verifyTicketInfo(data.getDepartmentLocation(), data.getDestinationLocation(),
+                expectedDepartLocalDate, expectedReturnLocalDate);
     }
 }

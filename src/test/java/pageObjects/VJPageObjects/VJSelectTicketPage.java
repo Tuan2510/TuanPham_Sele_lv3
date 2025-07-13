@@ -21,6 +21,7 @@ import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.ElementHelper.clickWhenReady;
+import static utils.ElementHelper.isElementDisplayed;
 import static utils.ElementHelper.scrollToElement;
 import static utils.ElementHelper.switchToDefault;
 import static utils.ElementHelper.switchToIframe;
@@ -38,10 +39,12 @@ public class VJSelectTicketPage {
     private final ElementsCollection availableTicketCollection = $$x("//div[p[contains(text(), '000 VND')]]/p[contains(@class, 'MuiTypography-h4')]");
 
     private final SelenideElement selectingDate = $("div[class*='lick-current'] p[weight='Bold']");
-    private final SelenideElement continueButton = $x("//button[.//span[text()='Continue']]");
+    private final SelenideElement continueButton = $x(String.format("//button[.//span[text()='%s']]", LanguageManager.get("continue")));
 
     //Dynamic Locators
     private final String flightPrice = "//div[p[contains(text(),'%s')]]//h4";
+    private final String flightIdAdditionalXpath = "./div//span[contains(text(), 'VJ')]/ancestor::div[1]";
+    private final String timeAdditionalXpath = String.format("./div//span[contains(text(), '%s')]/ancestor::div[1]", LanguageManager.get("time_to"));
 
     //Variable
     private final String flightCardAdditionalXpath = "ancestor::div[3]/preceding-sibling::div";
@@ -63,12 +66,8 @@ public class VJSelectTicketPage {
 
     @Step("Select flight type")
     public void closeAdPanelButton(){
-        if (alertOfferLaterBtn.isDisplayed()) {
-            switchToIframe(alertOfferLaterBtn);
-            if (closeAdPanelButton.isDisplayed()) {
-                clickWhenReady(closeAdPanelButton);
-            }
-            switchToDefault();
+        if (isElementDisplayed(closeAdPanelButton) ) {
+            clickWhenReady(closeAdPanelButton);
         }
     }
 
@@ -177,8 +176,8 @@ public class VJSelectTicketPage {
 
     @Step("Extract flight information from the ticket element")
     private FlightCardInfo extractFlightInfo(SelenideElement ticketElement, String flightType){
-        String flightId = ticketElement.$x("./div//span[contains(text(), 'VJ')]/ancestor::div[1]").getText();
-        String time  = ticketElement.$x("./div//span[contains(text(), 'To')]/ancestor::div[1]").getText();
+        String flightId = ticketElement.$x(flightIdAdditionalXpath).getText();
+        String time  = ticketElement.$x(timeAdditionalXpath).getText();
         String price = $x(flightPrice.formatted(flightType)).getText();
 
         return new FlightCardInfo(flightId, time, price);
@@ -200,14 +199,12 @@ public class VJSelectTicketPage {
         verifyTravelOptionPageDisplayed();
 
         //close offer alert if displayed
-        closeOfferAlert();
+       closeAdPanelButton();
 
         //verify currency
         verifyCurrency("VND");
 
         //verify flight depart and return address
-//        String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
-//        String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
         verifyFlightLocation(departAddress, destinationAddress);
 
         //verify flight type and passenger
@@ -216,7 +213,6 @@ public class VJSelectTicketPage {
         verifyFlightTypeAndPassenger(expectedFlightTypeAndPassenger);
 
         //verify depart date
-//        LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
         verifyFlightDate(departLocalDate);
 
         //select lowest ticket and save the flight card info
@@ -228,7 +224,6 @@ public class VJSelectTicketPage {
         continueButton.click();
 
         //verify return date
-//        LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
         verifyFlightDate(returnLocalDate);
 
         //select lowest ticket and save the flight card info

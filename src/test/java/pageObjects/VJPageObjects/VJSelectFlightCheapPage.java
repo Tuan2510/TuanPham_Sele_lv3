@@ -7,15 +7,13 @@ import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.StaleElementReferenceException;
 import utils.LanguageManager;
 import utils.NumberHelper;
+import testDataObject.VJTest.CheapestTicketDate;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
@@ -158,8 +156,8 @@ public class VJSelectFlightCheapPage {
         clickWhenReady(cheapestTicket);
     }
 
-    //need to update this method to choose the return flight is three days after the departure flight
-    public void selectMonthFlight(int departAfterMonths, int returnAfterMonths, int returnFlightAfterDays) {
+    public CheapestTicketDate selectCheapestTicketDates(int departAfterMonths, int returnAfterMonths, int returnFlightAfterDays) {
+        CheapestTicketDate ticketDate = new CheapestTicketDate();
         LocalDate departLocalDate = LocalDate.now().plusMonths(departAfterMonths);
         LocalDate returnLocalDate = departLocalDate.plusMonths(returnAfterMonths);
 
@@ -173,19 +171,22 @@ public class VJSelectFlightCheapPage {
         //select the cheapest flight ticket in the departure month
         SelenideElement cheapestDepartTicket = findCheapestFlightTicket(LanguageManager.get("departure_flight"));
         selectFlight(lowestYearMonth, LanguageManager.get("departure_flight"), cheapestDepartTicket);
+        int departDay = Integer.parseInt(cheapestDepartTicket.$(ticketDateSelector).getText().trim());
+        LocalDate departDate = lowestYearMonth.atDay(departDay);
+        ticketDate.setDepartDate(departDate);
 
         //navigate to the same month for return flight
         navigateToTargetMonth(lowestYearMonth, LanguageManager.get("return_flight"));
 
-        int departDay = Integer.parseInt(cheapestDepartTicket.$(ticketDateSelector).getText().trim());
-        LocalDate returnDate = lowestYearMonth.atDay(departDay).plusDays(returnFlightAfterDays);
-
+        LocalDate returnDate = departDate.plusDays(returnFlightAfterDays);
         waitForMonthToLoad(LanguageManager.get("return_flight"));
 
         // choose the return flight ticket
         ElementsCollection returnTicketList = $$x(availableTicketListXpath.formatted(LanguageManager.get("return_flight")));
         SelenideElement returnTicket = returnTicketList.find(text(String.valueOf(returnDate.getDayOfMonth())));
         selectFlight(lowestYearMonth, LanguageManager.get("return_flight"), returnTicket);
+        ticketDate.setReturnDate(returnDate);
+        return ticketDate;
     }
 
     public void verifySelectFlightCheapPageDisplayed() {
