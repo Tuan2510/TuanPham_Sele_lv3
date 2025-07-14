@@ -1,10 +1,12 @@
 package pageObjects.VJPageObjects;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.ElementHelper;
 import utils.LanguageManager;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -55,10 +57,12 @@ public class VJPassengerInputPage {
     @Step("Verify that the flight information is correct")
     private void verifyDepartAndReturnLocation(String departLocation, String returnLocation){
         SelenideElement flightDepartLocations = $x(flightLocationXpath.formatted(LanguageManager.get("departure_flight")));
+        flightDepartLocations.shouldBe(Condition.visible, Duration.ofSeconds(5));
         flightDepartLocations.shouldHave(text(departLocation));
         flightDepartLocations.shouldHave(text(returnLocation));
 
         SelenideElement flightReturnLocations = $x(flightLocationXpath.formatted(LanguageManager.get("return_flight")));
+        flightReturnLocations.shouldBe(Condition.visible, Duration.ofSeconds(5));
         flightReturnLocations.shouldHave(text(departLocation));
         flightReturnLocations.shouldHave(text(returnLocation));
     }

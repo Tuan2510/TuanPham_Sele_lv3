@@ -4,7 +4,7 @@
         <listener class-name="utils.TestListener"/>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
     </listeners>
-    <test name="VietJet Test Suite EN">
+    <test name="VietJet EN Test Suite">
         <parameter name="browser" value="chrome"/>
         <parameter name="language" value="en-us"/>
         <parameter name="env" value="stg"/>
@@ -16,7 +16,24 @@
         <classes>
             <class name="testcases.VJTest.VJTestSel3">
                 <methods>
-                    <include name="TC01"/>
+                    <include name="TC01_SearchCheapestTicketsInDayTest"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test name="VietJet VI Test Suite">
+        <parameter name="browser" value="chrome"/>
+        <parameter name="language" value="vi-vn"/>
+        <parameter name="env" value="stg"/>
+        <groups>
+            <run>
+                <include name="VJRegression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="testcases.VJTest.VJTestSel3">
+                <methods>
+                    <include name="TC02_SearchCheapestTicketsInNextThreeMonthsTest"/>
                 </methods>
             </class>
         </classes>

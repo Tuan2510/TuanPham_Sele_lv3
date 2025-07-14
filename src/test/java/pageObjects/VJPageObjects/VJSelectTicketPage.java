@@ -3,15 +3,14 @@ package pageObjects.VJPageObjects;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
-import testDataObject.VJTest.FlightDataObject;
 import testDataObject.VJTest.FlightCardInfo;
 import testDataObject.VJTest.FlightCardDataHolder;
 import testDataObject.VJTest.FlightPassengerDataObject;
 import utils.LanguageManager;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
 import java.util.Locale;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
@@ -77,9 +76,9 @@ public class VJSelectTicketPage {
     }
 
     @Step("Verify currency on the travel options page")
-    private void verifyCurrency(String currentcy) {
+    private void verifyCurrency(String currency) {
         // Locate any element that contains the text "VND"
-        $$("p.MuiTypography-root").findBy(text(currentcy)).shouldBe(visible);
+        $$("p.MuiTypography-root").findBy(text(currency)).shouldBe(visible, Duration.ofSeconds(5));
         availableTicketCollection.shouldHave(sizeGreaterThan(0));
     }
 
@@ -194,12 +193,12 @@ public class VJSelectTicketPage {
      * @param returnLocalDate The return date (if applicable).
      */
     @Step("Verify flight information on the travel options page")
-    public void verifyFlightInfo(String departAddress, String destinationAddress, String flightTypeCode
+    public void selectTicket(String departAddress, String destinationAddress, String flightTypeCode
             , FlightPassengerDataObject flightPassengerDataObject, LocalDate departLocalDate, LocalDate returnLocalDate) {
         verifyTravelOptionPageDisplayed();
 
         //close offer alert if displayed
-       closeAdPanelButton();
+        closeAdPanelButton();
 
         //verify currency
         verifyCurrency("VND");

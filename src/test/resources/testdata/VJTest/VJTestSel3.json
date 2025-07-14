@@ -1,5 +1,5 @@
 {
-  "TC01": [
+  "TC01_SearchCheapestTicketsInDayTest": [
     {
       "flightType": "ROUND_TRIP",
       "flightTypeCode": "RETURN",
@@ -16,7 +16,7 @@
       }
     }
   ],
-  "TC02": [
+  "TC02_SearchCheapestTicketsInNextThreeMonthsTest": [
     {
       "flightType": "Khứ hồi",
       "flightTypeCode": "RETURN",

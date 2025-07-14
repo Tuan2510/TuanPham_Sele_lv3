@@ -50,6 +50,7 @@ public class ElementHelper {
             logger.warn("Standard click failed, trying JavaScript click. Reason: {}", e.getMessage());
             executeJavaScript("arguments[0].click();", selector);
         }
+        sleep(1000);
     }
 
     /**
@@ -95,6 +96,7 @@ public class ElementHelper {
             logger.warn("Failed to scroll to element: {}. Reason: {}", element, e.getMessage());
             executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
         }
+//        sleep(500);
     }
 
     /**
@@ -111,14 +113,21 @@ public class ElementHelper {
     }
 
     public static boolean isElementDisplayed(SelenideElement element, int timeoutSeconds) {
-        try {
-            element.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+        long end = System.currentTimeMillis() + timeoutSeconds * 1000L;
 
+        while (System.currentTimeMillis() < end) {
+            try {
+                if (element.exists() && element.isDisplayed()) {
+                    return true;
+                }
+            } catch (Exception ignored) {
+                // ignore and retry until timeout
+            }
+//            sleep(500);
+        }
+
+        return false;
+    }
     public static boolean isElementDisplayed(SelenideElement element){
         return isElementDisplayed(element, 10);
     }

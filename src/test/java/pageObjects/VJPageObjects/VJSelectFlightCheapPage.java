@@ -4,6 +4,7 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 import org.openqa.selenium.StaleElementReferenceException;
 import utils.LanguageManager;
 import utils.NumberHelper;
@@ -20,15 +21,23 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.sleep;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.DateHelper.parseYearMonth;
 import static utils.ElementHelper.clickWhenReady;
+import static utils.ElementHelper.isElementDisplayed;
 import static utils.ElementHelper.scrollToElement;
+import static utils.ElementHelper.switchToDefault;
+import static utils.ElementHelper.switchToIframe;
 
 public class VJSelectFlightCheapPage {
     // Locators
+    private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
+    private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
+    private final SelenideElement closeAdPanelButton = $("button.MuiButtonBase-root[aria-label='close']");
     private final SelenideElement continueButton = $("div.MuiBox-root > button.MuiButtonBase-root");
+    private final SelenideElement selectingSampleColorElement = $x(String.format("//div[h5[text()='%s']]/div[2]", LanguageManager.get("selecting")));
 
     // Dynamic Locators
     private final String prevMonthButtonXpath = "//div[div/p[contains(text(), '%s')]]//div[@class='slick-slider slick-initialized']//button[1]";
@@ -44,6 +53,27 @@ public class VJSelectFlightCheapPage {
     private final String ticketPriceAdditionalXpath = ".//span[not(contains(normalize-space(), 'VND'))]";
 
     // Methods
+    @Step("Close offer alert if displayed")
+    public void closeOfferAlert() {
+        if (alertOfferIframe.isDisplayed()) {
+            switchToIframe(alertOfferIframe);
+
+            if (alertOfferLaterBtn.isDisplayed()) {
+                alertOfferLaterBtn.click();
+            }
+
+            switchToDefault();
+        }
+    }
+
+    @Step("Select flight type")
+    public void closeAdPanelButton(){
+        if (isElementDisplayed(closeAdPanelButton) ) {
+            clickWhenReady(closeAdPanelButton);
+        }
+    }
+
+
     private SelenideElement getPrevMonthButton(String dynamicValue) {
         return $x(prevMonthButtonXpath.formatted(dynamicValue));
     }
@@ -73,6 +103,10 @@ public class VJSelectFlightCheapPage {
             currentMonth = YearMonth.parse($x(currentMonthXpath.formatted(dynamicValue))
                     .$(monthDisplayValueSelector).getText(), formatter);
         }
+        //verify current month is displayed
+        $x(currentMonthXpath.formatted(dynamicValue))
+                .$(monthDisplayValueSelector).shouldHave(Condition.text(yearMonth.format(formatter)));
+
     }
 
     private void waitForMonthToLoad(String dynamicValue) {
@@ -153,10 +187,18 @@ public class VJSelectFlightCheapPage {
 
         //select the cheapest flight ticket
         scrollToElement(cheapestTicket);
+        sleep(1000);
         clickWhenReady(cheapestTicket);
+        sleep(1000);
+        String bgColor = selectingSampleColorElement.getCssValue("background-color");
+        cheapestTicket.shouldHave(Condition.cssValue("background-color", bgColor),
+                Duration.ofSeconds(10));
     }
 
     public CheapestTicketDate selectCheapestTicketDates(int departAfterMonths, int returnAfterMonths, int returnFlightAfterDays) {
+        closeOfferAlert();
+        closeAdPanelButton();
+
         CheapestTicketDate ticketDate = new CheapestTicketDate();
         LocalDate departLocalDate = LocalDate.now().plusMonths(departAfterMonths);
         LocalDate returnLocalDate = departLocalDate.plusMonths(returnAfterMonths);

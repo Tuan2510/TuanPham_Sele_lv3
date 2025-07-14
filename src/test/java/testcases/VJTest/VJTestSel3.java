@@ -23,13 +23,10 @@ public class VJTestSel3 extends TestBase{
     VJPassengerInputPage passengerInputPage = new VJPassengerInputPage();
     VJSelectFlightCheapPage selectFlightCheapPage = new VJSelectFlightCheapPage();
 
-    /**
-     * Verify that user can search and select VietJet flights using provided data.
-     */
     @Description("Validate flight booking flow on VietJet")
     @Test(dataProvider = "getData", description = "Search and choose tickets on a specific day successfully",
             retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
-    public void TC01(FlightDataObject data) {
+    public void TC01_SearchCheapestTicketsInDayTest(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
 
@@ -53,7 +50,7 @@ public class VJTestSel3 extends TestBase{
         LocalDate expectedDepartLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
         LocalDate expectedReturnLocalDate = expectedDepartLocalDate.plusDays(data.getReturnAfterDays());
 
-        selectTicketPage.verifyFlightInfo(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
+        selectTicketPage.selectTicket(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
                 data.getFlightPassengerDataObject(), expectedDepartLocalDate, expectedReturnLocalDate);
 
         logHelper.logStep("Step #7: Continue to Passenger page");
@@ -67,9 +64,10 @@ public class VJTestSel3 extends TestBase{
                 expectedDepartLocalDate, expectedReturnLocalDate);
     }
 
+    @Description("Search and choose cheapest tickets on next 3 months successfully")
     @Test(dataProvider = "getData", description = "Search and choose cheapest tickets on next 3 months successfully",
             retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
-    public void TC02(FlightDataObject data) {
+    public void TC02_SearchCheapestTicketsInNextThreeMonthsTest(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
 
@@ -104,7 +102,7 @@ public class VJTestSel3 extends TestBase{
         LocalDate expectedDepartLocalDate = cheapestDate.getDepartDate();
         LocalDate expectedReturnLocalDate = cheapestDate.getReturnDate();
 
-        selectTicketPage.verifyFlightInfo(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
+        selectTicketPage.selectTicket(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
                 data.getFlightPassengerDataObject(), expectedDepartLocalDate, expectedReturnLocalDate);
 
         logHelper.logStep("Step #10: Continue to Passenger page");
