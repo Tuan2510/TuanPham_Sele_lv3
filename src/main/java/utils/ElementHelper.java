@@ -4,7 +4,10 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Driver;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebElementCondition;
+import com.codeborne.selenide.ex.ElementNotFound;
+import com.codeborne.selenide.ex.UIAssertionError;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +99,6 @@ public class ElementHelper {
             logger.warn("Failed to scroll to element: {}. Reason: {}", element, e.getMessage());
             executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
         }
-//        sleep(500);
     }
 
     /**
@@ -113,23 +115,28 @@ public class ElementHelper {
     }
 
     public static boolean isElementDisplayed(SelenideElement element, int timeoutSeconds) {
-        long end = System.currentTimeMillis() + timeoutSeconds * 1000L;
-
-        while (System.currentTimeMillis() < end) {
-            try {
-                if (element.exists() && element.isDisplayed()) {
-                    return true;
-                }
-            } catch (Exception ignored) {
-                // ignore and retry until timeout
-            }
-//            sleep(500);
+        try {
+            element.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds));
+            return true;
+        } catch (NoSuchElementException | UIAssertionError e) {
+            return false;
         }
-
-        return false;
     }
+
     public static boolean isElementDisplayed(SelenideElement element){
         return isElementDisplayed(element, 10);
     }
 
+    public static boolean isElementClickable(SelenideElement element, int timeoutSeconds) {
+        try {
+            element.shouldBe(Condition.clickable, Duration.ofSeconds(timeoutSeconds));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean isElementClickable(SelenideElement element){
+        return isElementClickable(element, 10);
+    }
 }

@@ -8,7 +8,6 @@ import utils.LanguageManager;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +21,7 @@ import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.DateHelper.getFormattedDate;
+import static utils.ElementHelper.isElementClickable;
 import static utils.ElementHelper.isElementDisplayed;
 import static utils.LanguageManager.getLocale;
 
@@ -258,9 +258,9 @@ public class VJHomePage {
      * This method attempts to click the passenger-specific checkbox first, falling back to the general checkbox if it fails.
      */
     private void checkLowestPriceCheckbox() {
-        try {
+        if (isElementClickable(passengerLowestPriceChb)) {
             passengerLowestPriceChb.click();
-        } catch (Exception e) {
+        } else {
             lowestPriceChb.click();
         }
     }
