@@ -50,6 +50,10 @@ public class VJSelectTicketPage {
     public static final ThreadLocal<FlightCardDataHolder> filghtCardDataHolderThreadLocal = ThreadLocal.withInitial(FlightCardDataHolder::new);
 
     //methods
+    /**
+     * Close the offer alert if it is displayed.
+     * This method switches to the iframe containing the alert and clicks the "Later" button if it is visible.
+     */
     @Step("Close offer alert if displayed")
     public void closeOfferAlert() {
         if (alertOfferIframe.isDisplayed()) {
@@ -63,6 +67,10 @@ public class VJSelectTicketPage {
         }
     }
 
+    /**
+     * Close the advertisement panel if it is displayed.
+     * This method checks if the close button for the ad panel is visible and clicks it.
+     */
     @Step("Select flight type")
     public void closeAdPanelButton(){
         if (isElementDisplayed(closeAdPanelButton) ) {
@@ -70,6 +78,10 @@ public class VJSelectTicketPage {
         }
     }
 
+    /**
+     * Verify that the travel options page is displayed by checking the URL.
+     * This method uses Selenide's webdriver to assert that the current URL contains "/select-flight".
+     */
     @Step("Verify that the travel options page is displayed")
     public void verifyTravelOptionPageDisplayed(){
         webdriver().shouldHave(urlContaining("/select-flight"));

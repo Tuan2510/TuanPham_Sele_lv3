@@ -62,19 +62,11 @@ public class VJHomePage {
         webdriver().shouldHave(urlContaining("/vi"));
     }
 
-    /**
-     * Verifies that the passenger input page is displayed by checking the URL.
-     * This method uses Selenide's webdriver to assert that the current URL contains "/passengers".
-     */
     @Step("Get flight input section for type: {type}")
     private SelenideElement getFlightInputSection(String dynamicValue) {
         return $x(TicketInput.formatted(dynamicValue));
     }
 
-    /**
-     * Verifies that the passenger input page is displayed by checking the URL.
-     * This method uses Selenide's webdriver to assert that the current URL contains "/passengers".
-     */
     @Step("Close cookies banner if displayed")
     public void closeCookiesBanner() {
         if (acceptCookiesBtn.isDisplayed()) {
@@ -99,10 +91,6 @@ public class VJHomePage {
         }
     }
 
-    /**
-     * Verifies that the passenger input page is displayed by checking the URL.
-     * This method uses Selenide's webdriver to assert that the current URL contains "/passengers".
-     */
     @Step("Select flight type")
     private void chooseFlightType(FlightType type){
         if (type == FlightType.ROUND_TRIP){
@@ -116,10 +104,6 @@ public class VJHomePage {
         }
     }
 
-    /**
-     * Verifies that the passenger input page is displayed by checking the URL.
-     * This method uses Selenide's webdriver to assert that the current URL contains "/passengers".
-     */
     @Step("Select departure location for flight")
     private void selectDepartureLocation(String DepartAddress){
         SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DepartAddress));
@@ -133,10 +117,6 @@ public class VJHomePage {
         shadowLocationAddress.click();
     }
 
-    /**
-     * Verifies that the passenger input page is displayed by checking the URL.
-     * This method uses Selenide's webdriver to assert that the current URL contains "/passengers".
-     */
     @Step("Select destination location for flight")
     private void selectDestinationLocation(String DesAddress){
         SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DesAddress));
@@ -150,13 +130,6 @@ public class VJHomePage {
         shadowLocationAddress.click();
     }
 
-    /**
-     * Selects the departure date and return date for a round trip flight.
-     * This method uses Selenide to find the appropriate date buttons in the calendar and clicks them.
-     *
-     * @param departDate The departure date as a LocalDate object.
-     * @param returnDate The return date as a LocalDate object.
-     */
     @Step("Select departure date and return date for round trip flight")
     private void selectRoundTripDate(LocalDate departDate, LocalDate returnDate){
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
@@ -177,12 +150,6 @@ public class VJHomePage {
         returnDayBtn.shouldBe(visible).click();
     }
 
-    /**
-     * Navigates to the target month in the calendar by clicking next or previous buttons.
-     * This method uses a loop to ensure that the target month is reached, avoiding infinite loops.
-     *
-     * @param targetDate The target date to navigate to.
-     */
     @Step("Navigate to target month in the calendar")
     private void navigateToTargetMonth(LocalDate targetDate){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(LanguageManager.get("month_year_format"), getLocale());
@@ -207,14 +174,6 @@ public class VJHomePage {
         }
     }
 
-    /**
-     * Selects the number of passengers for the flight.
-     * This method adjusts the number of adults, children, and infants based on the provided parameters.
-     *
-     * @param numOfAdults   The number of adult passengers.
-     * @param numOfChildrens The number of child passengers.
-     * @param numOfInfants  The number of infant passengers.
-     */
     @Step("Select number of passenger in a flight")
     private void selectPassengerNumber(int numOfAdults, int numOfChildrens, int numOfInfants){
 
@@ -227,13 +186,6 @@ public class VJHomePage {
         adjustPassengerNumber("infants", numOfInfants);
     }
 
-    /**
-     * Adjusts the number of passengers for a specific passenger type (adults, children, infants).
-     * This method clicks the plus or minus buttons until the target number is reached.
-     *
-     * @param passengerKey The key for the passenger type (e.g., "adults", "children", "infants").
-     * @param target The target number of passengers to set.
-     */
     @Step("Adjust the number of passengers")
     private void adjustPassengerNumber(String passengerKey, int target){
         SelenideElement minusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get(passengerKey)));
@@ -253,10 +205,6 @@ public class VJHomePage {
         }
     }
 
-    /**
-     * Checks the checkbox for the lowest price option.
-     * This method attempts to click the passenger-specific checkbox first, falling back to the general checkbox if it fails.
-     */
     private void checkLowestPriceCheckbox() {
         if (isElementClickable(passengerLowestPriceChb)) {
             passengerLowestPriceChb.click();

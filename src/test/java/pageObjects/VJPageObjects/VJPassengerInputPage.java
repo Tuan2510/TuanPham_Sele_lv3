@@ -27,11 +27,6 @@ public class VJPassengerInputPage {
     private final String flightDateXpath = "//div[div/p[contains(text(),'%s')]]//h5[not(@variantlg='h4')]";
     private final String flightPrice = "//div[p[contains(text(),'%s')]]//h4";
 
-    /**
-     * Returns the SelenideElement representing the flight date section (Depart or Return)
-     * @param type either "Depart" or "Return"
-     * @return SelenideElement matching the flight date section
-     */
     @Step("Get flight date section for type: {type}")
     private SelenideElement getFlightDateSection(String type) {
         return $x(flightDateXpath.formatted(type));
@@ -47,13 +42,6 @@ public class VJPassengerInputPage {
         webdriver().shouldHave(urlContaining("/passengers"));
     }
 
-    /**
-     * Verifies that the flight information is correct by checking the departure and return locations.
-     * This method uses Selenide to find elements by their dynamic XPath and checks if they contain the expected text.
-     *
-     * @param departLocation The expected departure location for the flight.
-     * @param returnLocation The expected return location for the flight.
-     */
     @Step("Verify that the flight information is correct")
     private void verifyDepartAndReturnLocation(String departLocation, String returnLocation){
         SelenideElement flightDepartLocations = $x(flightLocationXpath.formatted(LanguageManager.get("departure_flight")));
@@ -67,13 +55,6 @@ public class VJPassengerInputPage {
         flightReturnLocations.shouldHave(text(returnLocation));
     }
 
-    /**
-     * Verifies the flight date and time for both departure and return flights.
-     * This method checks that the displayed dates match the expected LocalDate values.
-     *
-     * @param departLocalDate The expected departure date in LocalDate format.
-     * @param returnLocalDate The expected return date in LocalDate format.
-     */
     @Step("Verify the flight date and time")
     private void verifyFlightDate(LocalDate departLocalDate, LocalDate returnLocalDate){
         String departDate = formatShortDay(departLocalDate, LanguageManager.get("full_local_date_format"));
@@ -86,15 +67,6 @@ public class VJPassengerInputPage {
         flightReturnDate.shouldHave(text(returnDate));
     }
 
-    /**
-     * Verifies the flight ID and time for both departure and return flights.
-     * This method checks that the displayed flight IDs and times match the expected values.
-     *
-     * @param departFlightId The expected flight ID for the departure flight.
-     * @param departTime The expected time for the departure flight.
-     * @param returnFlightId The expected flight ID for the return flight.
-     * @param returnTime The expected time for the return flight.
-     */
     @Step("Verify the flight ID and time")
     private void verifyFlightIdAndTime(String departFlightId, String departTime, String returnFlightId, String returnTime){
         SelenideElement flightDepartDate = getFlightDateSection(LanguageManager.get("departure_flight"));
