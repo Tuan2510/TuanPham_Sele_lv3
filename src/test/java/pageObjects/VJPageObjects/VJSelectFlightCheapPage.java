@@ -127,25 +127,11 @@ public class VJSelectFlightCheapPage {
     }
 
     private int getTicketPrice(SelenideElement ticket) {
-        for (int i = 0; i < 2; i++) {
-            try {
-                return NumberHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
-            } catch (StaleElementReferenceException e) {
-                if (i == 1) throw e;
-            }
-        }
-        throw new RuntimeException("Cannot get ticket price");
+        return NumberHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
     }
 
     private int getTicketDay(SelenideElement ticket) {
-        for (int i = 0; i < 2; i++) {
-            try {
-                return Integer.parseInt(ticket.$(ticketDateSelector).getText().trim());
-            } catch (StaleElementReferenceException e) {
-                if (i == 1) throw e;
-            }
-        }
-        throw new RuntimeException("Cannot get ticket day");
+        return Integer.parseInt(ticket.$(ticketDateSelector).getText().trim());
     }
 
     private YearMonth findLowestPriceMonth(YearMonth startYearMonth, YearMonth endYearMonth, String dynamicValue) {
@@ -205,51 +191,40 @@ public class VJSelectFlightCheapPage {
         return getAvailableTickets(dynamicValue).find(text(String.valueOf(day)));
     }
 
-    private CheapestTicketDate findLowestTotalPriceTrip(YearMonth startMonth, int monthsRange, int returnAfterDays) {
+    private CheapestTicketDate findLowestTotalPriceTrip(YearMonth targetMonth, int returnAfterDays) {
         CheapestTicketDate result = new CheapestTicketDate();
         int lowestTotal = Integer.MAX_VALUE;
         LocalDate bestDepart = null;
         LocalDate bestReturn = null;
 
-        YearMonth current = startMonth;
+        ElementsCollection departTickets = getAvailableTickets(LanguageManager.get("departure_flight"));
 
-        // Iteration through the months to find the best combination of departure and return tickets
-        for (int m = 0; m < monthsRange; m++) {
-            navigateToTargetMonth(current, LanguageManager.get("departure_flight"));
-            ElementsCollection departTickets = getAvailableTickets(LanguageManager.get("departure_flight"));
+        // Iterate through each departure ticket to find the best ticket combination
+        for (int i = 0; i < departTickets.size(); i++) {
+            SelenideElement departTicket = departTickets.get(i);
+            int departPrice = getTicketPrice(departTicket);
+            int departDay = getTicketDay(departTicket);
+            LocalDate departDate = targetMonth.atDay(departDay);
 
-            // Iterate through each departure ticket to find the best ticket combination
-            for (int i = 0; i < departTickets.size(); i++) {
-                SelenideElement departTicket = departTickets.get(i);
-                int departPrice = getTicketPrice(departTicket);
-                int departDay = getTicketDay(departTicket);
-                LocalDate departDate = current.atDay(departDay);
+            // Calculate the return date based on the departure date
+            LocalDate returnDate = departDate.plusDays(returnAfterDays);
+            YearMonth returnMonth = YearMonth.from(returnDate);
 
-                // Calculate the return date based on the departure date and the specified return days
-                LocalDate returnDate = departDate.plusDays(returnAfterDays);
-                YearMonth returnMonth = YearMonth.from(returnDate);
-                if (returnMonth.isAfter(startMonth.plusMonths(monthsRange - 1))) {
-                    continue;
-                }
-
-                // Navigate to the return month and find the ticket for the return date
-                navigateToTargetMonth(returnMonth, LanguageManager.get("return_flight"));
-                SelenideElement returnTicket = findTicketByDay(returnDate.getDayOfMonth(), LanguageManager.get("return_flight"));
-                if (returnTicket == null || !returnTicket.exists()) {
-                    continue;
-                }
-                int returnPrice = getTicketPrice(returnTicket);
-                int total = departPrice + returnPrice;
-
-                // If the total price is lower than the current lowest, update the best dates
-                if (total < lowestTotal) {
-                    lowestTotal = total;
-                    bestDepart = departDate;
-                    bestReturn = returnDate;
-                }
+            // Navigate to the return month and find the ticket for the return date
+            navigateToTargetMonth(returnMonth, LanguageManager.get("return_flight"));
+            SelenideElement returnTicket = findTicketByDay(returnDate.getDayOfMonth(), LanguageManager.get("return_flight"));
+            if (returnTicket == null || !returnTicket.exists()) {
+                continue;
             }
+            int returnPrice = getTicketPrice(returnTicket);
+            int total = departPrice + returnPrice;
 
-            current = current.plusMonths(1);
+            // If the total price is lower than the current lowest, update the best dates
+            if (total < lowestTotal) {
+                lowestTotal = total;
+                bestDepart = departDate;
+                bestReturn = returnDate;
+            }
         }
 
         if (bestDepart != null) {
@@ -280,8 +255,9 @@ public class VJSelectFlightCheapPage {
         YearMonth endYearMonth = YearMonth.from(endDate);
 
         YearMonth lowestYearMonth = findLowestPriceMonth(startYearMonth, endYearMonth, LanguageManager.get("departure_flight"));
+        navigateToTargetMonth(lowestYearMonth, LanguageManager.get("departure_flight"));
 
-        CheapestTicketDate bestDates = findLowestTotalPriceTrip(lowestYearMonth, 3, returnFlightAfterDays);
+        CheapestTicketDate bestDates = findLowestTotalPriceTrip(lowestYearMonth, returnFlightAfterDays);
 
         navigateToTargetMonth(YearMonth.from(bestDates.getDepartDate()), LanguageManager.get("departure_flight"));
         SelenideElement departTicket = findTicketByDay(bestDates.getDepartDate().getDayOfMonth(), LanguageManager.get("departure_flight"));
