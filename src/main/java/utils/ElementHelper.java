@@ -129,8 +129,7 @@ public class ElementHelper {
 
     public static boolean isElementClickable(SelenideElement element, int timeoutSeconds) {
         try {
-            element.shouldBe(Condition.clickable, Duration.ofSeconds(timeoutSeconds));
-            return true;
+            return element.is(Condition.clickable, Duration.ofSeconds(timeoutSeconds));
         } catch (Exception e) {
             return false;
         }

@@ -97,7 +97,6 @@ public class VJSelectFlightCheapPage {
                 .$(monthDisplayValueSelector).getText(), formatter );
 
         while (currentMonth.compareTo(yearMonth) != 0) {
-            waitForMonthToLoad(dynamicValue);
             if (currentMonth.isAfter(yearMonth)) {
                 scrollToElement(prevButton);
                 prevButton.click();
@@ -179,9 +178,7 @@ public class VJSelectFlightCheapPage {
 
         //select the cheapest flight ticket
         scrollToElement(cheapestTicket);
-        sleep(1000);
         clickWhenReady(cheapestTicket);
-        sleep(1000);
         String bgColor = selectingSampleColorElement.getCssValue("background-color");
         cheapestTicket.shouldHave(Condition.cssValue("background-color", bgColor),
                 Duration.ofSeconds(10));
@@ -191,40 +188,47 @@ public class VJSelectFlightCheapPage {
         return getAvailableTickets(dynamicValue).find(text(String.valueOf(day)));
     }
 
-    private CheapestTicketDate findLowestTotalPriceTrip(YearMonth targetMonth, int returnAfterDays) {
+    private CheapestTicketDate findLowestTotalPriceTrip(YearMonth startYearMonth, YearMonth endYearMonth, int returnAfterDays)  {
         CheapestTicketDate result = new CheapestTicketDate();
         int lowestTotal = Integer.MAX_VALUE;
         LocalDate bestDepart = null;
         LocalDate bestReturn = null;
 
-        ElementsCollection departTickets = getAvailableTickets(LanguageManager.get("departure_flight"));
+        YearMonth currentMonth = startYearMonth;
+        while (!currentMonth.isAfter(endYearMonth)) {
+            navigateToTargetMonth(currentMonth, LanguageManager.get("departure_flight"));
 
-        // Iterate through each departure ticket to find the best ticket combination
-        for (int i = 0; i < departTickets.size(); i++) {
-            SelenideElement departTicket = departTickets.get(i);
-            int departPrice = getTicketPrice(departTicket);
-            int departDay = getTicketDay(departTicket);
-            LocalDate departDate = targetMonth.atDay(departDay);
+            ElementsCollection departTickets = getAvailableTickets(LanguageManager.get("departure_flight"));
 
-            // Calculate the return date based on the departure date
-            LocalDate returnDate = departDate.plusDays(returnAfterDays);
-            YearMonth returnMonth = YearMonth.from(returnDate);
+            for (int i = 0; i < departTickets.size(); i++) {
+                SelenideElement departTicket = departTickets.get(i);
+                int departPrice = getTicketPrice(departTicket);
+                int departDay = getTicketDay(departTicket);
+                LocalDate departDate = currentMonth.atDay(departDay);
 
-            // Navigate to the return month and find the ticket for the return date
-            navigateToTargetMonth(returnMonth, LanguageManager.get("return_flight"));
-            SelenideElement returnTicket = findTicketByDay(returnDate.getDayOfMonth(), LanguageManager.get("return_flight"));
-            if (returnTicket == null || !returnTicket.exists()) {
-                continue;
+                LocalDate returnDate = departDate.plusDays(returnAfterDays);
+                YearMonth returnMonth = YearMonth.from(returnDate);
+
+                navigateToTargetMonth(returnMonth, LanguageManager.get("return_flight"));
+                SelenideElement returnTicket = findTicketByDay(returnDate.getDayOfMonth(), LanguageManager.get("return_flight"));
+                if (returnTicket == null || !returnTicket.exists()) {
+                    navigateToTargetMonth(currentMonth, LanguageManager.get("departure_flight"));
+                    continue;
+                }
+                int returnPrice = getTicketPrice(returnTicket);
+                int total = departPrice + returnPrice;
+
+                if (total < lowestTotal) {
+                    lowestTotal = total;
+                    bestDepart = departDate;
+                    bestReturn = returnDate;
+                }
+
+                navigateToTargetMonth(currentMonth, LanguageManager.get("departure_flight"));
+                departTickets = getAvailableTickets(LanguageManager.get("departure_flight"));
             }
-            int returnPrice = getTicketPrice(returnTicket);
-            int total = departPrice + returnPrice;
 
-            // If the total price is lower than the current lowest, update the best dates
-            if (total < lowestTotal) {
-                lowestTotal = total;
-                bestDepart = departDate;
-                bestReturn = returnDate;
-            }
+            currentMonth = currentMonth.plusMonths(1);
         }
 
         if (bestDepart != null) {
@@ -254,10 +258,9 @@ public class VJSelectFlightCheapPage {
         YearMonth startYearMonth = YearMonth.from(startDate);
         YearMonth endYearMonth = YearMonth.from(endDate);
 
-        YearMonth lowestYearMonth = findLowestPriceMonth(startYearMonth, endYearMonth, LanguageManager.get("departure_flight"));
-        navigateToTargetMonth(lowestYearMonth, LanguageManager.get("departure_flight"));
+        navigateToTargetMonth(startYearMonth, LanguageManager.get("departure_flight"));
 
-        CheapestTicketDate bestDates = findLowestTotalPriceTrip(lowestYearMonth, returnFlightAfterDays);
+        CheapestTicketDate bestDates = findLowestTotalPriceTrip(startYearMonth, endYearMonth, returnFlightAfterDays);
 
         navigateToTargetMonth(YearMonth.from(bestDates.getDepartDate()), LanguageManager.get("departure_flight"));
         SelenideElement departTicket = findTicketByDay(bestDates.getDepartDate().getDayOfMonth(), LanguageManager.get("departure_flight"));
