@@ -10,13 +10,13 @@
         <parameter name="env" value="stg"/>
         <groups>
             <run>
-                <include name="VJRegression"/>
+                <include name="VJ_EN_Regression"/>
             </run>
         </groups>
         <classes>
             <class name="testcases.VJTest.VJTestSel3">
                 <methods>
-                    <include name="TC01_SearchCheapestTicketsInDayTest"/>
+                    <include name="VJ_TC01_SearchCheapestTicketsInDayTest"/>
                 </methods>
             </class>
         </classes>
@@ -27,13 +27,13 @@
         <parameter name="env" value="stg"/>
         <groups>
             <run>
-                <include name="VJRegression"/>
+                <include name="VJ_VI_Regression"/>
             </run>
         </groups>
         <classes>
             <class name="testcases.VJTest.VJTestSel3">
                 <methods>
-                    <include name="TC02_SearchCheapestTicketsInNextThreeMonthsTest"/>
+                    <include name="VJ_TC02_SearchCheapestTicketsInNextThreeMonthsTest"/>
                 </methods>
             </class>
         </classes>

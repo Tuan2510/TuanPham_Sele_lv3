@@ -9,6 +9,7 @@ import java.util.Properties;
 public class RunConfigReader {
 
     private static final Properties props = new Properties();
+    private static final ThreadLocal<Properties> threadProps = ThreadLocal.withInitial(Properties::new);
 
     public static void loadConfiguration() {
         try (InputStream input = RunConfigReader.class.getClassLoader().getResourceAsStream(Constants.CONFIG_FILE)) {
@@ -20,11 +21,27 @@ public class RunConfigReader {
         }
     }
 
+    public static void setThreadProperties(Properties p) {
+        if (p == null) {
+            threadProps.remove();
+        } else {
+            Properties copy = new Properties();
+            copy.putAll(p);
+            threadProps.set(copy);
+        }
+    }
+
     public static String get(String key) {
+        String threadVal = threadProps.get().getProperty(key);
+        if (threadVal != null && !threadVal.isBlank()) {
+            return threadVal;
+        }
+
         String sys = System.getProperty(key);
         if (sys != null && !sys.isBlank()) {
             return sys;
         }
+
         return props.getProperty(key);
     }
 

@@ -218,11 +218,12 @@ public class VJHomePage {
      */
     @Step("Find ticket button click")
     public void findTicket(){
-        if(passengerLetsGoBtn.isDisplayed()) {
+        System.out.println("lang: " + LanguageManager.getLanguage());
+//        if(passengerLetsGoBtn.isDisplayed()) {
             passengerLetsGoBtn.click();
-        } else{
-            letsGoBtn.click();
-        }
+//        } else{
+//            letsGoBtn.click();
+//        }
     }
 
     /**

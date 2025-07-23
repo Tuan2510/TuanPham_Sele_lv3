@@ -8,27 +8,39 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.aventstack.extentreports.gherkin.GherkinDialectManager.getLanguage;
 
 public class LanguageManager {
-    private static final Properties langProps = new Properties();
-    @Getter
-    private static final String language;
+    private static final ConcurrentHashMap<String, Properties> CACHE = new ConcurrentHashMap<>();
 
-    static {
-        language = RunConfigReader.getOrDefault("language", "en-us");
-        String languageFolder = extractTestCasePackage();
-        String resourcePath = "language/" + languageFolder + "/" + language + ".properties";
+    private static final ThreadLocal<String> currentLanguage = ThreadLocal.withInitial(() ->
+            RunConfigReader.getOrDefault("language", "en-us"));
 
-        try (InputStream input = LanguageManager.class.getClassLoader()
-                .getResourceAsStream(resourcePath)) {
-            if (input != null) {
-                langProps.load(new InputStreamReader(input, StandardCharsets.UTF_8));
-            } else {
-                throw new RuntimeException("Language file not found: " + resourcePath);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load language properties", e);
+    public static void setLanguage(String lang) {
+        if (lang != null && !lang.isBlank()) {
+            currentLanguage.set(lang);
         }
+    }
+
+    private static Properties loadLanguageProps(String language) {
+        return CACHE.computeIfAbsent(language, lang -> {
+            String languageFolder = extractTestCasePackage();
+            String resourcePath = "language/" + languageFolder + "/" + lang + ".properties";
+
+            Properties p = new Properties();
+            try (InputStream input = LanguageManager.class.getClassLoader().getResourceAsStream(resourcePath)) {
+                if (input != null) {
+                    p.load(new InputStreamReader(input, StandardCharsets.UTF_8));
+                } else {
+                    throw new RuntimeException("Language file not found: " + resourcePath);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Could not load language properties", e);
+            }
+            return p;
+        });
     }
 
     private static String extractTestCasePackage() {
@@ -45,11 +57,11 @@ public class LanguageManager {
     }
 
     public static String get(String key) {
-        return langProps.getProperty(key, key);
+        return loadLanguageProps(currentLanguage.get()).getProperty(key, key);
     }
 
     public static Locale getLocale(){
-        return switch (LanguageManager.getLanguage().toLowerCase()) {
+        return switch (getLanguage().toLowerCase()) {
             case "vi-vn" -> Locale.of("vi", "VN");
             case "en-us" -> Locale.ENGLISH;
             default -> Locale.ENGLISH;
@@ -57,9 +69,13 @@ public class LanguageManager {
     }
 
     public static String getLanguagePath() {
-        return switch (language) {
+        return switch (getLanguage()) {
             case "vi-vn" -> "/vi";
             default -> "/en";
         };
+    }
+
+    public static String getLanguage() {
+        return currentLanguage.get();
     }
 }

@@ -11,22 +11,16 @@ import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 
 public class DriverFactory {
-    protected static final Logger logger = LoggerFactory.getLogger(DriverFactory.class);
 
     static {
         RunConfigReader.loadConfiguration();
     }
 
     public static void initDriver() {
-        logger.info("initDriver - Start");
-
-        logger.info("initDriver - End");
     }
 
     public static void quitDriver() {
-        logger.info("quitDriver - Start");
         closeWebDriver();
-        logger.info("quitDriver - End");
     }
 
     public static void openHomePage() {

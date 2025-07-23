@@ -1,19 +1,13 @@
 package utils;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Driver;
 import com.codeborne.selenide.SelenideElement;
-import com.codeborne.selenide.WebElementCondition;
-import com.codeborne.selenide.ex.ElementNotFound;
 import com.codeborne.selenide.ex.UIAssertionError;
-import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.List;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -92,7 +86,7 @@ public class ElementHelper {
      */
     public static void scrollToElement(SelenideElement element) {
         try {
-            element.scrollIntoView(true);
+            element.scrollIntoView("{behavior: \"smooth\", block: \"center\"}");
             element.shouldBe(Condition.visible, Duration.ofSeconds(5));
         } catch (Exception e) {
             // Fallback to JavaScript scroll if standard scroll fails

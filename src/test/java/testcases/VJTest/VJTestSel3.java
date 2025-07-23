@@ -25,7 +25,7 @@ public class VJTestSel3 extends TestBase{
 
     @Description("Validate flight booking flow on VietJet")
     @Test(dataProvider = "getData", description = "Search and choose tickets on a specific day successfully",
-            retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
+            retryAnalyzer = RetryAnalyzer.class, groups = {"VJ_EN_Regression", "FullRegression"})
     public void VJ_TC01_SearchCheapestTicketsInDayTest(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
@@ -66,7 +66,7 @@ public class VJTestSel3 extends TestBase{
 
     @Description("Search and choose cheapest tickets on next 3 months successfully")
     @Test(dataProvider = "getData", description = "Search and choose cheapest tickets on next 3 months successfully",
-            retryAnalyzer = RetryAnalyzer.class, groups = {"VJRegression", "FullRegression"})
+            retryAnalyzer = RetryAnalyzer.class, groups = {"VJ_VI_Regression", "FullRegression"})
     public void VJ_TC02_SearchCheapestTicketsInNextThreeMonthsTest(FlightDataObject data) {
         logHelper.logStep("Step #1: Navigate to VietJet Air site");
         DriverFactory.openHomePage();
