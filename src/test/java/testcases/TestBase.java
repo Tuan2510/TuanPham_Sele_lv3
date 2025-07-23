@@ -19,6 +19,7 @@ import utils.LanguageManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 import static utils.JsonToObjectHelper.getDataByMethodName;
 
@@ -28,6 +29,7 @@ public class TestBase {
 
     static {
         RunConfigReader.loadConfiguration();
+//        LanguageManager.setLanguage(RunConfigReader.getOrDefault("language", "en-us"));
     }
 
     @DataProvider (name = "getData")
@@ -47,10 +49,9 @@ public class TestBase {
 
     @BeforeMethod(alwaysRun = true)
     public void beforeMethod(Object[] testArgs, ITestContext context) {
-        java.util.Properties p = new java.util.Properties();
+        Properties p = new java.util.Properties();
         p.putAll(context.getCurrentXmlTest().getAllParameters());
         RunConfigReader.setThreadProperties(p);
-        p.forEach((k, v) -> System.setProperty(k.toString(), v.toString()));
         LanguageManager.setLanguage(RunConfigReader.getOrDefault("language", "en-us"));
     }
 
@@ -58,6 +59,7 @@ public class TestBase {
     public void afterMethod() {
         DriverFactory.quitDriver();
         RunConfigReader.setThreadProperties(null);
+        LanguageManager.clearCache();
     }
 
     @AfterClass

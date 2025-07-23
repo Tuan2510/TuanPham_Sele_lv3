@@ -1,6 +1,8 @@
 package testcases.VJTest;
 
 import driver.DriverFactory;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pageObjects.VJPageObjects.VJHomePage;
@@ -10,7 +12,6 @@ import pageObjects.VJPageObjects.VJSelectTicketPage;
 import testDataObject.VJTest.CheapestTicketDate;
 import testDataObject.VJTest.FlightDataObject;
 import testcases.TestBase;
-import utils.LanguageManager;
 import utils.RetryAnalyzer;
 import utils.TestListener;
 import io.qameta.allure.Description;
@@ -19,10 +20,20 @@ import java.time.LocalDate;
 
 @Listeners({TestListener.class})
 public class VJTestSel3 extends TestBase{
-    VJHomePage homePage = new VJHomePage();
-    VJSelectTicketPage selectTicketPage = new VJSelectTicketPage();
-    VJPassengerInputPage passengerInputPage = new VJPassengerInputPage();
-    VJSelectFlightCheapPage selectFlightCheapPage = new VJSelectFlightCheapPage();
+    private VJHomePage homePage;
+    private VJSelectTicketPage selectTicketPage;
+    private VJPassengerInputPage passengerInputPage;
+    private VJSelectFlightCheapPage selectFlightCheapPage;
+
+    @Override
+    @BeforeMethod(alwaysRun = true)
+    public void beforeMethod(Object[] testArgs, ITestContext context) {
+        super.beforeMethod(testArgs, context);
+        homePage = new VJHomePage();
+        selectTicketPage = new VJSelectTicketPage();
+        passengerInputPage = new VJPassengerInputPage();
+        selectFlightCheapPage = new VJSelectFlightCheapPage();
+    }
 
     @Description("Validate flight booking flow on VietJet")
     @Test(dataProvider = "getData", description = "Search and choose tickets on a specific day successfully",

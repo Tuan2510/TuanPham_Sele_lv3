@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.IntStream;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
@@ -41,6 +42,7 @@ public class VJSelectFlightCheapPage {
     private final String nextMonthButtonXpath = "//div[div/p[contains(text(), '%s')]]//button[2]";
     private final String currentMonthXpath = "//div[div/p[contains(text(), '%s')]]//div[contains(@class, 'slick-current')]";
     private final String availableTicketListXpath = "//div[div/p[contains(text(), '%s')]]//div[@role='button'][.//div/span]";
+    private final String allTicketListXpath = "//div[div/p[contains(text(), '%s')]]//div[@role='button'][p]";
 
     //Additional Locators
     private final String monthDisplayValueSelector = "div p.MuiTypography-h6";
@@ -95,6 +97,15 @@ public class VJSelectFlightCheapPage {
                 .$(monthDisplayValueSelector).getText(), formatter );
 
         while (currentMonth.compareTo(yearMonth) != 0) {
+            //get first available ticket index in the current month
+            waitForMonthToLoad(dynamicValue);
+            ElementsCollection allTicketsInContainerOld = $$x(allTicketListXpath.formatted(dynamicValue));
+            SelenideElement oldMonthFirstTicketOld = $$x(availableTicketListXpath.formatted(dynamicValue)).first();
+            int oldIndex = IntStream.range(0, allTicketsInContainerOld.size())
+                    .filter(i -> allTicketsInContainerOld.get(i).equals(oldMonthFirstTicketOld))
+                    .findFirst()
+                    .orElse(-1);
+
             if (currentMonth.isAfter(yearMonth)) {
                 scrollToElement(prevButton);
                 prevButton.click();
@@ -102,6 +113,21 @@ public class VJSelectFlightCheapPage {
                 scrollToElement(nextButton);
                 nextButton.click();
             }
+
+            //get first available ticket index in the new month
+            waitForMonthToLoad(dynamicValue);
+            ElementsCollection allTicketsInContainerNew = $$x(allTicketListXpath.formatted(dynamicValue));
+            SelenideElement oldMonthFirstTicketNew = $$x(availableTicketListXpath.formatted(dynamicValue)).first();
+            int newIndex = IntStream.range(0, allTicketsInContainerNew.size())
+                    .filter(i -> allTicketsInContainerNew.get(i).equals(oldMonthFirstTicketNew))
+                    .findFirst()
+                    .orElse(-1);
+
+            //compare the indices to determine if the month has changed
+            if ( !(oldIndex != -1 && newIndex != -1 && oldIndex != newIndex)) {
+                throw new RuntimeException("Failed to navigate to the target month: " + yearMonth);
+            }
+
             // Update currentMonth after clicking
             currentMonth = YearMonth.parse($x(currentMonthXpath.formatted(dynamicValue))
                     .$(monthDisplayValueSelector).getText(), formatter);
@@ -129,45 +155,6 @@ public class VJSelectFlightCheapPage {
 
     private int getTicketDay(SelenideElement ticket) {
         return Integer.parseInt(ticket.$(ticketDateSelector).getText().trim());
-    }
-
-    private YearMonth findLowestPriceMonth(YearMonth startYearMonth, YearMonth endYearMonth, String dynamicValue) {
-        // Navigate to the starting month
-        navigateToTargetMonth(startYearMonth, dynamicValue);
-
-        // Initialize variables to track the lowest price and corresponding month
-        YearMonth lowestMonth = startYearMonth;
-        int lowestPrice = Integer.MAX_VALUE;
-        YearMonth currentMonth = startYearMonth;
-
-        // loop through months until we reach the end month to find the lowest price
-        while (!currentMonth.isAfter(endYearMonth)) {
-            // Ensure month content has loaded
-            waitForMonthToLoad(dynamicValue);
-
-            // Get the month element and extract the month text and price
-            SelenideElement monthElement = $x(currentMonthXpath.formatted(dynamicValue))
-                    .should(Condition.exist);
-            String monthText = monthElement.$(monthDisplayValueSelector).text();
-            String priceText = monthElement.$(monthPriceSelector).shouldBe(Condition.visible).text();
-            YearMonth parsedMonth = parseYearMonth(monthText);
-            int currentPrice = NumberHelper.parsePrice(priceText);
-
-            // If the current month is not valid, skip it
-            if (currentPrice < lowestPrice) {
-                lowestPrice = currentPrice;
-                lowestMonth = parsedMonth;
-            }
-
-            // If we reach the end month, break the loop
-            if (parsedMonth.equals(endYearMonth)) {
-                break;
-            }
-            clickWhenReady(getNextMonthButton(dynamicValue));
-            currentMonth = currentMonth.plusMonths(1);
-        }
-
-        return lowestMonth;
     }
 
     private void selectFlight(YearMonth lowestYearMonth, String dynamicValue, SelenideElement cheapestTicket) {

@@ -12,13 +12,18 @@ public class RunConfigReader {
     private static final ThreadLocal<Properties> threadProps = ThreadLocal.withInitial(Properties::new);
 
     public static void loadConfiguration() {
-        try (InputStream input = RunConfigReader.class.getClassLoader().getResourceAsStream(Constants.CONFIG_FILE)) {
+        props.clear();
+        try (InputStream input = RunConfigReader.class.getClassLoader()
+                .getResourceAsStream(Constants.CONFIG_FILE)) {
             if (input != null) {
                 props.load(input);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // apply overrides from system and TestNG xml parameters if available
+        props.putAll(System.getProperties());
     }
 
     public static void setThreadProperties(Properties p) {
@@ -26,17 +31,13 @@ public class RunConfigReader {
             threadProps.remove();
         } else {
             Properties copy = new Properties();
+            copy.putAll(props);
             copy.putAll(p);
             threadProps.set(copy);
         }
     }
 
     public static String get(String key) {
-        String sys = System.getProperty(key);
-        if (sys != null && !sys.isBlank()) {
-            return sys;
-        }
-
         String threadVal = threadProps.get().getProperty(key);
         if (threadVal != null && !threadVal.isBlank()) {
             return threadVal;

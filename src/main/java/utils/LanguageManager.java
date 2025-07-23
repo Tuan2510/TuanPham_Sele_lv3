@@ -6,13 +6,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class LanguageManager {
-    private static final ConcurrentHashMap<String, Properties> CACHE = new ConcurrentHashMap<>();
-
     private static final ThreadLocal<String> currentLanguage = ThreadLocal.withInitial(() ->
             RunConfigReader.getOrDefault("language", "en-us"));
+
     private static final ThreadLocal<Properties> languageProps = new ThreadLocal<>();
 
     public static void setLanguage(String lang) {
@@ -22,9 +20,18 @@ public class LanguageManager {
         }
     }
 
+    /**
+     * Clear any loaded language data for the current thread.
+     * This should be called after each test method to ensure the next method
+     * reloads language properties fresh.
+     */
+    public static void clearCache() {
+        languageProps.remove();
+    }
+
     private static Properties loadLanguageProps() {
         Properties p = languageProps.get();
-        if (p != null) {
+        if (p != null && p.get("language").equals(currentLanguage.get())) {
             return p;
         }
 
@@ -59,7 +66,7 @@ public class LanguageManager {
     }
 
     public static String get(String key) {
-        return loadLanguageProps().getProperty(key, key);
+        return loadLanguageProps().getProperty(key);
     }
 
     public static Locale getLocale(){
