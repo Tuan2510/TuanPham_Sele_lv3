@@ -50,6 +50,7 @@ public class TestBase {
         java.util.Properties p = new java.util.Properties();
         p.putAll(context.getCurrentXmlTest().getAllParameters());
         RunConfigReader.setThreadProperties(p);
+        p.forEach((k, v) -> System.setProperty(k.toString(), v.toString()));
         LanguageManager.setLanguage(RunConfigReader.getOrDefault("language", "en-us"));
     }
 

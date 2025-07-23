@@ -1,7 +1,5 @@
 package utils;
 
-import lombok.Getter;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,37 +8,41 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.aventstack.extentreports.gherkin.GherkinDialectManager.getLanguage;
-
 public class LanguageManager {
     private static final ConcurrentHashMap<String, Properties> CACHE = new ConcurrentHashMap<>();
 
     private static final ThreadLocal<String> currentLanguage = ThreadLocal.withInitial(() ->
             RunConfigReader.getOrDefault("language", "en-us"));
+    private static final ThreadLocal<Properties> languageProps = new ThreadLocal<>();
 
     public static void setLanguage(String lang) {
         if (lang != null && !lang.isBlank()) {
             currentLanguage.set(lang);
+            languageProps.remove();
         }
     }
 
-    private static Properties loadLanguageProps(String language) {
-        return CACHE.computeIfAbsent(language, lang -> {
-            String languageFolder = extractTestCasePackage();
-            String resourcePath = "language/" + languageFolder + "/" + lang + ".properties";
-
-            Properties p = new Properties();
-            try (InputStream input = LanguageManager.class.getClassLoader().getResourceAsStream(resourcePath)) {
-                if (input != null) {
-                    p.load(new InputStreamReader(input, StandardCharsets.UTF_8));
-                } else {
-                    throw new RuntimeException("Language file not found: " + resourcePath);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Could not load language properties", e);
-            }
+    private static Properties loadLanguageProps() {
+        Properties p = languageProps.get();
+        if (p != null) {
             return p;
-        });
+        }
+
+        String languageFolder = extractTestCasePackage();
+        String resourcePath = "language/" + languageFolder + "/" + currentLanguage.get() + ".properties";
+
+        p = new Properties();
+        try (InputStream input = LanguageManager.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (input != null) {
+                p.load(new InputStreamReader(input, StandardCharsets.UTF_8));
+            } else {
+                throw new RuntimeException("Language file not found: " + resourcePath);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load language properties", e);
+        }
+        languageProps.set(p);
+        return p;
     }
 
     private static String extractTestCasePackage() {
@@ -57,7 +59,7 @@ public class LanguageManager {
     }
 
     public static String get(String key) {
-        return loadLanguageProps(currentLanguage.get()).getProperty(key, key);
+        return loadLanguageProps().getProperty(key, key);
     }
 
     public static Locale getLocale(){

@@ -32,14 +32,14 @@ public class RunConfigReader {
     }
 
     public static String get(String key) {
-        String threadVal = threadProps.get().getProperty(key);
-        if (threadVal != null && !threadVal.isBlank()) {
-            return threadVal;
-        }
-
         String sys = System.getProperty(key);
         if (sys != null && !sys.isBlank()) {
             return sys;
+        }
+
+        String threadVal = threadProps.get().getProperty(key);
+        if (threadVal != null && !threadVal.isBlank()) {
+            return threadVal;
         }
 
         return props.getProperty(key);

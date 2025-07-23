@@ -10,6 +10,7 @@ import pageObjects.VJPageObjects.VJSelectTicketPage;
 import testDataObject.VJTest.CheapestTicketDate;
 import testDataObject.VJTest.FlightDataObject;
 import testcases.TestBase;
+import utils.LanguageManager;
 import utils.RetryAnalyzer;
 import utils.TestListener;
 import io.qameta.allure.Description;

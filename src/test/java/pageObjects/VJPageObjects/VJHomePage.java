@@ -218,7 +218,6 @@ public class VJHomePage {
      */
     @Step("Find ticket button click")
     public void findTicket(){
-        System.out.println("lang: " + LanguageManager.getLanguage());
 //        if(passengerLetsGoBtn.isDisplayed()) {
             passengerLetsGoBtn.click();
 //        } else{
