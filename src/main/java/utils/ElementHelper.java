@@ -121,15 +121,4 @@ public class ElementHelper {
         return isElementDisplayed(element, 10);
     }
 
-    public static boolean isElementClickable(SelenideElement element, int timeoutSeconds) {
-        try {
-            return element.is(Condition.clickable, Duration.ofSeconds(timeoutSeconds));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public static boolean isElementClickable(SelenideElement element){
-        return isElementClickable(element, 10);
-    }
 }

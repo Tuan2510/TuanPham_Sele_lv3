@@ -8,6 +8,7 @@ import utils.LanguageManager;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +22,6 @@ import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.DateHelper.getFormattedDate;
-import static utils.ElementHelper.isElementClickable;
 import static utils.ElementHelper.isElementDisplayed;
 import static utils.LanguageManager.getLocale;
 
@@ -206,7 +206,7 @@ public class VJHomePage {
     }
 
     private void checkLowestPriceCheckbox() {
-        if (isElementClickable(passengerLowestPriceChb)) {
+        if (passengerLowestPriceChb.is(Condition.clickable, Duration.ofSeconds(10))) {
             passengerLowestPriceChb.click();
         } else {
             lowestPriceChb.click();
