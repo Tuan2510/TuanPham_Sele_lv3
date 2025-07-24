@@ -17,6 +17,8 @@ public class FlightDataObject {
     private String destinationLocationCode;
     private int departAfterDays;
     private int returnAfterDays;
+    private int departAfterMonths;
+    private int returnAfterMonths;
     private FlightPassengerDataObject flightPassengerDataObject;
 
     public FlightDataObject(FlightType flightType, String flightTypeCode,

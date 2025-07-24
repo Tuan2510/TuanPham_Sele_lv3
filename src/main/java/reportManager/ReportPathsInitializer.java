@@ -7,7 +7,7 @@ import static commons.Constants.REPORT_DIR;
 public class ReportPathsInitializer {
 
     public static final String EXTENT_REPORT_FILE = REPORT_DIR + "/extent-report.html";
-    public static final String SCREENSHOT_DIR = REPORT_DIR + "/screenshots";
+    public static final String SCREENSHOT_DIR = REPORT_DIR;
 
     public static void createReportFolders(){
         File extentDir = new File(REPORT_DIR);

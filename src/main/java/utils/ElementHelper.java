@@ -2,6 +2,8 @@ package utils;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.ex.UIAssertionError;
+import org.openqa.selenium.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,17 +38,16 @@ public class ElementHelper {
      */
     public static void clickWhenReady(SelenideElement selector, int timeoutSeconds) {
         try {
-//            sleep(500);
-            selector.scrollIntoView(true);
-            executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", selector);
+            scrollToElement(selector);
             selector.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds))
                     .shouldBe(Condition.enabled, Duration.ofSeconds(timeoutSeconds));
             selector.click();
         } catch (Exception e) {
-            // Fallback to JS click if standard click fails
+            // If standard click fails, try JavaScript click
             logger.warn("Standard click failed, trying JavaScript click. Reason: {}", e.getMessage());
             executeJavaScript("arguments[0].click();", selector);
         }
+        sleep(1000);
     }
 
     /**
@@ -84,8 +85,14 @@ public class ElementHelper {
      * @param element The SelenideElement to scroll to
      */
     public static void scrollToElement(SelenideElement element) {
-        element.scrollIntoView(true);
-        element.shouldBe(Condition.visible, Duration.ofSeconds(5));
+        try {
+            element.scrollIntoView("{behavior: \"smooth\", block: \"center\"}");
+            element.shouldBe(Condition.visible, Duration.ofSeconds(5));
+        } catch (Exception e) {
+            // Fallback to JavaScript scroll if standard scroll fails
+            logger.warn("Failed to scroll to element: {}. Reason: {}", element, e.getMessage());
+            executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
+        }
     }
 
     /**
@@ -105,7 +112,7 @@ public class ElementHelper {
         try {
             element.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds));
             return true;
-        } catch (Exception e) {
+        } catch (NoSuchElementException | UIAssertionError e) {
             return false;
         }
     }
@@ -113,4 +120,5 @@ public class ElementHelper {
     public static boolean isElementDisplayed(SelenideElement element){
         return isElementDisplayed(element, 10);
     }
+
 }

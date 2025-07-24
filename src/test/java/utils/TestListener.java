@@ -14,9 +14,9 @@ import org.testng.ITestResult;
 import org.testng.TestNG;
 import reportManager.AllureManager;
 import reportManager.ExtentManager;
-import testDataObject.SampleDataObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 
@@ -37,6 +37,12 @@ public class TestListener implements ITestListener, IExecutionListener {
 
     @Override
     public void onStart(ITestContext context) {
+        try {
+            AllureManager.copyAllureResult();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         AllureManager.setupAllureReporting();
     }
 

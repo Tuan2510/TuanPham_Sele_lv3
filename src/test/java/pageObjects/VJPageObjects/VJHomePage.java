@@ -8,15 +8,20 @@ import utils.LanguageManager;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 
 import static com.codeborne.selenide.Condition.appear;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.webdriver;
+import static com.codeborne.selenide.WebDriverConditions.urlContaining;
+import static utils.DateHelper.getFormattedDate;
 import static utils.ElementHelper.isElementDisplayed;
 import static utils.LanguageManager.getLocale;
 
@@ -34,6 +39,7 @@ public class VJHomePage {
 
     private final SelenideElement departureDateBtn = $x(String.format("//div[@role='button'][.//p[contains(text(), '%s')]]", LanguageManager.get("departure_date")));
     private final SelenideElement lowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='secondary']");
+    private final SelenideElement passengerLowestPriceChb = $("span.MuiIconButton-label input[type='checkbox'][value='primary']");
     private final SelenideElement letsGoBtn = $("button.MuiButtonBase-root.MuiButton-root.MuiButton-contained");
     private final SelenideElement passengerLetsGoBtn = $x(String.format("//button[span/span[text()=\"%s\"]]", LanguageManager.get("lets_go")));
 
@@ -46,6 +52,16 @@ public class VJHomePage {
     private final String shadowPassengerPlusBtn = "//div[div/div/p[text()='%s']]//button[2]";
 
     // Methods
+    /**
+     * Verifies that the home page is displayed by checking the URL.
+     * This method uses Selenide's webdriver to assert that the current URL contains "/home".
+     */
+    @Step("Verify home page displayed in Vietnamese")
+    public void verifyPageDisplayInVietnamese(){
+        //check the url
+        webdriver().shouldHave(urlContaining("/vi"));
+    }
+
     @Step("Get flight input section for type: {type}")
     private SelenideElement getFlightInputSection(String dynamicValue) {
         return $x(TicketInput.formatted(dynamicValue));
@@ -58,6 +74,10 @@ public class VJHomePage {
         }
     }
 
+    /**
+     * Closes the offer alert if it is displayed.
+     * This method switches to the iframe containing the alert and clicks the "Later" button if it exists.
+     */
     @Step("Close offer alert if displayed")
     public void closeOfferAlert() {
         if (alertOfferIframe.isDisplayed()) {
@@ -113,38 +133,39 @@ public class VJHomePage {
     @Step("Select departure date and return date for round trip flight")
     private void selectRoundTripDate(LocalDate departDate, LocalDate returnDate){
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
-                departDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), departDate.getDayOfMonth()));
+                getFormattedDate(departDate, getLocale(), LanguageManager.get("month_format")), departDate.getDayOfMonth()));
+
 
         SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
-                returnDate.getMonth().getDisplayName(TextStyle.FULL, getLocale()), returnDate.getDayOfMonth()));
+                getFormattedDate(departDate, getLocale(), LanguageManager.get("month_format")), returnDate.getDayOfMonth()));
 
         if (!isElementDisplayed(currentMonthLabel)) {
             departureDateBtn.click();
         }
 
         navigateToTargetMonth(departDate);
-        departDateBtn.shouldBe(Condition.visible).click();
+        departDateBtn.shouldBe(visible).click();
 
         navigateToTargetMonth(returnDate);
-        returnDayBtn.shouldBe(Condition.visible).click();
+        returnDayBtn.shouldBe(visible).click();
     }
 
     @Step("Navigate to target month in the calendar")
     private void navigateToTargetMonth(LocalDate targetDate){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", getLocale());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(LanguageManager.get("month_year_format"), getLocale());
 
         YearMonth target = YearMonth.from(targetDate);
 
         for (int i = 0; i < 24; i++) { // avoid infinite loop
-            String displayedText = currentMonthLabel.getText().trim();
+            String displayedText = currentMonthLabel.getText().replace("Tháng", "").trim();
             YearMonth current = YearMonth.parse(displayedText, formatter);
 
             if (current.equals(target)) break;
 
             if (current.isBefore(target)) {
-                nextButton.shouldBe(Condition.visible).click();
+                nextButton.shouldBe(visible).click();
             } else {
-                prevButton.shouldBe(Condition.visible).click();
+                prevButton.shouldBe(visible).click();
             }
 
             currentMonthLabel.shouldHave(Condition.text(
@@ -184,16 +205,24 @@ public class VJHomePage {
         }
     }
 
+    private void checkLowestPriceCheckbox() {
+        if (passengerLowestPriceChb.is(Condition.clickable, Duration.ofSeconds(10))) {
+            passengerLowestPriceChb.click();
+        } else {
+            lowestPriceChb.click();
+        }
+    }
+
     /**
      * Clicks the button to search for tickets based on the current form values.
      */
     @Step("Find ticket button click")
     public void findTicket(){
-        if(passengerLetsGoBtn.isDisplayed()) {
+//        if(passengerLetsGoBtn.isDisplayed()) {
             passengerLetsGoBtn.click();
-        } else{
-            letsGoBtn.click();
-        }
+//        } else{
+//            letsGoBtn.click();
+//        }
     }
 
     /**
@@ -218,4 +247,28 @@ public class VJHomePage {
         findTicket();
     }
 
+    /**
+     * Searches for tickets with the lowest fare option.
+     * This method fills in the flight search form with the provided data and checks the lowest price checkbox.
+     *
+     * @param data The flight data object containing flight details.
+     */
+    @Step("Search for tickets with lowest fare option")
+    public void searchTicketWithLowestOption(FlightDataObject data){
+        chooseFlightType(data.getFlightType());
+        selectDepartureLocation(data.getDepartmentLocation());
+        selectDestinationLocation(data.getDestinationLocation());
+
+        LocalDate departLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
+        LocalDate returnLocalDate = departLocalDate.plusDays(data.getReturnAfterDays());
+        selectRoundTripDate(departLocalDate, returnLocalDate);
+
+        selectPassengerNumber(
+                data.getFlightPassengerDataObject().getAdults(),
+                data.getFlightPassengerDataObject().getChildren(),
+                data.getFlightPassengerDataObject().getInfants());
+
+        checkLowestPriceCheckbox();
+        findTicket();
+    }
 }

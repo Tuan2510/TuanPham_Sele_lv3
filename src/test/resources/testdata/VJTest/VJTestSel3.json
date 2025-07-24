@@ -1,5 +1,5 @@
 {
-  "TC01": [
+  "VJ_TC01_SearchCheapestTicketsInDayTest": [
     {
       "flightType": "ROUND_TRIP",
       "flightTypeCode": "RETURN",
@@ -16,9 +16,22 @@
       }
     }
   ],
-  "TC02": [
+  "VJ_TC02_SearchCheapestTicketsInNextThreeMonthsTest": [
     {
-      "test": "test"
+      "flightType": "Khứ hồi",
+      "flightTypeCode": "RETURN",
+      "departmentLocation": "Tp. Hồ Chí Minh",
+      "departmentLocationCode": " ( SGN )",
+      "destinationLocation": "Hà Nội",
+      "destinationLocationCode": " ( HAN )",
+      "departAfterMonths": 0,
+      "returnAfterMonths": 3,
+      "returnAfterDays": 3,
+      "flightPassengerDataObject": {
+        "adults": 2,
+        "children": 0,
+        "infants": 0
+      }
     }
   ]
 }

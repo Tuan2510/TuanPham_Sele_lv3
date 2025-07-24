@@ -1,32 +1,55 @@
 package utils;
 
-import lombok.Getter;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Properties;
 
 public class LanguageManager {
-    private static final Properties langProps = new Properties();
-    @Getter
-    private static final String language;
+    private static final ThreadLocal<String> currentLanguage = ThreadLocal.withInitial(() ->
+            RunConfigReader.getOrDefault("language", "en-us"));
 
-    static {
-        language = RunConfigReader.getOrDefault("language", "en-us");
+    private static final ThreadLocal<Properties> languageProps = new ThreadLocal<>();
+
+    public static void setLanguage(String lang) {
+        if (lang != null && !lang.isBlank()) {
+            currentLanguage.set(lang);
+            languageProps.remove();
+        }
+    }
+
+    /**
+     * Clear any loaded language data for the current thread.
+     * This should be called after each test method to ensure the next method
+     * reloads language properties fresh.
+     */
+    public static void clearCache() {
+        languageProps.remove();
+    }
+
+    private static Properties loadLanguageProps() {
+        Properties p = languageProps.get();
+        if (p != null && p.get("language").equals(currentLanguage.get())) {
+            return p;
+        }
+
         String languageFolder = extractTestCasePackage();
-        String resourcePath = "language/" + languageFolder + "/" + language + ".properties";
+        String resourcePath = "language/" + languageFolder + "/" + currentLanguage.get() + ".properties";
 
-        try (InputStream input = LanguageManager.class.getClassLoader()
-                .getResourceAsStream(resourcePath)) {
+        p = new Properties();
+        try (InputStream input = LanguageManager.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (input != null) {
-                langProps.load(input);
+                p.load(new InputStreamReader(input, StandardCharsets.UTF_8));
             } else {
                 throw new RuntimeException("Language file not found: " + resourcePath);
             }
         } catch (IOException e) {
             throw new RuntimeException("Could not load language properties", e);
         }
+        languageProps.set(p);
+        return p;
     }
 
     private static String extractTestCasePackage() {
@@ -43,11 +66,11 @@ public class LanguageManager {
     }
 
     public static String get(String key) {
-        return langProps.getProperty(key, key);
+        return loadLanguageProps().getProperty(key);
     }
 
     public static Locale getLocale(){
-        return switch (LanguageManager.getLanguage().toLowerCase()) {
+        return switch (getLanguage().toLowerCase()) {
             case "vi-vn" -> Locale.of("vi", "VN");
             case "en-us" -> Locale.ENGLISH;
             default -> Locale.ENGLISH;
@@ -55,9 +78,13 @@ public class LanguageManager {
     }
 
     public static String getLanguagePath() {
-        return switch (language) {
+        return switch (getLanguage()) {
             case "vi-vn" -> "/vi";
             default -> "/en";
         };
+    }
+
+    public static String getLanguage() {
+        return currentLanguage.get();
     }
 }
