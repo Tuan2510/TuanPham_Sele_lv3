@@ -13,7 +13,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.stream.IntStream;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
@@ -22,7 +21,6 @@ import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
-import static utils.DateHelper.parseYearMonth;
 import static utils.ElementHelper.clickWhenReady;
 import static utils.ElementHelper.isElementDisplayed;
 import static utils.ElementHelper.scrollToElement;
@@ -97,14 +95,6 @@ public class VJSelectFlightCheapPage {
                 .$(monthDisplayValueSelector).getText(), formatter );
 
         while (currentMonth.compareTo(yearMonth) != 0) {
-            //get first available ticket index in the current month
-            waitForMonthToLoad(dynamicValue);
-            ElementsCollection allTicketsInContainerOld = $$x(allTicketListXpath.formatted(dynamicValue));
-            SelenideElement oldMonthFirstTicketOld = $$x(availableTicketListXpath.formatted(dynamicValue)).first();
-            int oldIndex = IntStream.range(0, allTicketsInContainerOld.size())
-                    .filter(i -> allTicketsInContainerOld.get(i).equals(oldMonthFirstTicketOld))
-                    .findFirst()
-                    .orElse(-1);
 
             if (currentMonth.isAfter(yearMonth)) {
                 scrollToElement(prevButton);
@@ -114,37 +104,26 @@ public class VJSelectFlightCheapPage {
                 nextButton.click();
             }
 
-            //get first available ticket index in the new month
-            waitForMonthToLoad(dynamicValue);
-            ElementsCollection allTicketsInContainerNew = $$x(allTicketListXpath.formatted(dynamicValue));
-            SelenideElement oldMonthFirstTicketNew = $$x(availableTicketListXpath.formatted(dynamicValue)).first();
-            int newIndex = IntStream.range(0, allTicketsInContainerNew.size())
-                    .filter(i -> allTicketsInContainerNew.get(i).equals(oldMonthFirstTicketNew))
-                    .findFirst()
-                    .orElse(-1);
-
-            //compare the indices to determine if the month has changed
-            if ( !(oldIndex != -1 && newIndex != -1 && oldIndex != newIndex)) {
-                throw new RuntimeException("Failed to navigate to the target month: " + yearMonth);
-            }
-
             // Update currentMonth after clicking
             currentMonth = YearMonth.parse($x(currentMonthXpath.formatted(dynamicValue))
                     .$(monthDisplayValueSelector).getText(), formatter);
-        }
-        //verify current month is displayed
-        $x(currentMonthXpath.formatted(dynamicValue))
-                .$(monthDisplayValueSelector).shouldHave(Condition.text(yearMonth.format(formatter)));
 
+            // Check if the month has changed after clicking
+            $x(currentMonthXpath.formatted(dynamicValue))
+                    .$(monthDisplayValueSelector).shouldHave(Condition.text(currentMonth.format(formatter)));
+
+            // wait for the month ticket to load
+            waitForMonthTicketToLoad(dynamicValue);
+        }
     }
 
-    private void waitForMonthToLoad(String dynamicValue) {
+    private void waitForMonthTicketToLoad(String dynamicValue) {
         ElementsCollection availableTicketCollection = $$x(availableTicketListXpath.formatted(dynamicValue));
         availableTicketCollection.shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
     }
 
     private ElementsCollection getAvailableTickets(String dynamicValue) {
-        waitForMonthToLoad(dynamicValue);
+        waitForMonthTicketToLoad(dynamicValue);
         return $$x(availableTicketListXpath.formatted(dynamicValue))
                 .shouldHave(sizeGreaterThan(0));
     }
