@@ -4,6 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import testcases.TestBase;
+import utils.RetryAnalyzer;
 import utils.TestListener;
 import utils.ExcelReader;
 import utils.WebPageLoader;
@@ -19,7 +20,8 @@ import static commons.Constants.LEAP_FROG_EXCEL_PATH;
 @Listeners({TestListener.class})
 public class LeapFrogContentTest extends TestBase{
 
-    @Test
+    @Test(description = "Verify the product content on LeapFrog website",
+    retryAnalyzer = RetryAnalyzer .class, groups = "LF_Regression")
     public void verifyLeapFrogContent() throws Exception {
         logHelper.logStep("Step #1: Load expected data from Excel file");
         List<ProductInfo> expectedList = ExcelReader.readProducts(LEAP_FROG_EXCEL_PATH);
