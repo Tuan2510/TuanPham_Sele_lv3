@@ -14,4 +14,8 @@ public class Constants {
     public static final String TIMESTAMP = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
 
     public static final String REPORT_DIR = "extent-reports/" + TIMESTAMP;
+
+    public static final String LEAP_FROG_EXCEL_PATH = "src/test/resources/testdata/LeapFrog/leapfrog-games.xlsx";
+    public static final String LEAP_FROG_TEST_URL = "https://store.leapfrog.com/en-us/apps/c?p=%s&platforms=197&product_list_dir=asc&product_list_order=name";
+//    public static final String LEAP_FROG_PARAMS = "&platforms=197&product_list_dir=asc&product_list_order=name";
 }
