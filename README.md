@@ -23,7 +23,7 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Source control practice: branch
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
 - [ ] Wrap custom controls
-- [x] Data driven testing: test data is in excel file
+- [ ] Data driven testing: test data is in excel file
 - [ ] Working with Shadow DOM
 - [ ] Compare with another FW e.g. Playwright
 
