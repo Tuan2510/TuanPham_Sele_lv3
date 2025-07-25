@@ -12,16 +12,18 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Cross browsers testing: Chrome, Edge
 - [ ] Selenium Grid/Shard
 - [ ] Test cases: VJ, Agoda, TBD (only 2/6 done)
+  - [x] VJ: [vj.com](https://www.vj.com/)
+  - [ ] Agoda: [agoda.com](https://www.agoda.com/)
 - [ ] CI: Schedule test, send email notification result with summary
 
 ### User Cases
-- [ ] Content testing
-- [ ] Multiple languages testing
+- [x] Content testing
+- [x] Multiple languages testing
 - [x] Group tests by purposes: regression, smoke/sanity test
 - [x] Source control practice: branch
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
 - [ ] Wrap custom controls
-- [ ] Data driven testing: test data is in excel file
+- [x] Data driven testing: test data is in excel file
 - [ ] Working with Shadow DOM
 - [ ] Compare with another FW e.g. Playwright
 

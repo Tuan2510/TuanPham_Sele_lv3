@@ -72,5 +72,4 @@ public class WebPageLoader {
         executor.shutdown();
         return all;
     }
-
 }
