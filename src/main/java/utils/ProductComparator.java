@@ -3,9 +3,9 @@ package utils;
 import testDataObject.LeapFrog.ProductInfo;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -23,15 +23,15 @@ public class ProductComparator {
         Report r = new Report();
         r.totalExcel = excel.size();
         r.totalWeb = web.size();
-        Map<String, List<ProductInfo>> mapWeb = web.stream()
-                .collect(Collectors.groupingBy(ProductInfo::getName, HashMap::new, Collectors.toList()));
+        // Map website products by unique name for quick lookup
+        Map<String, ProductInfo> mapWeb = web.stream()
+                .collect(Collectors.toMap(ProductInfo::getName, Function.identity()));
 
         for (ProductInfo e : excel) {
-            List<ProductInfo> matches = mapWeb.get(e.getName());
-            if (matches == null || matches.isEmpty()) {
+            ProductInfo w = mapWeb.remove(e.getName());
+            if (w == null) {
                 r.deleted.add(e);
             } else {
-                ProductInfo w = matches.remove(0);
                 if (normalizeAge(e.getAge()).equals(normalizeAge(w.getAge())) &&
                         normalizePrice(e.getPrice()).equals(normalizePrice(w.getPrice()))) {
                     r.identical.add(w);
@@ -40,8 +40,9 @@ public class ProductComparator {
                 }
             }
         }
-        for (List<ProductInfo> remaining : mapWeb.values()) {
-            r.added.addAll(remaining);
+        // Anything left in the map was not in Excel => added
+        for (ProductInfo remaining : mapWeb.values()) {
+            r.added.add(remaining);
         }
         return r;
     }

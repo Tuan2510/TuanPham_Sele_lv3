@@ -4,6 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import testcases.TestBase;
+import utils.ProductReportGenerator;
 import utils.RetryAnalyzer;
 import utils.TestListener;
 import utils.ExcelReader;
@@ -34,48 +35,32 @@ public class LeapFrogContentTest extends TestBase{
         logHelper.logStep("Step #3: Compare expected data with website data");
         ProductComparator.Report report = ProductComparator.compare(expectedList, webList);
 
+        logHelper.logStep("Step #4: Generate report of differences");
         Map<String, Integer> rowMap = expectedList.stream()
                 .collect(Collectors.toMap(ProductInfo::getName, ProductInfo::getRowNo, (a, b) -> a));
 
-        logHelper.logStep("Step #4: Generate report of differences");
-        if(!report.identical.isEmpty()) {
+        if (!report.identical.isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
             logHelper.logStep("Step #4.1: Identical products: " + report.identical.size());
-            for (ProductInfo p : report.identical) {
-                int row = rowMap.getOrDefault(p.getName(), -1);
-                logHelper.logStep(String.format("row=%d, name=[%s] are identical with web", row, p.getName()));
-            }
+            ProductReportGenerator.logIdentical(report.identical, rowMap, logHelper);
         }
 
-        if(!report.added.isEmpty()) {
+        if (!report.added.isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
             logHelper.logStep("Step #4.2: Added products: " + report.added.size());
-            for (ProductInfo p : report.added) {
-                logHelper.logStep(String.format("name=[%s] only exists on website", p.getName()));
-            }
+            ProductReportGenerator.logAdded(report.added, logHelper);
         }
 
-        if(!report.updated.isEmpty()) {
+        if (!report.updated.isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
             logHelper.logStep("Step #4.3: Updated products: " + report.updated.size());
-            for (ProductInfo p : report.updated) {
-                ProductInfo origin = expectedList.stream()
-                        .filter(e -> e.getName().equals(p.getName()))
-                        .findFirst().orElse(null);
-                int row = origin != null ? origin.getRowNo() : -1;
-                String oriAge = origin != null ? origin.getAge() : "";
-                String oriPrice = origin != null ? origin.getPrice() : "";
-                logHelper.logStep(String.format("row=%d, name=[%s] is changed, original=[%s %s] actual=[%s %s]",
-                        row, p.getName(), oriAge, oriPrice, p.getAge(), p.getPrice()));
-            }
+            ProductReportGenerator.logUpdated(report.updated, expectedList, logHelper);
         }
 
-        if(!report.deleted.isEmpty()) {
+        if (!report.deleted.isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
             logHelper.logStep("Step #4.4: Deleted products: " + report.deleted.size());
-            for (ProductInfo p : report.deleted) {
-                logHelper.logStep(String.format("row=%d, name=[%s %s] is deleted", p.getRowNo(), p.getName(), p.getAge()));
-            }
+            ProductReportGenerator.logDeleted(report.deleted, logHelper);
         }
 
         Assert.assertTrue(report.updated.isEmpty(), "Updated records found: " + report.updated.size());
