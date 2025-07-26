@@ -36,32 +36,7 @@ public class LeapFrogContentTest extends TestBase{
         ProductComparator.Report report = ProductComparator.compare(expectedList, webList);
 
         logHelper.logStep("Step #4: Generate report of differences");
-        Map<String, Integer> rowMap = expectedList.stream()
-                .collect(Collectors.toMap(ProductInfo::getName, ProductInfo::getRowNo, (a, b) -> a));
-
-        if (!report.identical.isEmpty()) {
-            logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep("Step #4.1: Identical products: " + report.identical.size());
-            ProductReportGenerator.logIdentical(report.identical, rowMap, logHelper);
-        }
-
-        if (!report.added.isEmpty()) {
-            logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep("Step #4.2: Added products: " + report.added.size());
-            ProductReportGenerator.logAdded(report.added, logHelper);
-        }
-
-        if (!report.updated.isEmpty()) {
-            logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep("Step #4.3: Updated products: " + report.updated.size());
-            ProductReportGenerator.logUpdated(report.updated, expectedList, logHelper);
-        }
-
-        if (!report.deleted.isEmpty()) {
-            logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep("Step #4.4: Deleted products: " + report.deleted.size());
-            ProductReportGenerator.logDeleted(report.deleted, logHelper);
-        }
+        ProductReportGenerator.logLeapFrogReportSummary(report, expectedList, logHelper);
 
         Assert.assertTrue(report.updated.isEmpty(), "Updated records found: " + report.updated.size());
         Assert.assertTrue(report.deleted.isEmpty(), "Deleted records found: " + report.deleted.size());

@@ -4,6 +4,7 @@ import testDataObject.LeapFrog.ProductInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ProductReportGenerator {
 
@@ -40,6 +41,41 @@ public class ProductReportGenerator {
     public static void logDeleted(List<ProductInfo> deleted, LogHelper logHelper) {
         for (ProductInfo p : deleted) {
             logHelper.logStep(String.format("row=%d, name=[%s %s] is deleted", p.getRowNo(), p.getName(), p.getAge()));
+        }
+    }
+
+    public static void logLeapFrogReportSummary(ProductComparator.Report report,
+                                                List<ProductInfo> expectedList,
+                                                LogHelper logHelper) {
+        logHelper.logStep("--------------------------------------------------");
+        logHelper.logStep("Total products in Excel: " + report.totalExcel);
+        logHelper.logStep("Total products on website: " + report.totalWeb);
+
+        Map<String, Integer> rowMap = expectedList.stream()
+                .collect(Collectors.toMap(ProductInfo::getName, ProductInfo::getRowNo, (a, b) -> a));
+
+        if (!report.identical.isEmpty()) {
+            logHelper.logStep("--------------------------------------------------");
+            logHelper.logStep(String.format("----- Identical products: %s -----", report.identical.size()));
+            logIdentical(report.identical, rowMap, logHelper);
+        }
+
+        if (!report.added.isEmpty()) {
+            logHelper.logStep("--------------------------------------------------");
+            logHelper.logStep(String.format("----- Added products: %s -----", report.added.size()));
+            logAdded(report.added, logHelper);
+        }
+
+        if (!report.updated.isEmpty()) {
+            logHelper.logStep("--------------------------------------------------");
+            logHelper.logStep(String.format("----- Updated products: %s -----", report.updated.size()));
+            logUpdated(report.updated, expectedList, logHelper);
+        }
+
+        if (!report.deleted.isEmpty()) {
+            logHelper.logStep("--------------------------------------------------");
+            logHelper.logStep(String.format("----- Deleted products: %s -----", report.deleted.size()));
+            logDeleted(report.deleted, logHelper);
         }
     }
 }
