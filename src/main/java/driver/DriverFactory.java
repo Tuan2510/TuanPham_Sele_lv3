@@ -25,7 +25,12 @@ public class DriverFactory {
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
-        open(url + LanguageManager.getLanguagePath());
+
+        if(RunConfigReader.get("env").equalsIgnoreCase("stg")){
+            url = url + LanguageManager.getLanguagePath();
+        }
+
+        open(url);
     }
 
 }

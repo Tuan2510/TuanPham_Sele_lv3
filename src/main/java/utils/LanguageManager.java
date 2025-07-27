@@ -78,11 +78,23 @@ public class LanguageManager {
     }
 
     public static String getLanguagePath() {
-        return switch (getLanguage()) {
-            case "vi-vn" -> "/vi";
-            default -> "/en";
+        String env = RunConfigReader.getOrDefault("env", "dev").toLowerCase();
+        String language = getLanguage();
+
+        return switch (env) {
+            case "dev" -> switch (language) {
+                case "vi-vn" -> "/vi-vn";
+                default -> "/en-us";
+            };
+            case "stg", "stage" -> switch (language) {
+                case "vi-vn", "vi" -> "/vi";
+                default -> "/en";
+            };
+            default -> "/en"; // fallback
         };
     }
+
+
 
     public static String getLanguage() {
         return currentLanguage.get();
