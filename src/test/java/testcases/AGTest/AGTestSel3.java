@@ -1,0 +1,53 @@
+package testcases.AGTest;
+
+import driver.DriverFactory;
+import io.qameta.allure.Description;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
+import pageObjects.AGPageObjects.AgodaHomePage;
+import testDataObject.AGTest.AGDataObject;
+import testcases.TestBase;
+import utils.RetryAnalyzer;
+import utils.TestListener;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+
+@Listeners({TestListener.class})
+public class AGTestSel3 extends TestBase {
+    AgodaHomePage agodaHomePage;
+
+    @Override
+    @BeforeMethod(alwaysRun = true)
+    public void beforeMethod(Object[] testArgs, ITestContext context) {
+        super.beforeMethod(testArgs, context);
+        agodaHomePage = new AgodaHomePage();
+    }
+
+    @Description("Search and sort hotel successfully")
+    @Test(dataProvider = "getData", description = "Search and sort for hotel successfully",
+            retryAnalyzer = RetryAnalyzer.class, groups = {"AG_Regression", "FullRegression"})
+    public void AG_TC01_SearchAndSortHotel(AGDataObject data) {
+        logHelper.logStep("Step #1: Navigate to Agoda site");
+        DriverFactory.openHomePage();
+
+        logHelper.logStep("Step #2: Search hotel with test case information");
+        LocalDate checkInDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.valueOf(data.getCheckInDay())));
+        LocalDate checkOutDate = checkInDate.plusDays(data.getStayDurationDays());
+
+        agodaHomePage.searchHotel(
+                data.getPlace(),
+                checkInDate,
+                checkOutDate,
+                data.getOccupancy().getRoomCount(),
+                data.getOccupancy().getAdultCount(),
+                data.getOccupancy().getChildCount());
+
+        logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
+        //
+
+    }
+}
