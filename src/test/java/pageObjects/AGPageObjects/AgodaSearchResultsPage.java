@@ -5,36 +5,50 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
-import org.openqa.selenium.By;
+import lombok.Getter;
 import testDataObject.AGTest.Hotel;
 import utils.LanguageManager;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.switchTo;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.ElementHelper.scrollToElement;
+import static utils.ElementHelper.scrollToPageTop;
 import static utils.ValueHelper.getSafeText;
 import static utils.ValueHelper.parseFloatSafe;
 import static utils.ValueHelper.parsePrice;
 
 public class AgodaSearchResultsPage {
+    // Locators
     private final SelenideElement minPriceFilter = $("#SideBarLocationFilters #price_box_0");
     private final SelenideElement maxPriceFilter = $("#SideBarLocationFilters #price_box_1");
     private final SelenideElement hotelContainer = $("#contentContainer");
     private final ElementsCollection hotelCards = $$("[data-selenium='hotel-item']");
+    @Getter
+    private final ElementsCollection hotelImagesList = $$("[data-element-name='property-card-gallery']");
 
+    // String locators
+    private final String hotelNameCss = "[data-selenium='hotel-name']";
+    private final String hotelAddressCss = "[data-selenium='area-city']";
+    private final String hotelRatingCss = "[data-testid='rating-container'] span";
+    private final String hotelPriceCss = "[data-selenium='display-price']";
+    private final String hotelFinalPriceCss = "[data-element-name='final-price']";
+    private final String hotelSoldOutCss = ".SoldOutMessage";
 
     //Dynamic locators
     private final String starRatingFilter = "//fieldset[legend[@id='filter-menu-StarRatingWithLuxury']]//label[@data-element-index='%s']//input";
     private final String sortByOption = "//button[div/span[text()='%s']]";
 
     //Methods
+    /**
+     * Verifies that the search results page is displayed by checking the URL.
+     */
     public void verifyPageIsDisplayed() {
         webdriver().shouldHave(urlContaining("/search?"));
     }
@@ -70,9 +84,9 @@ public class AgodaSearchResultsPage {
     }
 
     private void selectSortBy(String sortBy) {
-        SelenideElement sortByElement = $(String.format(sortByOption, sortBy));
-        scrollToElement(sortByElement);
-        sortByElement.click();
+        SelenideElement sortByElement = $x(String.format(sortByOption, sortBy));
+        scrollToPageTop();
+        sortByElement.shouldBe(Condition.visible).click();
     }
 
     @Step("Sort results by: {sortBy}")
@@ -80,24 +94,19 @@ public class AgodaSearchResultsPage {
         selectSortBy(LanguageManager.get("lowest_price_first"));
     }
 
-    private void waitForHotelCardsToLoad() {
-        $("#contentContainer").shouldBe(Condition.visible, Duration.ofSeconds(10));
-        $$("[data-selenium='hotel-item']").shouldBe(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
-    }
-
     private void loadHotelResults(int numberOfHotels) {
-        int currentCount = $$("[data-selenium='hotel-item']").size();
+        int currentCount = getHotelImagesList().size();
 
-        while (currentCount < numberOfHotels) {
-            SelenideElement lastCard = $$("[data-selenium='hotel-item']").last();
-            scrollToElement(lastCard);
+        while (currentCount < numberOfHotels*2) {
+            SelenideElement lastCard = getHotelImagesList().last();
+            lastCard.scrollIntoView(true);
 
             // Wait until more hotel cards are loaded
-            $$("[data-selenium='hotel-item']").shouldHave(CollectionCondition.sizeGreaterThan(currentCount), Duration.ofSeconds(10));
+            getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(currentCount), Duration.ofSeconds(10));
 
-            int newCount = $$("[data-selenium='hotel-item']").size();
-            if (newCount == currentCount) {
-                // No more hotels were loaded, possibly end of list
+            int newCount = getHotelImagesList().size();
+            if (newCount >= currentCount) {
+                // reached the number of hotels we want so we can break the loop
                 break;
             }
             currentCount = newCount;
@@ -105,60 +114,35 @@ public class AgodaSearchResultsPage {
     }
 
     private List<Hotel> getHotelsFromResults(int numberOfHotels) {
-        waitForHotelCardsToLoad();
         loadHotelResults(numberOfHotels);
 
-        ElementsCollection hotelElements = $$(".PropertyCardItem");
-        int limit = Math.min(hotelElements.size(), numberOfHotels);
+        int limit = Math.min(hotelCards.size(), numberOfHotels);
 
-        return hotelElements.stream()
+        //need to handle the case that the hotel is sold out
+        return hotelCards.stream()
+                .filter(element -> !element.$(".SoldOutMessage").exists())
                 .limit(limit)
                 .map(element -> {
                     Hotel hotel = new Hotel();
 
-                    hotel.setName(getSafeText(element, "[data-selenium='hotel-name']"));
-                    hotel.setAddress(getSafeText(element, "[data-selenium='area-city']"));
-                    hotel.setRating(parseFloatSafe(getSafeText(element, "[data-testid='rating-container'] span")));
-                    hotel.setPrice(parsePrice(getSafeText(element, "[data-element-name='final-price']")));
+                    hotel.setName(getSafeText(element, hotelNameCss));
+                    hotel.setAddress(getSafeText(element, hotelAddressCss));
+                    hotel.setRating(parseFloatSafe(getSafeText(element, hotelRatingCss)));
+
+                    if( element.$(hotelFinalPriceCss).isDisplayed() ) {
+                        hotel.setPrice(parsePrice(getSafeText(element, hotelFinalPriceCss)));
+                    } else {
+                        hotel.setPrice(parsePrice(getSafeText(element, hotelPriceCss)));
+                    }
 
                     return hotel;
                 })
                 .toList();
     }
 
-    //---
-    public List<Hotel> getHotels(int count) {
-        String cardContainer = "PropertyCardItem";
-        List<Hotel> cardContainers = new ArrayList<>();
-
-        int retries = 0;
-        // scroll into center of each card
-        // for card loaded lazily, wait for it and its attribute to be displayed
-        while (cardContainers.size() < count && retries++ < 2 * count) {
-            int currIndex = cardContainers.size();
-            SelenideElement card = $$(By.className(cardContainer)).get(currIndex).$(":first-child");
-
-            card.scrollIntoView("{block: 'center'}").shouldBe(visible);
-
-            Hotel hotel = getHotel(card);
-            cardContainers.add(hotel);
-        }
-
-        return cardContainers;
-    }
-
-    private Hotel getHotel(SelenideElement container) {
-        String dest = container.$("[data-selenium='area-city']").shouldBe(visible).getText().split("-")[0].trim();
-        String name = container.$("[data-selenium='hotel-name']").shouldBe(visible).getText().trim();
-        String priceText = container.$("[data-element-name='final-price']").shouldBe(visible).getText().replaceAll("\\D", "");
-        float rating = Float.parseFloat(container.$("[data-testid='rating-container'] span").shouldBe(visible).getText().split(" ")[0]);
-        return new Hotel(name, dest, rating, Integer.parseInt(priceText));
-    }
-
-    public void verifySearchResults(int numberOfHotels, String expectedLocation) {
-//        List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
-        List<Hotel> hotels = getHotels(numberOfHotels);
-
+    public void verifySearchResultsHotelAddress(int numberOfHotels, String expectedLocation) {
+        switchTo().window(1);
+        List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
 
         if (hotels.isEmpty()) {
             throw new AssertionError("No hotels found in search results.");
