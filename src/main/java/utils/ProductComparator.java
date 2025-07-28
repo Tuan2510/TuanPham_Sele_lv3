@@ -11,12 +11,36 @@ import java.util.stream.Collectors;
 
 public class ProductComparator {
     public static class Report {
-        public int totalExcel;
-        public int totalWeb;
-        public final List<ProductInfo> identical = new ArrayList<>();
-        public final List<ProductInfo> updated = new ArrayList<>();
-        public final List<ProductInfo> deleted = new ArrayList<>();
-        public final List<ProductInfo> added = new ArrayList<>();
+        private int totalExcel;
+        private int totalWeb;
+        private final List<ProductInfo> identical = new ArrayList<>();
+        private final List<ProductInfo> updated = new ArrayList<>();
+        private final List<ProductInfo> deleted = new ArrayList<>();
+        private final List<ProductInfo> added = new ArrayList<>();
+
+        public int getTotalExcel() {
+            return totalExcel;
+        }
+
+        public int getTotalWeb() {
+            return totalWeb;
+        }
+
+        public List<ProductInfo> getIdentical() {
+            return identical;
+        }
+
+        public List<ProductInfo> getUpdated() {
+            return updated;
+        }
+
+        public List<ProductInfo> getDeleted() {
+            return deleted;
+        }
+
+        public List<ProductInfo> getAdded() {
+            return added;
+        }
     }
 
     public static Report compare(List<ProductInfo> excel, List<ProductInfo> web) {

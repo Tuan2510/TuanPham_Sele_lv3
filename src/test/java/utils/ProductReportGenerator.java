@@ -48,34 +48,35 @@ public class ProductReportGenerator {
                                                 List<ProductInfo> expectedList,
                                                 LogHelper logHelper) {
         logHelper.logStep("--------------------------------------------------");
-        logHelper.logStep("Total products in Excel: " + report.totalExcel);
-        logHelper.logStep("Total products on website: " + report.totalWeb);
+        logHelper.logStep("Total products in Excel: " + report.getTotalExcel());
+        logHelper.logStep("Total products on website: " + report.getTotalWeb());
 
-        Map<String, Integer> rowMap = expectedList.stream()
-                .collect(Collectors.toMap(ProductInfo::getName, ProductInfo::getRowNo, (a, b) -> a));
+//        //uncomment to log identical products
+//        Map<String, Integer> rowMap = expectedList.stream()
+//                .collect(Collectors.toMap(ProductInfo::getName, ProductInfo::getRowNo, (a, b) -> a));
+//
+//        if (!report.getIdentical().isEmpty()) {
+//            logHelper.logStep("--------------------------------------------------");
+//            logHelper.logStep(String.format("----- Identical products: %s -----", report.getIdentical().size()));
+//            logIdentical(report.getIdentical(), rowMap, logHelper);
+//        }
 
-        if (!report.identical.isEmpty()) {
+        if (!report.getAdded().isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep(String.format("----- Identical products: %s -----", report.identical.size()));
-            logIdentical(report.identical, rowMap, logHelper);
+            logHelper.logStep(String.format("----- Added products: %s -----", report.getAdded().size()));
+            logAdded(report.getAdded(), logHelper);
         }
 
-        if (!report.added.isEmpty()) {
+        if (!report.getUpdated().isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep(String.format("----- Added products: %s -----", report.added.size()));
-            logAdded(report.added, logHelper);
+            logHelper.logStep(String.format("----- Updated products: %s -----", report.getUpdated().size()));
+            logUpdated(report.getUpdated(), expectedList, logHelper);
         }
 
-        if (!report.updated.isEmpty()) {
+        if (!report.getDeleted().isEmpty()) {
             logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep(String.format("----- Updated products: %s -----", report.updated.size()));
-            logUpdated(report.updated, expectedList, logHelper);
-        }
-
-        if (!report.deleted.isEmpty()) {
-            logHelper.logStep("--------------------------------------------------");
-            logHelper.logStep(String.format("----- Deleted products: %s -----", report.deleted.size()));
-            logDeleted(report.deleted, logHelper);
+            logHelper.logStep(String.format("----- Deleted products: %s -----", report.getDeleted().size()));
+            logDeleted(report.getDeleted(), logHelper);
         }
     }
 }

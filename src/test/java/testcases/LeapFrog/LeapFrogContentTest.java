@@ -38,7 +38,7 @@ public class LeapFrogContentTest extends TestBase{
         logHelper.logStep("Step #4: Generate report of differences");
         ProductReportGenerator.logLeapFrogReportSummary(report, expectedList, logHelper);
 
-        Assert.assertTrue(report.updated.isEmpty(), "Updated records found: " + report.updated.size());
-        Assert.assertTrue(report.deleted.isEmpty(), "Deleted records found: " + report.deleted.size());
+        Assert.assertTrue(report.getUpdated().isEmpty(), "Updated records found: " + report.getUpdated().size());
+        Assert.assertTrue(report.getDeleted().isEmpty(), "Deleted records found: " + report.getDeleted().size());
     }
 }
