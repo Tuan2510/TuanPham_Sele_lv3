@@ -6,7 +6,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.LanguageManager;
-import utils.NumberHelper;
+import utils.ValueHelper;
 import testDataObject.VJTest.CheapestTicketDate;
 
 import java.time.Duration;
@@ -129,7 +129,7 @@ public class VJSelectFlightCheapPage {
     }
 
     private int getTicketPrice(SelenideElement ticket) {
-        return NumberHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
+        return ValueHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
     }
 
     private int getTicketDay(SelenideElement ticket) {

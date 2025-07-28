@@ -16,5 +16,5 @@ public class AGDataObject {
     private Occupancy occupancy;
     private priceFilter priceFilter;
     private int rating;
-
+    private int resultCount;
 }

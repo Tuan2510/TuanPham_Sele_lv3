@@ -24,8 +24,8 @@ import static utils.ElementHelper.isElementDisplayed;
 import static utils.ElementHelper.scrollToElement;
 import static utils.ElementHelper.switchToDefault;
 import static utils.ElementHelper.switchToIframe;
-import static utils.NumberHelper.getNumberSuffix;
-import static utils.NumberHelper.parsePrice;
+import static utils.ValueHelper.getNumberSuffix;
+import static utils.ValueHelper.parsePrice;
 import static utils.LanguageManager.getLocale;
 
 public class VJSelectTicketPage {
