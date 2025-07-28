@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pageObjects.AGPageObjects.AgodaHomePage;
+import pageObjects.AGPageObjects.AgodaSearchResultsPage;
 import testDataObject.AGTest.AGDataObject;
 import testcases.TestBase;
 import utils.RetryAnalyzer;
@@ -19,12 +20,14 @@ import java.time.temporal.TemporalAdjusters;
 @Listeners({TestListener.class})
 public class AGTestSel3 extends TestBase {
     AgodaHomePage agodaHomePage;
+    AgodaSearchResultsPage agodaSearchResultsPage;
 
     @Override
     @BeforeMethod(alwaysRun = true)
     public void beforeMethod(Object[] testArgs, ITestContext context) {
         super.beforeMethod(testArgs, context);
         agodaHomePage = new AgodaHomePage();
+        agodaSearchResultsPage = new AgodaSearchResultsPage();
     }
 
     @Description("Search and sort hotel successfully")
@@ -47,7 +50,14 @@ public class AGTestSel3 extends TestBase {
                 data.getOccupancy().getChildCount());
 
         logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
-        //
+        agodaSearchResultsPage.verifyPageIsDisplayed();
+        agodaSearchResultsPage.verifySearchResults(data.getResultCount(), data.getPlace());
 
+        logHelper.logStep("Step #4: Sort results by lowest price");
+        agodaSearchResultsPage.sortByLowestPrice();
+
+        logHelper.logStep("Step #5: Verify results are sorted by lowest price and the destination is correct");
+        agodaSearchResultsPage.verifyResultsSortedByLowestPrice(data.getResultCount());
+        agodaSearchResultsPage.verifySearchResults(data.getResultCount(), data.getPlace());
     }
 }

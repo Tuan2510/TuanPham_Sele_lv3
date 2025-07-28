@@ -4,8 +4,10 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.DatePickerHelper;
+import utils.ElementHelper;
 import utils.LanguageManager;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -82,6 +84,7 @@ public class AgodaHomePage {
         if(!datePickerWindow.isDisplayed()){
             checkInToggle.click();
         }
+        datePickerWindow.shouldBe(Condition.visible, Duration.ofSeconds(10));
         selectTravelDate(checkIn);
         selectTravelDate(checkOut);
     }

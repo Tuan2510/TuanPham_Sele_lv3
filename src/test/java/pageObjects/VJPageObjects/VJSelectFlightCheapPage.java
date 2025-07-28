@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.LanguageManager;
 import utils.LogHelper;
-import utils.NumberHelper;
+import utils.ValueHelper;
 import testDataObject.VJTest.CheapestTicketDate;
 import utils.TestListener;
 
@@ -133,7 +133,7 @@ public class VJSelectFlightCheapPage {
     }
 
     private int getTicketPrice(SelenideElement ticket) {
-        return NumberHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
+        return ValueHelper.parsePrice(ticket.$x(ticketPriceAdditionalXpath).getText());
     }
 
     private int getTicketDay(SelenideElement ticket) {

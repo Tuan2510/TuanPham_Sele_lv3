@@ -3,6 +3,7 @@ package utils;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +42,7 @@ public class DatePickerHelper {
     }
 
     private YearMonth getCurrentMonth() {
-        String text = calendar.shouldBe(Condition.visible).shouldNotHave(Condition.exactText("")).getText().trim();
+        String text = calendar.shouldBe(Condition.visible, Duration.ofSeconds(10)).shouldNotHave(Condition.exactText("")).getText().trim();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy");
         return YearMonth.parse(text, formatter);
     }

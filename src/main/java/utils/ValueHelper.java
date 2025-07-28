@@ -1,8 +1,12 @@
 package utils;
 
-import java.text.DecimalFormat;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.SelenideElement;
 
-public class NumberHelper {
+import java.text.DecimalFormat;
+import java.time.Duration;
+
+public class ValueHelper {
 
     /**
      * Parse a price to number
@@ -35,6 +39,22 @@ public class NumberHelper {
             case 3 -> "rd";
             default -> "th";
         };
+    }
+
+    public static String getSafeText(SelenideElement parent, String cssSelector) {
+        try {
+            return parent.$(cssSelector).shouldBe(Condition.visible, Duration.ofSeconds(5)).getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public static float parseFloatSafe(String value) {
+        try {
+            return Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+            return 0f;
+        }
     }
 
 }
