@@ -51,13 +51,13 @@ public class AGTestSel3 extends TestBase {
 
         logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
         agodaSearchResultsPage.verifyPageIsDisplayed();
-        agodaSearchResultsPage.verifySearchResults(data.getResultCount(), data.getPlace());
+        agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
 
         logHelper.logStep("Step #4: Sort results by lowest price");
         agodaSearchResultsPage.sortByLowestPrice();
 
         logHelper.logStep("Step #5: Verify results are sorted by lowest price and the destination is correct");
         agodaSearchResultsPage.verifyResultsSortedByLowestPrice(data.getResultCount());
-        agodaSearchResultsPage.verifySearchResults(data.getResultCount(), data.getPlace());
+        agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
     }
 }
