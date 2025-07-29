@@ -95,40 +95,67 @@ public class AgodaSearchResultsPage {
     }
 
     private void loadHotelResults(int numberOfHotels) {
-        int currentCount = getHotelImagesList().size();
+        int currentLoadedImages = getHotelImagesList().size();
+        int availableCount = getAvailableHotelCount();
 
-        while (currentCount < numberOfHotels*2) {
-            SelenideElement lastCard = getHotelImagesList().last();
-            lastCard.scrollIntoView(true);
+        while (availableCount < numberOfHotels) {
+            SelenideElement lastLoaded = getHotelImagesList().last();
+            lastLoaded.scrollIntoView(true);
 
-            // Wait until more hotel cards are loaded
-            getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(currentCount), Duration.ofSeconds(10));
+            getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(currentLoadedImages), Duration.ofSeconds(10));
 
-            int newCount = getHotelImagesList().size();
-            if (newCount >= currentCount) {
-                // reached the number of hotels we want so we can break the loop
+            int newLoadedImages = getHotelImagesList().size();
+            if (newLoadedImages == currentLoadedImages) {
                 break;
             }
-            currentCount = newCount;
+            currentLoadedImages = newLoadedImages;
+            availableCount = getAvailableHotelCount();
         }
+    }
+
+    private int getAvailableHotelCount() {
+        int loaded = getHotelImagesList().size();
+        int count = 0;
+        for (int i = 0; i < loaded && i < hotelCards.size(); i++) {
+            if (!hotelCards.get(i).$(hotelSoldOutCss).exists()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private List<SelenideElement> getLoadedHotelCards() {
+        int loadedCount = Math.min(getHotelImagesList().size(), hotelCards.size());
+        List<SelenideElement> loaded = new java.util.ArrayList<>(loadedCount);
+        for (int i = 0; i < loadedCount; i++) {
+            loaded.add(hotelCards.get(i));
+        }
+        return loaded;
     }
 
     private List<Hotel> getHotelsFromResults(int numberOfHotels) {
         loadHotelResults(numberOfHotels);
 
-        int limit = Math.min(hotelCards.size(), numberOfHotels);
+        List<SelenideElement> loadedCards = getLoadedHotelCards();
 
-        //need to handle the case that the hotel is sold out
-        return hotelCards.stream()
-                .filter(element -> !element.$(".SoldOutMessage").exists())
+        List<SelenideElement> availableHotelCards = loadedCards.stream()
+                .filter(element -> !element.$(hotelSoldOutCss).exists())
+                .toList();
+
+        int limit = Math.min(availableHotelCards.size(), numberOfHotels);
+
+        return availableHotelCards.stream()
                 .limit(limit)
                 .map(element -> {
+                    scrollToElement(element);
+
                     Hotel hotel = new Hotel();
 
                     hotel.setName(getSafeText(element, hotelNameCss));
                     hotel.setAddress(getSafeText(element, hotelAddressCss));
                     hotel.setRating(parseFloatSafe(getSafeText(element, hotelRatingCss)));
 
+                    String temp = getSafeText(element, hotelFinalPriceCss);
                     if( element.$(hotelFinalPriceCss).isDisplayed() ) {
                         hotel.setPrice(parsePrice(getSafeText(element, hotelFinalPriceCss)));
                     } else {
