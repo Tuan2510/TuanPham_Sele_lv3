@@ -4,10 +4,13 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Step;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.LanguageManager;
+import utils.LogHelper;
 import utils.NumberHelper;
 import testDataObject.VJTest.CheapestTicketDate;
+import utils.TestListener;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -28,6 +31,9 @@ import static utils.ElementHelper.switchToDefault;
 import static utils.ElementHelper.switchToIframe;
 
 public class VJSelectFlightCheapPage {
+    private static final Logger logger = LoggerFactory.getLogger(VJSelectFlightCheapPage.class);
+    private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
+
     // Locators
     private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
@@ -54,7 +60,6 @@ public class VJSelectFlightCheapPage {
      * This method switches to the iframe containing the alert, clicks the "Later" button if it is visible,
      * and then switches back to the default content.
      */
-    @Step("Close offer alert if displayed")
     public void closeOfferAlert() {
         if (alertOfferIframe.isDisplayed()) {
             switchToIframe(alertOfferIframe);
@@ -71,7 +76,6 @@ public class VJSelectFlightCheapPage {
      * Closes the advertisement panel if it is displayed.
      * This method checks if the close button for the ad panel is visible and clicks it to close the panel.
      */
-    @Step("Select flight type")
     public void closeAdPanelButton(){
         if (isElementDisplayed(closeAdPanelButton) ) {
             clickWhenReady(closeAdPanelButton);
@@ -213,9 +217,11 @@ public class VJSelectFlightCheapPage {
      * @return CheapestTicketDate object containing the best departure and return dates found.
      */
     public CheapestTicketDate selectCheapestTicketDates(int departAfterMonths, int returnAfterMonths, int returnFlightAfterDays) {
+        logHelper.logStep("Close offer alert and ad panel if displayed");
         closeOfferAlert();
         closeAdPanelButton();
 
+        logHelper.logStep("Find the best dates for departure and return flights");
         LocalDate startDate = LocalDate.now().plusMonths(departAfterMonths);
         LocalDate endDate = startDate.plusMonths(returnAfterMonths);
 
@@ -225,7 +231,10 @@ public class VJSelectFlightCheapPage {
         navigateToTargetMonth(startYearMonth, LanguageManager.get("departure_flight"));
 
         CheapestTicketDate bestDates = findLowestTotalPriceTrip(startYearMonth, endYearMonth, returnFlightAfterDays);
+        logHelper.logStep("Best dates found: Depart - %s, Return - %s",
+                bestDates.getDepartDate(), bestDates.getReturnDate());
 
+        logHelper.logStep("Select the best flight tickets");
         navigateToTargetMonth(YearMonth.from(bestDates.getDepartDate()), LanguageManager.get("departure_flight"));
         SelenideElement departTicket = findTicketByDay(bestDates.getDepartDate().getDayOfMonth(), LanguageManager.get("departure_flight"));
         selectFlight(YearMonth.from(bestDates.getDepartDate()), LanguageManager.get("departure_flight"), departTicket);
@@ -251,6 +260,7 @@ public class VJSelectFlightCheapPage {
      * This method waits for the button to be ready and then clicks it.
      */
     public void clickContinueButton() {
+        logHelper.logStep("Click continue button to proceed with flight selection");
         clickWhenReady(continueButton);
     }
 }

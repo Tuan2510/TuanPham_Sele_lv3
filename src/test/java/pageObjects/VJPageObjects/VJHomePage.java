@@ -2,17 +2,21 @@ package pageObjects.VJPageObjects;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Step;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.ElementHelper;
 import utils.LanguageManager;
 import testDataObject.VJTest.FlightType;
 import testDataObject.VJTest.FlightDataObject;
+import utils.LogHelper;
+import utils.TestListener;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.appear;
 import static com.codeborne.selenide.Condition.visible;
@@ -26,6 +30,9 @@ import static utils.ElementHelper.isElementDisplayed;
 import static utils.LanguageManager.getLocale;
 
 public class VJHomePage {
+    private static final Logger logger = LoggerFactory.getLogger(VJHomePage.class);
+    private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
+
     // Locators
     private final SelenideElement acceptCookiesBtn = $("#popup-dialog-description + div button");
     private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
@@ -56,18 +63,19 @@ public class VJHomePage {
      * Verifies that the home page is displayed by checking the URL.
      * This method uses Selenide's webdriver to assert that the current URL contains "/home".
      */
-    @Step("Verify home page displayed in Vietnamese")
     public void verifyPageDisplayInVietnamese(){
         //check the url
         webdriver().shouldHave(urlContaining("/vi"));
     }
 
-    @Step("Get flight input section for type: {type}")
     private SelenideElement getFlightInputSection(String dynamicValue) {
         return $x(TicketInput.formatted(dynamicValue));
     }
 
-    @Step("Close cookies banner if displayed")
+    /**
+     * Closes the cookies banner if it is displayed.
+     * This method checks for the presence of the accept cookies button and clicks it if visible.
+     */
     public void closeCookiesBanner() {
         if (acceptCookiesBtn.isDisplayed()) {
             acceptCookiesBtn.click();
@@ -78,7 +86,6 @@ public class VJHomePage {
      * Closes the offer alert if it is displayed.
      * This method switches to the iframe containing the alert and clicks the "Later" button if it exists.
      */
-    @Step("Close offer alert if displayed")
     public void closeOfferAlert() {
         if (alertOfferIframe.isDisplayed()) {
             ElementHelper.switchToIframe(alertOfferIframe);
@@ -91,7 +98,6 @@ public class VJHomePage {
         }
     }
 
-    @Step("Select flight type")
     private void chooseFlightType(FlightType type){
         if (type == FlightType.ROUND_TRIP){
             if(!roundTripRdb.isSelected()) {
@@ -104,7 +110,6 @@ public class VJHomePage {
         }
     }
 
-    @Step("Select departure location for flight")
     private void selectDepartureLocation(String DepartAddress){
         SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DepartAddress));
 
@@ -117,7 +122,6 @@ public class VJHomePage {
         shadowLocationAddress.click();
     }
 
-    @Step("Select destination location for flight")
     private void selectDestinationLocation(String DesAddress){
         SelenideElement shadowLocationAddress = $x(shadowLocationXpath.formatted(DesAddress));
 
@@ -130,14 +134,13 @@ public class VJHomePage {
         shadowLocationAddress.click();
     }
 
-    @Step("Select departure date and return date for round trip flight")
     private void selectRoundTripDate(LocalDate departDate, LocalDate returnDate){
         SelenideElement departDateBtn = $x(shadowDateButtonXpath.formatted(
                 getFormattedDate(departDate, getLocale(), LanguageManager.get("month_format")), departDate.getDayOfMonth()));
 
 
         SelenideElement returnDayBtn = $x(shadowDateButtonXpath.formatted(
-                getFormattedDate(departDate, getLocale(), LanguageManager.get("month_format")), returnDate.getDayOfMonth()));
+                getFormattedDate(returnDate, getLocale(), LanguageManager.get("month_format")), returnDate.getDayOfMonth()));
 
         if (!isElementDisplayed(currentMonthLabel)) {
             departureDateBtn.click();
@@ -150,7 +153,6 @@ public class VJHomePage {
         returnDayBtn.shouldBe(visible).click();
     }
 
-    @Step("Navigate to target month in the calendar")
     private void navigateToTargetMonth(LocalDate targetDate){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(LanguageManager.get("month_year_format"), getLocale());
 
@@ -167,14 +169,18 @@ public class VJHomePage {
             } else {
                 prevButton.shouldBe(visible).click();
             }
+        }
 
+        if(getLocale().equals(Locale.of("vi", "vn"))) {
+            String monthWithLeadingZero = String.format("Tháng %02d", targetDate.getMonthValue());
+            currentMonthLabel.shouldHave(Condition.text(monthWithLeadingZero));
+        } else {
             currentMonthLabel.shouldHave(Condition.text(
                     targetDate.getMonth().getDisplayName(TextStyle.FULL, getLocale())
             ));
         }
     }
 
-    @Step("Select number of passenger in a flight")
     private void selectPassengerNumber(int numOfAdults, int numOfChildrens, int numOfInfants){
 
         if ($x(TicketInput.formatted(LanguageManager.get("passenger"))).isDisplayed()) {
@@ -186,7 +192,6 @@ public class VJHomePage {
         adjustPassengerNumber("infants", numOfInfants);
     }
 
-    @Step("Adjust the number of passengers")
     private void adjustPassengerNumber(String passengerKey, int target){
         SelenideElement minusBtn = $x(shadowPassengerMinusBtn.formatted(LanguageManager.get(passengerKey)));
         SelenideElement currentNumber = $x(shadowPassengerNumber.formatted(LanguageManager.get(passengerKey)));
@@ -216,7 +221,6 @@ public class VJHomePage {
     /**
      * Clicks the button to search for tickets based on the current form values.
      */
-    @Step("Find ticket button click")
     public void findTicket(){
 //        if(passengerLetsGoBtn.isDisplayed()) {
             passengerLetsGoBtn.click();
@@ -229,21 +233,33 @@ public class VJHomePage {
      * Fill in the search form with provided flight data and trigger the search.
      * @param data flight information
      */
-    @Step("Search for tickets")
     public void searchTicket(FlightDataObject data){
+        logHelper.logStep("Searching for tickets with flight type: %s", data.getFlightType());
         chooseFlightType(data.getFlightType());
+
+        logHelper.logStep("Selecting departure location: %s", data.getDepartmentLocation());
         selectDepartureLocation(data.getDepartmentLocation());
+
+        logHelper.logStep("Selecting destination location: %s", data.getDestinationLocation());
         selectDestinationLocation(data.getDestinationLocation());
 
         LocalDate departLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
         LocalDate returnLocalDate = departLocalDate.plusDays(data.getReturnAfterDays());
-
+        logHelper.logStep("Selecting round trip date: Depart - %s, Return - %s",
+                departLocalDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                returnLocalDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         selectRoundTripDate(departLocalDate, returnLocalDate);
 
+        logHelper.logStep("Selecting passenger number: Adults - %s, Children - %s, Infants - %s",
+                data.getFlightPassengerDataObject().getAdults(),
+                data.getFlightPassengerDataObject().getChildren(),
+                data.getFlightPassengerDataObject().getInfants());
         selectPassengerNumber(
                 data.getFlightPassengerDataObject().getAdults(),
                 data.getFlightPassengerDataObject().getChildren(),
                 data.getFlightPassengerDataObject().getInfants());
+
+        logHelper.logStep("Clicking find ticket button");
         findTicket();
     }
 
@@ -253,22 +269,37 @@ public class VJHomePage {
      *
      * @param data The flight data object containing flight details.
      */
-    @Step("Search for tickets with lowest fare option")
     public void searchTicketWithLowestOption(FlightDataObject data){
+        logHelper.logStep("Searching for tickets with flight type: %s", data.getFlightType());
         chooseFlightType(data.getFlightType());
+
+        logHelper.logStep("Selecting departure location: %s", data.getDepartmentLocation());
         selectDepartureLocation(data.getDepartmentLocation());
+
+        logHelper.logStep("Selecting destination location: %s", data.getDestinationLocation());
         selectDestinationLocation(data.getDestinationLocation());
 
         LocalDate departLocalDate = LocalDate.now().plusDays(data.getDepartAfterDays());
         LocalDate returnLocalDate = departLocalDate.plusDays(data.getReturnAfterDays());
+
+        logHelper.logStep("Selecting round trip date: Depart - %s, Return - %s",
+                departLocalDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                returnLocalDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         selectRoundTripDate(departLocalDate, returnLocalDate);
 
+        logHelper.logStep("Selecting passenger number: Adults - %s, Children - %s, Infants - %s",
+                data.getFlightPassengerDataObject().getAdults(),
+                data.getFlightPassengerDataObject().getChildren(),
+                data.getFlightPassengerDataObject().getInfants());
         selectPassengerNumber(
                 data.getFlightPassengerDataObject().getAdults(),
                 data.getFlightPassengerDataObject().getChildren(),
                 data.getFlightPassengerDataObject().getInfants());
 
+        logHelper.logStep("Checking lowest price checkbox");
         checkLowestPriceCheckbox();
+
+        logHelper.logStep("Clicking find ticket button");
         findTicket();
     }
 }
