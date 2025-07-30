@@ -3,9 +3,13 @@ package pageObjects.AGPageObjects;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.DatePickerHelper;
 import utils.ElementHelper;
 import utils.LanguageManager;
+import utils.LogHelper;
+import utils.TestListener;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -16,6 +20,9 @@ import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
 public class AgodaHomePage {
+    private static final Logger logger = LoggerFactory.getLogger(AgodaHomePage.class);
+    private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
+
     // Static Locators
     private final SelenideElement menuIcon = $("button.igBcCj");
     private final SelenideElement menuWindow = $("div[data-selenium='hamburger-menu-dropdown-container']");
@@ -125,12 +132,16 @@ public class AgodaHomePage {
     public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int rooms, int adults, int children) {
         changeLanguageAndCurrencyToVND();
 
+        logHelper.logStep("Setting destination: " + place);
         setDestination(place);
 
+        logHelper.logStep("Setting check-in date: " + checkInDate + ", check-out date: " + checkOutDate);
         setTravelDate(checkInDate, checkOutDate);
 
+        logHelper.logStep("Setting occupancy: " + rooms + " rooms, " + adults + " adults, " + children + " children");
         setOccupancy(rooms, adults, children);
 
+        logHelper.logStep("Clicking search button");
         searchButton.click();
     }
 

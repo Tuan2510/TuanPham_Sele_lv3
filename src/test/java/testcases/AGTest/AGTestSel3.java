@@ -56,7 +56,7 @@ public class AGTestSel3 extends TestBase {
         logHelper.logStep("Step #4: Sort results by lowest price");
         agodaSearchResultsPage.sortByLowestPrice();
 
-        logHelper.logStep("Step #5: Verify results are sorted by lowest price and the destination is correct");
+        logHelper.logStep("Step #5: Verify results are sorted by lowest price and the destination is still correct");
         agodaSearchResultsPage.verifyResultsSortedByLowestPrice(data.getResultCount());
         agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
     }

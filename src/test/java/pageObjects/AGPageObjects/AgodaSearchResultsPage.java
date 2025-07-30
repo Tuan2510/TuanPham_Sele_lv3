@@ -6,8 +6,12 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import testDataObject.AGTest.Hotel;
 import utils.LanguageManager;
+import utils.LogHelper;
+import utils.TestListener;
 
 import java.time.Duration;
 import java.util.List;
@@ -20,11 +24,15 @@ import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 import static utils.ElementHelper.scrollToElement;
 import static utils.ElementHelper.scrollToPageTop;
+import static utils.ValueHelper.formatPrice;
 import static utils.ValueHelper.getSafeText;
 import static utils.ValueHelper.parseFloatSafe;
 import static utils.ValueHelper.parsePrice;
 
 public class AgodaSearchResultsPage {
+    private static final Logger logger = LoggerFactory.getLogger(AgodaSearchResultsPage.class);
+    private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
+
     // Locators
     private final SelenideElement minPriceFilter = $("#SideBarLocationFilters #price_box_0");
     private final SelenideElement maxPriceFilter = $("#SideBarLocationFilters #price_box_1");
@@ -50,7 +58,9 @@ public class AgodaSearchResultsPage {
      * Verifies that the search results page is displayed by checking the URL.
      */
     public void verifyPageIsDisplayed() {
+        switchTo().window(1);
         webdriver().shouldHave(urlContaining("/search?"));
+        logHelper.logStep("Search results page is displayed with URL: " + webdriver().driver().getCurrentFrameUrl());
     }
 
     private void setMinPriceFilter(String minPrice) {
@@ -87,6 +97,8 @@ public class AgodaSearchResultsPage {
         SelenideElement sortByElement = $x(String.format(sortByOption, sortBy));
         scrollToPageTop();
         sortByElement.shouldBe(Condition.visible).click();
+        // Wait for the sorting to apply
+        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
     }
 
     @Step("Sort results by: {sortBy}")
@@ -153,9 +165,13 @@ public class AgodaSearchResultsPage {
 
                     hotel.setName(getSafeText(element, hotelNameCss));
                     hotel.setAddress(getSafeText(element, hotelAddressCss));
-                    hotel.setRating(parseFloatSafe(getSafeText(element, hotelRatingCss)));
 
-                    String temp = getSafeText(element, hotelFinalPriceCss);
+                    if( element.$(hotelRatingCss).isDisplayed() ) {
+                        hotel.setRating(parseFloatSafe(getSafeText(element, hotelRatingCss)));
+                    } else {
+                        hotel.setRating(0f); // Default rating if not displayed
+                    }
+
                     if( element.$(hotelFinalPriceCss).isDisplayed() ) {
                         hotel.setPrice(parsePrice(getSafeText(element, hotelFinalPriceCss)));
                     } else {
@@ -167,8 +183,14 @@ public class AgodaSearchResultsPage {
                 .toList();
     }
 
+    /**
+     * Verifies that the search results contain hotels with the expected address.
+     *
+     * @param numberOfHotels The number of hotels to check in the results.
+     * @param expectedLocation The expected location substring to match in hotel addresses.
+     */
     public void verifySearchResultsHotelAddress(int numberOfHotels, String expectedLocation) {
-        switchTo().window(1);
+        logHelper.logStep("Expecting "+ numberOfHotels + " hotels in location: " + expectedLocation);
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
 
         if (hotels.isEmpty()) {
@@ -176,12 +198,18 @@ public class AgodaSearchResultsPage {
         }
         //check the location of the results
         for (Hotel hotel : hotels) {
+            logHelper.logStep("Checking hotel: " + hotel.getName() + ", at address: " + hotel.getAddress());
             if (!hotel.getAddress().toLowerCase().contains(expectedLocation.toLowerCase())) {
                 throw new AssertionError("Hotel address does not match expected location: " + hotel.getAddress());
             }
         }
     }
 
+    /**
+     * Verifies that the search results are sorted by the lowest price.
+     *
+     * @param numberOfHotels The number of hotels to check in the results.
+     */
     public void verifyResultsSortedByLowestPrice(int numberOfHotels) {
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
         if (hotels.isEmpty()) {
@@ -189,6 +217,7 @@ public class AgodaSearchResultsPage {
         }
 
         for (int i = 0; i < hotels.size() - 1; i++) {
+            logHelper.logStep("Checking hotel: " + hotels.get(i).getName() + ", with price: " + formatPrice(hotels.get(i).getPrice()) + " VND");
             if (hotels.get(i).getPrice() > hotels.get(i + 1).getPrice()) {
                 throw new AssertionError("Hotels are not sorted by lowest price.");
             }
