@@ -22,6 +22,7 @@
         "adults": 4,
         "children": 0
       },
+      "resultCount": "5",
       "rating": "3",
       "priceFilter": {
         "priceMin": "500000",
@@ -38,7 +39,8 @@
         "rooms": 2,
         "adults": 4,
         "children": 0
-      }
+      },
+      "resultCount": "5"
     }
   ]
 }

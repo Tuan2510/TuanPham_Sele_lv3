@@ -63,30 +63,45 @@ public class AgodaSearchResultsPage {
         logHelper.logStep("Search results page is displayed with URL: " + webdriver().driver().getCurrentFrameUrl());
     }
 
-    private void setMinPriceFilter(String minPrice) {
+    private void setMinPriceFilter(int minPrice) {
         scrollToElement(minPriceFilter);
-        minPriceFilter.setValue(minPrice);
+        minPriceFilter.setValue(String.valueOf(minPrice));
     }
 
-    private void setMaxPriceFilter(String maxPrice) {
+    private void setMaxPriceFilter(int maxPrice) {
         scrollToElement(maxPriceFilter);
-        maxPriceFilter.setValue(maxPrice);
+        maxPriceFilter.setValue(String.valueOf(maxPrice));
     }
 
-    @Step("Set price filter with min: {minPrice} and max: {maxPrice}")
-    public void setPriceFilter(String minPrice, String maxPrice) {
+    /**
+     * Sets the price filter for the search results.
+     *
+     * @param minPrice The minimum price to filter by.
+     * @param maxPrice The maximum price to filter by.
+     */
+    public void setPriceFilter(int minPrice, int maxPrice) {
+        logHelper.logStep("Setting price filter: " + formatPrice(minPrice) + " - " + formatPrice(maxPrice) + " VND");
         setMinPriceFilter(minPrice);
         setMaxPriceFilter(maxPrice);
+        // wait for the results to update
+        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
     }
 
     private void selectStarRating(int rating) {
         SelenideElement starRatingElement = $(String.format(starRatingFilter, rating));
         scrollToElement(starRatingElement);
         starRatingElement.click();
+        // Wait for the results to update
+        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
     }
 
-    @Step("Filter by rating: {rating} stars")
+    /**
+     * Filters the search results by star rating.
+     *
+     * @param rating The star rating to filter by (1 to 5).
+     */
     public void filterByStarRating(int rating) {
+        logHelper.logStep("Filtering results by star rating: " + rating + " stars");
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
@@ -101,8 +116,11 @@ public class AgodaSearchResultsPage {
         getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
     }
 
-    @Step("Sort results by: {sortBy}")
+    /**
+     * Sorts the search results by the lowest price.
+     */
     public void sortByLowestPrice() {
+        logHelper.logStep("Sorting results by lowest price");
         selectSortBy(LanguageManager.get("lowest_price_first"));
     }
 
@@ -222,5 +240,62 @@ public class AgodaSearchResultsPage {
                 throw new AssertionError("Hotels are not sorted by lowest price.");
             }
         }
+    }
+
+    /**
+     * Verifies that the filter is applied by checking the URL.
+     */
+    public void verifyFilterApplied() {
+        logHelper.logStep("Verifying that the filter is applied by ...");
+        //TODO: Implement verification logic for filter application
+
+    }
+
+    public void verifyHotelPriceAfterFilter(int numberOfHotels, int minPrice, int maxPrice) {
+        logHelper.logStep("Verifying hotel prices after applying filter: " + formatPrice(minPrice) + " - " + formatPrice(maxPrice) + " VND");
+        List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
+
+        if (hotels.isEmpty()) {
+            throw new AssertionError("No hotels found after filtering.");
+        }
+
+        for (Hotel hotel : hotels) {
+            logHelper.logStep("Checking hotel: " + hotel.getName() + ", with price: " + formatPrice(hotel.getPrice()) + " VND");
+            if (hotel.getPrice() < minPrice || hotel.getPrice() > maxPrice) {
+                throw new AssertionError("Hotel price is out of the specified range: " + hotel.getPrice());
+            }
+        }
+    }
+
+    public void verifyHotelStarRatingAfterFilter(int numberOfHotels, int starRating) {
+        logHelper.logStep("Verifying hotel star ratings after applying filter: " + starRating + " stars");
+        List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
+
+        if (hotels.isEmpty()) {
+            throw new AssertionError("No hotels found after filtering.");
+        }
+
+        for (Hotel hotel : hotels) {
+            logHelper.logStep("Checking hotel: " + hotel.getName() + ", with rating: " + hotel.getRating() + " stars");
+            if (hotel.getRating() < starRating) {
+                throw new AssertionError("Hotel rating is below the specified star rating: " + hotel.getRating());
+            }
+        }
+    }
+
+    /**
+     * Resets the price filter by clearing the input fields.
+     */
+    public void resetPriceFilter() {
+        logHelper.logStep("Resetting price filter");
+        //TODO: Implement reset logic for price filter
+    }
+
+    /**
+     * Verifies that the price filter is reset by checking the input fields.
+     */
+    public void verifyPriceFilterReset() {
+        logHelper.logStep("Verifying that the price filter is reset");
+        //TODO: Implement verification logic for price filter reset
     }
 }

@@ -128,7 +128,16 @@ public class AgodaHomePage {
         }
     }
 
-    @Step("Search hotel")
+    /**
+     * Searches for a hotel with the specified parameters.
+     *
+     * @param place         The destination place to search for hotels.
+     * @param checkInDate   The check-in date.
+     * @param checkOutDate  The check-out date.
+     * @param rooms         The number of rooms.
+     * @param adults        The number of adults.
+     * @param children      The number of children.
+     */
     public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int rooms, int adults, int children) {
         changeLanguageAndCurrencyToVND();
 
