@@ -89,7 +89,7 @@ public class AGTestSel3 extends TestBase {
         agodaSearchResultsPage.filterByStarRating(data.getRating());
 
         logHelper.logStep("Step #5: Verify results are filtered by price range and star rating");
-        agodaSearchResultsPage.verifyFilterApplied();
+        agodaSearchResultsPage.verifyFilterApplied(data.getPriceFilter());
         agodaSearchResultsPage.verifyHotelPriceAfterFilter(data.getResultCount(), data.getPriceFilter().getPriceMin(),
                 data.getPriceFilter().getPriceMax());
         agodaSearchResultsPage.verifyHotelStarRatingAfterFilter(data.getResultCount(), data.getRating());
@@ -97,7 +97,5 @@ public class AGTestSel3 extends TestBase {
         logHelper.logStep("Step #6: Reset price filters");
         agodaSearchResultsPage.resetPriceFilter();
         agodaSearchResultsPage.verifyPriceFilterReset();
-
-
     }
 }

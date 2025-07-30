@@ -4,8 +4,6 @@ package testDataObject.AGTest;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.DayOfWeek;
-
 @Data
 @NoArgsConstructor
 public class AGDataObject {
@@ -14,7 +12,7 @@ public class AGDataObject {
     private String checkInDay;
     private int stayDurationDays;
     private Occupancy occupancy;
-    private priceFilter priceFilter;
+    private PriceFilter priceFilter;
     private int rating;
     private int resultCount;
 }
