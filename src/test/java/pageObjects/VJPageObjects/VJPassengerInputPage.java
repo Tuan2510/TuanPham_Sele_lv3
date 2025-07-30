@@ -2,9 +2,12 @@ package pageObjects.VJPageObjects;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Step;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.ElementHelper;
 import utils.LanguageManager;
+import utils.LogHelper;
+import utils.TestListener;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -20,14 +23,14 @@ import static utils.DateHelper.formatShortDay;
 import static utils.LanguageManager.getLocale;
 
 public class VJPassengerInputPage {
-
+    private static final Logger logger = LoggerFactory.getLogger(VJPassengerInputPage.class);
+    private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
 
     // Dynamic Locators
     private final String flightLocationXpath = "//div[div/p[contains(text(),'%s')]]//div[span/img]";
     private final String flightDateXpath = "//div[div/p[contains(text(),'%s')]]//h5[not(@variantlg='h4')]";
     private final String flightPrice = "//div[p[contains(text(),'%s')]]//h4";
 
-    @Step("Get flight date section for type: {type}")
     private SelenideElement getFlightDateSection(String type) {
         return $x(flightDateXpath.formatted(type));
     }
@@ -36,13 +39,11 @@ public class VJPassengerInputPage {
      * Verifies that the passenger input page is displayed by checking the URL.
      * This method uses Selenide's webdriver to assert that the current URL contains "/passengers".
      */
-    @Step("Verify that the passenger input page is displayed")
     public void verifyPassengerPageDisplayed(){
         //check the url
         webdriver().shouldHave(urlContaining("/passengers"));
     }
 
-    @Step("Verify that the flight information is correct")
     private void verifyDepartAndReturnLocation(String departLocation, String returnLocation){
         SelenideElement flightDepartLocations = $x(flightLocationXpath.formatted(LanguageManager.get("departure_flight")));
         flightDepartLocations.shouldBe(Condition.visible, Duration.ofSeconds(5));
@@ -55,11 +56,11 @@ public class VJPassengerInputPage {
         flightReturnLocations.shouldHave(text(returnLocation));
     }
 
-    @Step("Verify the flight date and time")
     private void verifyFlightDate(LocalDate departLocalDate, LocalDate returnLocalDate){
         String departDate = formatShortDay(departLocalDate, LanguageManager.get("full_local_date_format"));
         String returnDate = formatShortDay(returnLocalDate, LanguageManager.get("full_local_date_format"));
 
+        logHelper.logStep("Departure date: %s, Return date: %s", departDate, returnDate);
         SelenideElement flightDepartDate = getFlightDateSection(LanguageManager.get("departure_flight"));
         flightDepartDate.shouldHave(text(departDate));
 
@@ -67,8 +68,9 @@ public class VJPassengerInputPage {
         flightReturnDate.shouldHave(text(returnDate));
     }
 
-    @Step("Verify the flight ID and time")
     private void verifyFlightIdAndTime(String departFlightId, String departTime, String returnFlightId, String returnTime){
+        logHelper.logStep("Departure Flight ID: %s, Departure Time: %s, Return Flight ID: %s, Return Time: %s",
+                departFlightId, departTime, returnFlightId, returnTime);
         SelenideElement flightDepartDate = getFlightDateSection(LanguageManager.get("departure_flight"));
         flightDepartDate.shouldHave(text(departFlightId));
         flightDepartDate.shouldHave(text(departTime));
@@ -78,8 +80,8 @@ public class VJPassengerInputPage {
         flightReturnDate.shouldHave(text(returnTime));
     }
 
-    @Step("Verify the flight price for departure and return flights")
     private void verifyFlightPrice(String departPrice, String returnPrice){
+        logHelper.logStep("Departure Price: %s, Return Price: %s", departPrice, returnPrice);
         SelenideElement flightDepartPrice = $x(flightPrice.formatted(LanguageManager.get("departure_flight")));
         flightDepartPrice.shouldHave(text(departPrice));
 
@@ -96,23 +98,33 @@ public class VJPassengerInputPage {
      * @param expectedDepartLocalDate The expected departure date in LocalDate format.
      * @param expectedReturnLocalDate The expected return date in LocalDate format.
      */
-    @Step("Verify the ticket information on the passenger input page")
     public void verifyTicketInfo(String departLocation, String returnLocation
             , LocalDate expectedDepartLocalDate, LocalDate expectedReturnLocalDate){
+        logHelper.logStep("Verifying ticket information for departure location: %s, return location: %s"
+                , departLocation, returnLocation);
         ElementHelper.scrollToPageTop();
 
         verifyDepartAndReturnLocation(departLocation, returnLocation);
 
+        logHelper.logStep("Verifying flight dates for departure: %s, return: %s"
+                , expectedDepartLocalDate.toString(), expectedReturnLocalDate.toString());
         verifyFlightDate(expectedDepartLocalDate, expectedReturnLocalDate);
 
         String departFlightId = filghtCardDataHolderThreadLocal.get().getDepartFlight().getFlightId();
         String departTime = filghtCardDataHolderThreadLocal.get().getDepartFlight().getTime().replace(LanguageManager.get("time_to"), "-");
         String returnFlightId = filghtCardDataHolderThreadLocal.get().getReturnFlight().getFlightId();
         String returnTime = filghtCardDataHolderThreadLocal.get().getReturnFlight().getTime().replace(LanguageManager.get("time_to"), "-");
+        logHelper.logStep("Verifying flight departFlightId: %s, departTime: %s, returnFlightId: %s, returnTime: %s"
+                , filghtCardDataHolderThreadLocal.get().getDepartFlight().getFlightId()
+                , filghtCardDataHolderThreadLocal.get().getDepartFlight().getTime()
+                , filghtCardDataHolderThreadLocal.get().getReturnFlight().getFlightId()
+                , filghtCardDataHolderThreadLocal.get().getReturnFlight().getTime());
         verifyFlightIdAndTime(departFlightId, departTime, returnFlightId, returnTime);
 
         String departPrice = filghtCardDataHolderThreadLocal.get().getDepartFlight().getPrice();
         String returnPrice = filghtCardDataHolderThreadLocal.get().getReturnFlight().getPrice();
+        logHelper.logStep("Verifying flight prices for departPrice: %s, returnPrice: %s"
+                , departPrice, returnPrice);
         verifyFlightPrice(departPrice, returnPrice);
     }
 }

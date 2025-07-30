@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Leap Frog Content Testing Suite" >
+    <listeners>
+        <listener class-name="utils.TestListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="Leap Frog Content Testing">
+        <groups>
+            <run>
+                <include name="LF_Regression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="testcases.LeapFrog.LeapFrogContentTest"> </class>
+        </classes>
+    </test>
+</suite>
