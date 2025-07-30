@@ -4,11 +4,11 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Step;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import testDataObject.AGTest.Hotel;
+import testDataObject.AGTest.PriceFilter;
 import utils.LanguageManager;
 import utils.LogHelper;
 import utils.TestListener;
@@ -19,6 +19,7 @@ import java.util.List;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.executeJavaScript;
 import static com.codeborne.selenide.Selenide.switchTo;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
@@ -40,6 +41,8 @@ public class AgodaSearchResultsPage {
     private final ElementsCollection hotelCards = $$("[data-selenium='hotel-item']");
     @Getter
     private final ElementsCollection hotelImagesList = $$("[data-element-name='property-card-gallery']");
+    private final SelenideElement priceFilterSliderMin = $(".rc-slider-handle-1");
+    private final SelenideElement priceFilterSliderMax = $(".rc-slider-handle-2");
 
     // String locators
     private final String hotelNameCss = "[data-selenium='hotel-name']";
@@ -48,6 +51,10 @@ public class AgodaSearchResultsPage {
     private final String hotelPriceCss = "[data-selenium='display-price']";
     private final String hotelFinalPriceCss = "[data-element-name='final-price']";
     private final String hotelSoldOutCss = ".SoldOutMessage";
+    private final String priceMinValueAttribute = "aria-valuemin";
+    private final String priceMaxValueAttribute = "aria-valuemax";
+    private final String priceNowValueAttribute = "aria-valuenow";
+    private final String priceDisplayValueAttribute = "aria-valuetext";
 
     //Dynamic locators
     private final String starRatingFilter = "//fieldset[legend[@id='filter-menu-StarRatingWithLuxury']]//label[@data-element-index='%s']//input";
@@ -65,12 +72,20 @@ public class AgodaSearchResultsPage {
 
     private void setMinPriceFilter(int minPrice) {
         scrollToElement(minPriceFilter);
-        minPriceFilter.setValue(String.valueOf(minPrice));
+        minPriceFilter.click();
+        minPriceFilter.clear();
+        minPriceFilter.pressEnter();
+        minPriceFilter.shouldBe(Condition.empty, Duration.ofSeconds(5));
+        minPriceFilter.setValue(String.valueOf(minPrice)).pressEnter();
     }
 
     private void setMaxPriceFilter(int maxPrice) {
         scrollToElement(maxPriceFilter);
-        maxPriceFilter.setValue(String.valueOf(maxPrice));
+        maxPriceFilter.click();
+        maxPriceFilter.clear();
+        maxPriceFilter.pressEnter();
+        maxPriceFilter.shouldBe(Condition.empty, Duration.ofSeconds(5));
+        maxPriceFilter.setValue(String.valueOf(maxPrice)).pressEnter();
     }
 
     /**
@@ -84,15 +99,15 @@ public class AgodaSearchResultsPage {
         setMinPriceFilter(minPrice);
         setMaxPriceFilter(maxPrice);
         // wait for the results to update
-        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
+        waitForHotelCardsToLoad();
     }
 
     private void selectStarRating(int rating) {
-        SelenideElement starRatingElement = $(String.format(starRatingFilter, rating));
-        scrollToElement(starRatingElement);
+        SelenideElement starRatingElement = $x(String.format(starRatingFilter, rating));
+        starRatingElement.scrollIntoView(true);
         starRatingElement.click();
         // Wait for the results to update
-        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
+        waitForHotelCardsToLoad();
     }
 
     /**
@@ -113,7 +128,7 @@ public class AgodaSearchResultsPage {
         scrollToPageTop();
         sortByElement.shouldBe(Condition.visible).click();
         // Wait for the sorting to apply
-        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
+        waitForHotelCardsToLoad();
     }
 
     /**
@@ -132,7 +147,7 @@ public class AgodaSearchResultsPage {
             SelenideElement lastLoaded = getHotelImagesList().last();
             lastLoaded.scrollIntoView(true);
 
-            getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(currentLoadedImages), Duration.ofSeconds(10));
+            waitForHotelCardsToLoad();
 
             int newLoadedImages = getHotelImagesList().size();
             if (newLoadedImages == currentLoadedImages) {
@@ -141,6 +156,10 @@ public class AgodaSearchResultsPage {
             currentLoadedImages = newLoadedImages;
             availableCount = getAvailableHotelCount();
         }
+    }
+
+    private void waitForHotelCardsToLoad() {
+        getHotelImagesList().shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
     }
 
     private int getAvailableHotelCount() {
@@ -243,14 +262,32 @@ public class AgodaSearchResultsPage {
     }
 
     /**
-     * Verifies that the filter is applied by checking the URL.
+     * Verifies that the price filter is applied correctly by comparing the expected and actual filter values.
+     *
+     * @param expectedFilter The expected price filter values.
      */
-    public void verifyFilterApplied() {
+    public void verifyFilterApplied(PriceFilter expectedFilter) {
         logHelper.logStep("Verifying that the filter is applied by ...");
-        //TODO: Implement verification logic for filter application
-
+        PriceFilter actualFilter = getActualPriceFilter();
+        if (actualFilter.getPriceMin() != expectedFilter.getPriceMin() || actualFilter.getPriceMax() != expectedFilter.getPriceMax()) {
+            throw new AssertionError("Price filter values do not match. Expected: " + expectedFilter + ", Actual: " + actualFilter);
+        }
     }
 
+    private PriceFilter getActualPriceFilter() {
+        logHelper.logStep("Getting actual price filter values");
+        int minPrice = parsePrice(minPriceFilter.scrollIntoView(true).getAttribute("value") );
+        int maxPrice = parsePrice(maxPriceFilter.scrollIntoView(true).getAttribute("value") );
+        return new PriceFilter(minPrice, maxPrice);
+    }
+
+    /**
+     * Verifies that the hotel prices are within the specified range after applying the filter.
+     *
+     * @param numberOfHotels The number of hotels to check in the results.
+     * @param minPrice       The minimum price to check against.
+     * @param maxPrice       The maximum price to check against.
+     */
     public void verifyHotelPriceAfterFilter(int numberOfHotels, int minPrice, int maxPrice) {
         logHelper.logStep("Verifying hotel prices after applying filter: " + formatPrice(minPrice) + " - " + formatPrice(maxPrice) + " VND");
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
@@ -267,6 +304,12 @@ public class AgodaSearchResultsPage {
         }
     }
 
+    /**
+     * Verifies that the hotel star ratings are at least the specified rating after applying the filter.
+     *
+     * @param numberOfHotels The number of hotels to check in the results.
+     * @param starRating     The minimum star rating to check against.
+     */
     public void verifyHotelStarRatingAfterFilter(int numberOfHotels, int starRating) {
         logHelper.logStep("Verifying hotel star ratings after applying filter: " + starRating + " stars");
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
@@ -277,7 +320,7 @@ public class AgodaSearchResultsPage {
 
         for (Hotel hotel : hotels) {
             logHelper.logStep("Checking hotel: " + hotel.getName() + ", with rating: " + hotel.getRating() + " stars");
-            if (hotel.getRating() < starRating) {
+            if (hotel.getRating() >= starRating) {
                 throw new AssertionError("Hotel rating is below the specified star rating: " + hotel.getRating());
             }
         }
@@ -288,7 +331,112 @@ public class AgodaSearchResultsPage {
      */
     public void resetPriceFilter() {
         logHelper.logStep("Resetting price filter");
-        //TODO: Implement reset logic for price filter
+        String sliderMinValue = priceFilterSliderMin.getAttribute("aria-valuemin");
+        String sliderMaxValue = priceFilterSliderMax.getAttribute("aria-valuemax");
+
+        simulateSliderDrag(priceFilterSliderMin, Integer.parseInt(sliderMinValue), Integer.parseInt(sliderMaxValue));
+        // Reset the max price filter to the maximum value since the slider is set to the minimum value
+        setMinPriceFilter(0);
+        waitForHotelCardsToLoad();
+        simulateSliderDrag(priceFilterSliderMax, Integer.parseInt(sliderMaxValue), Integer.parseInt(sliderMaxValue));
+        waitForHotelCardsToLoad();
+    }
+
+    private String getSliderAttributes(SelenideElement slider, String attribute) {
+        return slider.getAttribute(attribute);
+    }
+
+    private void simulateSliderDrag(SelenideElement handle, int targetIndex, int maxIndex) {
+        handle.scrollIntoView(true);
+
+        double targetPercentage = ((double) targetIndex / maxIndex) * 100;
+        double preDragPercentage = targetPercentage > 0 ? targetPercentage - 1 : targetPercentage + 1;
+
+        executeJavaScript("""
+        const handle = arguments[0];
+        const targetPercentage = arguments[1];
+        const preDragPercentage = arguments[2];
+
+        const rect = handle.getBoundingClientRect();
+        const startX = rect.left + rect.width / 2;
+
+        const sliderTrack = handle.closest('.rc-slider');
+        const sliderRect = sliderTrack.getBoundingClientRect();
+
+        const eventOptions = { bubbles: true, cancelable: true };
+
+        // Simulate a small move before actual target (to force update)
+        const preX = sliderRect.left + (preDragPercentage / 100) * sliderRect.width;
+        const endX = sliderRect.left + (targetPercentage / 100) * sliderRect.width;
+
+        handle.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, ...eventOptions }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: preX, ...eventOptions }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: endX, ...eventOptions }));
+        document.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOptions }));
+        sliderTrack.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOptions }));
+    """, handle, targetPercentage, preDragPercentage);
+    }
+
+    private void simulateSliderDrag2(SelenideElement handle, int targetIndex, int maxIndex) {
+        handle.scrollIntoView(true);
+
+        int intermediateIndex = targetIndex == 0 ? 1 : targetIndex - 1;
+        double intermediatePercent = ((double) intermediateIndex / maxIndex) * 100;
+        double targetPercent = ((double) targetIndex / maxIndex) * 100;
+
+        executeJavaScript("""
+        const handle = arguments[0];
+        const intermediatePercent = arguments[1];
+        const targetPercent = arguments[2];
+
+        const rect = handle.getBoundingClientRect();
+        const sliderTrack = handle.closest('.rc-slider');
+        const sliderRect = sliderTrack.getBoundingClientRect();
+
+        const startX = rect.left + rect.width / 2;
+        const intermediateX = sliderRect.left + (intermediatePercent / 100) * sliderRect.width;
+        const endX = sliderRect.left + (targetPercent / 100) * sliderRect.width;
+
+        const eventOpts = { bubbles: true, cancelable: true };
+
+        handle.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: intermediateX, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: endX, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOpts }));
+        sliderTrack.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOpts }));
+    """, handle, intermediatePercent, targetPercent);
+    }
+
+    private void simulateSliderDrag3(SelenideElement handle, int targetIndex, int maxIndex) {
+        handle.scrollIntoView(true);
+
+        double percentTarget = ((double) targetIndex / maxIndex) * 100;
+        double percentNudgeForward = Math.min(percentTarget + 1, 100);
+        double percentNudgeBack = Math.max(percentTarget - 1, 0);
+
+        executeJavaScript("""
+        const handle = arguments[0];
+        const percentTarget = arguments[1];
+        const percentNudgeForward = arguments[2];
+        const percentNudgeBack = arguments[3];
+
+        const eventOpts = { bubbles: true, cancelable: true };
+        const rect = handle.getBoundingClientRect();
+        const sliderTrack = handle.closest('.rc-slider');
+        const sliderRect = sliderTrack.getBoundingClientRect();
+
+        const startX = rect.left + rect.width / 2;
+        const xNudgeForward = sliderRect.left + (percentNudgeForward / 100) * sliderRect.width;
+        const xNudgeBack = sliderRect.left + (percentNudgeBack / 100) * sliderRect.width;
+        const xTarget = sliderRect.left + (percentTarget / 100) * sliderRect.width;
+
+        handle.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: xNudgeForward, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: xNudgeBack, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mousemove', { clientX: xTarget, ...eventOpts }));
+        document.dispatchEvent(new MouseEvent('mouseup', { clientX: xTarget, ...eventOpts }));
+        sliderTrack.dispatchEvent(new MouseEvent('mouseup', { clientX: xTarget, ...eventOpts }));
+    """, handle, percentTarget, percentNudgeForward, percentNudgeBack);
     }
 
     /**
@@ -296,6 +444,20 @@ public class AgodaSearchResultsPage {
      */
     public void verifyPriceFilterReset() {
         logHelper.logStep("Verifying that the price filter is reset");
-        //TODO: Implement verification logic for price filter reset
+
+        int minValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMin, priceMinValueAttribute));
+        int maxValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMax, priceMaxValueAttribute));
+
+        int currentMinValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMin, priceNowValueAttribute));
+        int currentMaxValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMax, priceNowValueAttribute));
+
+        if (currentMinValue == minValue && currentMaxValue == maxValue) {
+            logHelper.logStep("Price filter is reset to default values");
+        } else {
+            String currentMinValueText = getSliderAttributes(minPriceFilter, priceDisplayValueAttribute);
+            String currentMaxValueText = getSliderAttributes(maxPriceFilter, priceDisplayValueAttribute);
+            throw new AssertionError("Price filter is not reset correctly. Current: " + currentMinValueText + " -> " + currentMaxValueText);
+        }
+
     }
 }

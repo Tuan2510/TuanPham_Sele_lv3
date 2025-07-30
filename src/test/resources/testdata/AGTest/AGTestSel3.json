@@ -14,13 +14,13 @@
   ],
   "AG_TC02_SearchAndFilterHotel": [
     {
-      "Location": "Da Nang",
-      "CheckInDay": "FRIDAY",
+      "place": "Da Nang",
+      "checkInDay": "FRIDAY",
       "stayDurationDays": "3",
       "occupancy": {
-        "rooms": 2,
-        "adults": 4,
-        "children": 0
+        "roomCount": 2,
+        "adultCount": 4,
+        "childCount": 0
       },
       "resultCount": "5",
       "rating": "3",
@@ -32,13 +32,13 @@
   ],
   "AG_TC03_AddHotelIntoFavourite": [
     {
-      "Location": "Da Nang",
-      "CheckInDay": "FRIDAY",
+      "place": "Da Nang",
+      "checkInDay": "FRIDAY",
       "stayDurationDays": "3",
       "occupancy": {
-        "rooms": 2,
-        "adults": 4,
-        "children": 0
+        "roomCount": 2,
+        "adultCount": 4,
+        "childCount": 0
       },
       "resultCount": "5"
     }
