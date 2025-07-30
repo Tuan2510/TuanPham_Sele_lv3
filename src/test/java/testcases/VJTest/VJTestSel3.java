@@ -108,11 +108,12 @@ public class VJTestSel3 extends TestBase{
         logHelper.logStep("Step #8: Verify travel options page displayed");
         selectTicketPage.verifyTravelOptionPageDisplayed();
 
-        logHelper.logStep("Step #9: Verify flight information");
+        logHelper.logStep("Step #9: Select flight ticket with cheapest price");
         String expectedDepartAddress = String.format("%s%s", data.getDepartmentLocation(), data.getDepartmentLocationCode());
         String expectedDestinationAddress = String.format("%s%s", data.getDestinationLocation(), data.getDestinationLocationCode());
         LocalDate expectedDepartLocalDate = cheapestDate.getDepartDate();
         LocalDate expectedReturnLocalDate = cheapestDate.getReturnDate();
+
 
         selectTicketPage.selectTicket(expectedDepartAddress, expectedDestinationAddress, data.getFlightTypeCode(),
                 data.getFlightPassengerDataObject(), expectedDepartLocalDate, expectedReturnLocalDate);

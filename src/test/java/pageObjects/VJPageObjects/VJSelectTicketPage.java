@@ -2,11 +2,14 @@ package pageObjects.VJPageObjects;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Step;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import testDataObject.VJTest.FlightCardInfo;
 import testDataObject.VJTest.FlightCardDataHolder;
 import testDataObject.VJTest.FlightPassengerDataObject;
 import utils.LanguageManager;
+import utils.LogHelper;
+import utils.TestListener;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -29,6 +32,9 @@ import static utils.ValueHelper.parsePrice;
 import static utils.LanguageManager.getLocale;
 
 public class VJSelectTicketPage {
+    private static final Logger logger = LoggerFactory.getLogger(VJSelectTicketPage.class);
+    private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
+
     //Locators
     private final SelenideElement alertOfferIframe = $("#preview-notification-frame");
     private final SelenideElement alertOfferLaterBtn = $("#NC_CTA_TWO");
@@ -54,7 +60,6 @@ public class VJSelectTicketPage {
      * Close the offer alert if it is displayed.
      * This method switches to the iframe containing the alert and clicks the "Later" button if it is visible.
      */
-    @Step("Close offer alert if displayed")
     public void closeOfferAlert() {
         if (alertOfferIframe.isDisplayed()) {
             switchToIframe(alertOfferIframe);
@@ -71,7 +76,6 @@ public class VJSelectTicketPage {
      * Close the advertisement panel if it is displayed.
      * This method checks if the close button for the ad panel is visible and clicks it.
      */
-    @Step("Select flight type")
     public void closeAdPanelButton(){
         if (isElementDisplayed(closeAdPanelButton) ) {
             clickWhenReady(closeAdPanelButton);
@@ -82,19 +86,17 @@ public class VJSelectTicketPage {
      * Verify that the travel options page is displayed by checking the URL.
      * This method uses Selenide's webdriver to assert that the current URL contains "/select-flight".
      */
-    @Step("Verify that the travel options page is displayed")
     public void verifyTravelOptionPageDisplayed(){
         webdriver().shouldHave(urlContaining("/select-flight"));
+        logHelper.logStep("Travel options page is displayed");
     }
 
-    @Step("Verify currency on the travel options page")
     private void verifyCurrency(String currency) {
         // Locate any element that contains the text "VND"
         $$("p.MuiTypography-root").findBy(text(currency)).shouldBe(visible, Duration.ofSeconds(5));
         availableTicketCollection.shouldHave(sizeGreaterThan(0));
     }
 
-    @Step("Verify flight location")
     private void verifyFlightLocation(String expectedDepartCity, String expectedDestinationCity){
         String departureCity = null;
         String destinationCity = null;
@@ -122,7 +124,6 @@ public class VJSelectTicketPage {
         }
     }
 
-    @Step("Verify flight type and passenger information")
     private void verifyFlightTypeAndPassenger(String expectedFlightTypeAndPassenger){
         String flightTypeAndPassenger = null;
 
@@ -139,7 +140,6 @@ public class VJSelectTicketPage {
         }
     }
 
-    @Step("Verify that there are no sold out tickets")
     private SelenideElement findCheapestTicket(){
         SelenideElement lowest = availableTicketCollection.get(0);
         int lowestPrice = parsePrice(lowest.getText().trim());
@@ -155,12 +155,10 @@ public class VJSelectTicketPage {
         return lowest;
     }
 
-    @Step("Select the lowest ticket")
     private void selectTicket(SelenideElement element){
         clickWhenReady(element);
     }
 
-    @Step("Verify flight date on the travel options page")
     private void verifyFlightDate(LocalDate expectedLocalDate){
         Locale locale = getLocale();
         String formatPattern = LanguageManager.get("date_display_format");
@@ -185,7 +183,6 @@ public class VJSelectTicketPage {
         selectingDate.shouldHave(exactText(expectedDate));
     }
 
-    @Step("Extract flight information from the ticket element")
     private FlightCardInfo extractFlightInfo(SelenideElement ticketElement, String flightType){
         String flightId = ticketElement.$x(flightIdAdditionalXpath).getText();
         String time  = ticketElement.$x(timeAdditionalXpath).getText();
@@ -204,11 +201,12 @@ public class VJSelectTicketPage {
      * @param departLocalDate The departure date.
      * @param returnLocalDate The return date (if applicable).
      */
-    @Step("Verify flight information on the travel options page")
     public void selectTicket(String departAddress, String destinationAddress, String flightTypeCode
             , FlightPassengerDataObject flightPassengerDataObject, LocalDate departLocalDate, LocalDate returnLocalDate) {
         verifyTravelOptionPageDisplayed();
 
+        logHelper.logStep("Verifying flight information: Depart Address: %s, Destination Address: %s, Flight Type: %s, Passenger: %s",
+                departAddress, destinationAddress, flightTypeCode, flightPassengerDataObject.getStringFlightPassenger());
         //close offer alert if displayed
         closeAdPanelButton();
 
@@ -231,6 +229,11 @@ public class VJSelectTicketPage {
         SelenideElement departFlightCard = lowestDepart.$x(flightCardAdditionalXpath);
         selectTicket(lowestDepart);
         filghtCardDataHolderThreadLocal.get().setDepartFlight(extractFlightInfo(departFlightCard, LanguageManager.get("departure_flight")));
+        logHelper.logStep("Selected departure flight: id=%s, time=%s, price=%s",
+                filghtCardDataHolderThreadLocal.get().getDepartFlight().getFlightId(),
+                filghtCardDataHolderThreadLocal.get().getDepartFlight().getTime(),
+                filghtCardDataHolderThreadLocal.get().getDepartFlight().getPrice());
+
 
         continueButton.click();
 
@@ -242,12 +245,15 @@ public class VJSelectTicketPage {
         SelenideElement returnFlightCard = lowestReturn.$x(flightCardAdditionalXpath);
         selectTicket(lowestReturn);
         filghtCardDataHolderThreadLocal.get().setReturnFlight(extractFlightInfo(returnFlightCard, LanguageManager.get("return_flight")));
+        logHelper.logStep("Selected return flight: id=%s, time=%s, price=%s",
+                filghtCardDataHolderThreadLocal.get().getReturnFlight().getFlightId(),
+                filghtCardDataHolderThreadLocal.get().getReturnFlight().getTime(),
+                filghtCardDataHolderThreadLocal.get().getReturnFlight().getPrice());
     }
 
     /**
      * Proceed to the passenger information page after selecting flights.
      */
-    @Step("Continue to passenger info page")
     public void continueToPassengerPage(){
         //continue to passenger info page
         clickWhenReady(continueButton);

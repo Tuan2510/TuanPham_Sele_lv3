@@ -30,4 +30,10 @@ public class LogHelper {
 
         io.qameta.allure.Allure.step(message);
     }
+
+    public void logStep(String message, Object ... args) {
+        String formattedMessage = String.format(message, args);
+        logStep(formattedMessage);
+    }
+
 }
