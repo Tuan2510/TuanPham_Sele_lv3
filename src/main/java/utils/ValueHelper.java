@@ -5,6 +5,8 @@ import com.codeborne.selenide.SelenideElement;
 
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ValueHelper {
 
@@ -49,12 +51,25 @@ public class ValueHelper {
         }
     }
 
-    public static float parseFloatSafe(String value) {
-        try {
-            return Float.parseFloat(value);
-        } catch (NumberFormatException e) {
+    public static float parseHotelRatingFloat(String rawText) {
+        if (rawText == null || rawText.isEmpty()) {
             return 0f;
         }
+
+        // Extract first number from the string (e.g., "5 stars out of 5" => 5)
+        Pattern pattern = Pattern.compile("(\\d+(\\.\\d+)?)");
+        Matcher matcher = pattern.matcher(rawText.trim());
+
+        if (matcher.find()) {
+            try {
+                return Float.parseFloat(matcher.group(1));
+            } catch (NumberFormatException e) {
+                // Fallback in case parsing fails
+                throw new RuntimeException("Failed to parse hotel rating from: " + rawText);
+            }
+        }
+
+        return 0f; // Default if no match
     }
 
 }
