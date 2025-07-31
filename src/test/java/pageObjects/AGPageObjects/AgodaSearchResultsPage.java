@@ -27,7 +27,7 @@ import static utils.ElementHelper.scrollToElement;
 import static utils.ElementHelper.scrollToPageTop;
 import static utils.ValueHelper.formatPrice;
 import static utils.ValueHelper.getSafeText;
-import static utils.ValueHelper.parseFloatSafe;
+import static utils.ValueHelper.parseHotelRatingFloat;
 import static utils.ValueHelper.parsePrice;
 
 public class AgodaSearchResultsPage {
@@ -67,7 +67,7 @@ public class AgodaSearchResultsPage {
     public void verifyPageIsDisplayed() {
         switchTo().window(1);
         webdriver().shouldHave(urlContaining("/search?"));
-        logHelper.logStep("Search results page is displayed with URL: " + webdriver().driver().getCurrentFrameUrl());
+        logHelper.logStep("Search results page is displayed with URL: %s", webdriver().driver().getCurrentFrameUrl());
     }
 
     private void setMinPriceFilter(int minPrice) {
@@ -95,7 +95,7 @@ public class AgodaSearchResultsPage {
      * @param maxPrice The maximum price to filter by.
      */
     public void setPriceFilter(int minPrice, int maxPrice) {
-        logHelper.logStep("Setting price filter: " + formatPrice(minPrice) + " - " + formatPrice(maxPrice) + " VND");
+        logHelper.logStep("Setting price filter: min= %s, max= %s", formatPrice(minPrice), formatPrice(maxPrice));
         setMinPriceFilter(minPrice);
         setMaxPriceFilter(maxPrice);
         // wait for the results to update
@@ -116,7 +116,7 @@ public class AgodaSearchResultsPage {
      * @param rating The star rating to filter by (1 to 5).
      */
     public void filterByStarRating(int rating) {
-        logHelper.logStep("Filtering results by star rating: " + rating + " stars");
+        logHelper.logStep("Filtering results by star rating: %s stars", rating);
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
@@ -204,7 +204,7 @@ public class AgodaSearchResultsPage {
                     hotel.setAddress(getSafeText(element, hotelAddressCss));
 
                     if( element.$(hotelRatingCss).isDisplayed() ) {
-                        hotel.setRating(parseFloatSafe(getSafeText(element, hotelRatingCss)));
+                        hotel.setRating(parseHotelRatingFloat(getSafeText(element, hotelRatingCss)));
                     } else {
                         hotel.setRating(0f); // Default rating if not displayed
                     }
@@ -227,7 +227,7 @@ public class AgodaSearchResultsPage {
      * @param expectedLocation The expected location substring to match in hotel addresses.
      */
     public void verifySearchResultsHotelAddress(int numberOfHotels, String expectedLocation) {
-        logHelper.logStep("Expecting "+ numberOfHotels + " hotels in location: " + expectedLocation);
+        logHelper.logStep("Expecting %s hotels in search results with location containing: %s", numberOfHotels, expectedLocation);
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
 
         if (hotels.isEmpty()) {
@@ -235,7 +235,7 @@ public class AgodaSearchResultsPage {
         }
         //check the location of the results
         for (Hotel hotel : hotels) {
-            logHelper.logStep("Checking hotel: " + hotel.getName() + ", at address: " + hotel.getAddress());
+            logHelper.logStep("Checking hotel: [%s], with address: [%s]", hotel.getName(), hotel.getAddress());
             if (!hotel.getAddress().toLowerCase().contains(expectedLocation.toLowerCase())) {
                 throw new AssertionError("Hotel address does not match expected location: " + hotel.getAddress());
             }
@@ -254,7 +254,7 @@ public class AgodaSearchResultsPage {
         }
 
         for (int i = 0; i < hotels.size() - 1; i++) {
-            logHelper.logStep("Checking hotel: " + hotels.get(i).getName() + ", with price: " + formatPrice(hotels.get(i).getPrice()) + " VND");
+            logHelper.logStep("Checking hotel: [%s], with price: %s", hotels.get(i).getName(), formatPrice(hotels.get(i).getPrice()));
             if (hotels.get(i).getPrice() > hotels.get(i + 1).getPrice()) {
                 throw new AssertionError("Hotels are not sorted by lowest price.");
             }
@@ -267,7 +267,7 @@ public class AgodaSearchResultsPage {
      * @param expectedFilter The expected price filter values.
      */
     public void verifyFilterApplied(PriceFilter expectedFilter) {
-        logHelper.logStep("Verifying that the filter is applied by ...");
+        logHelper.logStep("Verifying that the filter is applied");
         PriceFilter actualFilter = getActualPriceFilter();
         if (actualFilter.getPriceMin() != expectedFilter.getPriceMin() || actualFilter.getPriceMax() != expectedFilter.getPriceMax()) {
             throw new AssertionError("Price filter values do not match. Expected: " + expectedFilter + ", Actual: " + actualFilter);
@@ -289,7 +289,7 @@ public class AgodaSearchResultsPage {
      * @param maxPrice       The maximum price to check against.
      */
     public void verifyHotelPriceAfterFilter(int numberOfHotels, int minPrice, int maxPrice) {
-        logHelper.logStep("Verifying hotel prices after applying filter: " + formatPrice(minPrice) + " - " + formatPrice(maxPrice) + " VND");
+        logHelper.logStep("Verifying hotel prices after applying filter: %s - %s", formatPrice(minPrice), formatPrice(maxPrice));
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
 
         if (hotels.isEmpty()) {
@@ -297,9 +297,11 @@ public class AgodaSearchResultsPage {
         }
 
         for (Hotel hotel : hotels) {
-            logHelper.logStep("Checking hotel: " + hotel.getName() + ", with price: " + formatPrice(hotel.getPrice()) + " VND");
+            logHelper.logStep("Checking hotel: [%s], with price: %s", hotel.getName(), formatPrice(hotel.getPrice()));
             if (hotel.getPrice() < minPrice || hotel.getPrice() > maxPrice) {
-                throw new AssertionError("Hotel price is out of the specified range: " + hotel.getPrice());
+                throw new AssertionError("Hotel price is out of the specified range. Hotel name: " + hotel.getName() +
+                        ", price: " + formatPrice(hotel.getPrice()) +
+                        ", expected range: " + formatPrice(minPrice) + " - " + formatPrice(maxPrice));
             }
         }
     }
@@ -311,7 +313,7 @@ public class AgodaSearchResultsPage {
      * @param starRating     The minimum star rating to check against.
      */
     public void verifyHotelStarRatingAfterFilter(int numberOfHotels, int starRating) {
-        logHelper.logStep("Verifying hotel star ratings after applying filter: " + starRating + " stars");
+        logHelper.logStep("Verifying hotel star ratings after applying filter: %s stars", starRating);
         List<Hotel> hotels = getHotelsFromResults(numberOfHotels);
 
         if (hotels.isEmpty()) {
@@ -319,9 +321,11 @@ public class AgodaSearchResultsPage {
         }
 
         for (Hotel hotel : hotels) {
-            logHelper.logStep("Checking hotel: " + hotel.getName() + ", with rating: " + hotel.getRating() + " stars");
-            if (hotel.getRating() >= starRating) {
-                throw new AssertionError("Hotel rating is below the specified star rating: " + hotel.getRating());
+            logHelper.logStep("Checking hotel: [%s], with rating: %.1f stars", hotel.getName(), hotel.getRating());
+            if (hotel.getRating() < starRating) {
+                throw new AssertionError("Hotel rating is below the specified star rating. Hotel name: " + hotel.getName() +
+                        ", rating: " + hotel.getRating() +
+                        ", expected minimum rating: " + starRating);
             }
         }
     }
@@ -442,21 +446,38 @@ public class AgodaSearchResultsPage {
     /**
      * Verifies that the price filter is reset by checking the input fields.
      */
-    public void verifyPriceFilterReset() {
+    public void verifyPriceFilterReset(PriceFilter expectedFilter) {
         logHelper.logStep("Verifying that the price filter is reset");
 
+        // Get the current attributes of the price filter sliders
         int minValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMin, priceMinValueAttribute));
         int maxValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMax, priceMaxValueAttribute));
 
         int currentMinValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMin, priceNowValueAttribute));
         int currentMaxValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMax, priceNowValueAttribute));
 
+        //Check for filter slider attribute values
         if (currentMinValue == minValue && currentMaxValue == maxValue) {
-            logHelper.logStep("Price filter is reset to default values");
+            logHelper.logStep("Price filter attributes are reset correctly: " +
+                    "Min: " + formatPrice(minValue) + "; Max: " + formatPrice(maxValue));
         } else {
             String currentMinValueText = getSliderAttributes(minPriceFilter, priceDisplayValueAttribute);
             String currentMaxValueText = getSliderAttributes(maxPriceFilter, priceDisplayValueAttribute);
-            throw new AssertionError("Price filter is not reset correctly. Current: " + currentMinValueText + " -> " + currentMaxValueText);
+            throw new AssertionError("Price filter is not reset correctly. Current filter values: " +
+                    "Min: " + currentMinValueText + "; Max: " + currentMaxValueText +
+                    ". Expected Min: " + formatPrice(minValue) + "; Max: " + formatPrice(maxValue));
+        }
+
+        // Get the actual displayed price filter values
+        PriceFilter displayedPriceValues = getActualPriceFilter();
+
+        // Check if the displayed prices should reset to the expected filter values
+        if (displayedPriceValues.getPriceMin() < expectedFilter.getPriceMin() || displayedPriceValues.getPriceMax() > expectedFilter.getPriceMax()) {
+            logHelper.logStep("Price filter display values are reset correctly: " +
+                    "Min: " + formatPrice(displayedPriceValues.getPriceMin()) + "; Max: " + formatPrice(displayedPriceValues.getPriceMax()));
+        } else {
+            throw new AssertionError("Display price filter is not reset correctly. Current display price: " +
+                    "Min: " + formatPrice(displayedPriceValues.getPriceMin()) + "; Max: " + formatPrice(displayedPriceValues.getPriceMax()));
         }
 
     }

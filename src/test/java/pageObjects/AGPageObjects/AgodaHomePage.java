@@ -88,9 +88,9 @@ public class AgodaHomePage {
     }
 
     private void setTravelDate(LocalDate checkIn, LocalDate checkOut) {
-        if(!datePickerWindow.isDisplayed()){
-            checkInToggle.click();
-        }
+//        if(!datePickerWindow.isDisplayed()){
+//            checkInToggle.click();
+//        }
         datePickerWindow.shouldBe(Condition.visible, Duration.ofSeconds(10));
         selectTravelDate(checkIn);
         selectTravelDate(checkOut);
@@ -141,13 +141,13 @@ public class AgodaHomePage {
     public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int rooms, int adults, int children) {
         changeLanguageAndCurrencyToVND();
 
-        logHelper.logStep("Setting destination: " + place);
+        logHelper.logStep("Setting destination: %s", place);
         setDestination(place);
 
-        logHelper.logStep("Setting check-in date: " + checkInDate + ", check-out date: " + checkOutDate);
+        logHelper.logStep("Setting check-in date: %s, check-out date: %s", checkInDate, checkOutDate);
         setTravelDate(checkInDate, checkOutDate);
 
-        logHelper.logStep("Setting occupancy: " + rooms + " rooms, " + adults + " adults, " + children + " children");
+        logHelper.logStep("Setting occupancy: Rooms: %d, Adults: %d, Children: %d", rooms, adults, children);
         setOccupancy(rooms, adults, children);
 
         logHelper.logStep("Clicking search button");

@@ -96,6 +96,6 @@ public class AGTestSel3 extends TestBase {
 
         logHelper.logStep("Step #6: Reset price filters");
         agodaSearchResultsPage.resetPriceFilter();
-        agodaSearchResultsPage.verifyPriceFilterReset();
+        agodaSearchResultsPage.verifyPriceFilterReset(data.getPriceFilter());
     }
 }
