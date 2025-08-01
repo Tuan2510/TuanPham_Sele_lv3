@@ -10,15 +10,7 @@ import static com.codeborne.selenide.Selenide.closeWebDriver;
 public class DriverFactory {
 
     public static void initDriver() {
-        String browser = RunConfigReader.getOrDefault("browser", "chrome");
-        Configuration.browser = browser;
 
-        String hostUrl = RunConfigReader.get("hostUrl");
-        if (hostUrl != null && !hostUrl.isBlank()) {
-            Configuration.remote = hostUrl;
-        } else {
-            Configuration.remote = null; // run locally
-        }
     }
 
     public static void quitDriver() {

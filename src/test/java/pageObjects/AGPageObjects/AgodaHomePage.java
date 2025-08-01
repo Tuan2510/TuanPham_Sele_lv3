@@ -2,11 +2,10 @@ package pageObjects.AGPageObjects;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import testDataObject.AGTest.Occupancy;
 import utils.DatePickerHelper;
-import utils.ElementHelper;
 import utils.LanguageManager;
 import utils.LogHelper;
 import utils.TestListener;
@@ -44,7 +43,7 @@ public class AgodaHomePage {
     // Dynamic Locators
     private final String selectableDate = "[data-selenium-date='%s']";
     private final String searchSuggestion = "[data-text='%s']";
-    private final String occupancyDisplayValue = "//div[div/h2[contains(text(), '%s')]]//p[contains(@class,'gpxKdd')]";
+    private final String occupancyDisplayValue = "//div[div/h2[contains(text(), '%s')]]//div[@data-selenium]/p";
     private final String occupancyMinusButton = "//div[div/h2[contains(text(), '%s')]]//button[@data-selenium='minus']";
     private final String occupancyPlusButton = "//div[div/h2[contains(text(), '%s')]]//button[@data-selenium='plus']";
 
@@ -101,19 +100,19 @@ public class AgodaHomePage {
                 $(datePickerCaption),
                 $(nextMonthButton),
                 $(prevMonthButton),
-                $(selectableDate.formatted(date))
+                selectableDate
         );
-        datePickerHelper.selectDate(date);
+        datePickerHelper.selectDateCss(date);
     }
 
-    private void setOccupancy(int rooms, int adults, int children) {
+    private void setOccupancy(Occupancy occupancy) {
         int currentRooms = Integer.parseInt($x(String.format(occupancyDisplayValue, LanguageManager.get("room"))).getText().trim());
         int currentAdults = Integer.parseInt($x(String.format(occupancyDisplayValue, LanguageManager.get("adults"))).getText().trim());
         int currentChildren = Integer.parseInt($x(String.format(occupancyDisplayValue, LanguageManager.get("children"))).getText().trim());
 
-        adjustOccupancyValue(LanguageManager.get("room"), currentRooms, rooms);
-        adjustOccupancyValue(LanguageManager.get("adults"), currentAdults, adults);
-        adjustOccupancyValue(LanguageManager.get("children"), currentChildren, children);
+        adjustOccupancyValue(LanguageManager.get("room"), currentRooms, occupancy.getRoomCount());
+        adjustOccupancyValue(LanguageManager.get("adults"), currentAdults, occupancy.getAdultCount());
+        adjustOccupancyValue(LanguageManager.get("children"), currentChildren, occupancy.getChildCount());
     }
 
     private void adjustOccupancyValue(String type, int current, int target) {
@@ -134,11 +133,9 @@ public class AgodaHomePage {
      * @param place         The destination place to search for hotels.
      * @param checkInDate   The check-in date.
      * @param checkOutDate  The check-out date.
-     * @param rooms         The number of rooms.
-     * @param adults        The number of adults.
-     * @param children      The number of children.
+     * @param occupancy     The occupancy details including room count, adult count, and child count.
      */
-    public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int rooms, int adults, int children) {
+    public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, Occupancy occupancy) {
         changeLanguageAndCurrencyToVND();
 
         logHelper.logStep("Setting destination: %s", place);
@@ -147,8 +144,8 @@ public class AgodaHomePage {
         logHelper.logStep("Setting check-in date: %s, check-out date: %s", checkInDate, checkOutDate);
         setTravelDate(checkInDate, checkOutDate);
 
-        logHelper.logStep("Setting occupancy: Rooms: %d, Adults: %d, Children: %d", rooms, adults, children);
-        setOccupancy(rooms, adults, children);
+        logHelper.logStep("Setting occupancy: %s", occupancy.toString());
+        setOccupancy(occupancy);
 
         logHelper.logStep("Clicking search button");
         searchButton.click();
