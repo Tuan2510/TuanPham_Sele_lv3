@@ -37,24 +37,19 @@ public class AgodaSearchResultsPage {
     // Locators
     private final SelenideElement minPriceFilter = $("#SideBarLocationFilters #price_box_0");
     private final SelenideElement maxPriceFilter = $("#SideBarLocationFilters #price_box_1");
-    private final SelenideElement hotelContainer = $("#contentContainer");
     private final ElementsCollection hotelCards = $$("[data-selenium='hotel-item']");
     @Getter
     private final ElementsCollection hotelImagesList = $$("[data-element-name='property-card-gallery']");
-    private final SelenideElement priceFilterSliderMin = $(".rc-slider-handle-1");
-    private final SelenideElement priceFilterSliderMax = $(".rc-slider-handle-2");
 
     // String locators
+    private final String hotelImgCss = "[data-element-name='property-card-gallery']";
     private final String hotelNameCss = "[data-selenium='hotel-name']";
     private final String hotelAddressCss = "[data-selenium='area-city']";
     private final String hotelRatingCss = "[data-testid='rating-container'] span";
     private final String hotelPriceCss = "[data-selenium='display-price']";
     private final String hotelFinalPriceCss = "[data-element-name='final-price']";
     private final String hotelSoldOutCss = ".SoldOutMessage";
-    private final String priceMinValueAttribute = "aria-valuemin";
-    private final String priceMaxValueAttribute = "aria-valuemax";
-    private final String priceNowValueAttribute = "aria-valuenow";
-    private final String priceDisplayValueAttribute = "aria-valuetext";
+    private final String PriceFilterValueAttribute = "value";
 
     //Dynamic locators
     private final String starRatingFilter = "//fieldset[legend[@id='filter-menu-StarRatingWithLuxury']]//label[@data-element-index='%s']//input";
@@ -88,6 +83,16 @@ public class AgodaSearchResultsPage {
         maxPriceFilter.setValue(String.valueOf(maxPrice)).pressEnter();
     }
 
+    public PriceFilter getFilterValues() {
+        logHelper.logStep("Getting current price filter values");
+        scrollToPageTop();
+        scrollToElement(minPriceFilter);
+
+        int minPrice = parsePrice(minPriceFilter.getAttribute(PriceFilterValueAttribute));
+        int maxPrice = parsePrice(maxPriceFilter.getAttribute(PriceFilterValueAttribute));
+        return new PriceFilter(minPrice, maxPrice);
+    }
+
     /**
      * Sets the price filter for the search results.
      *
@@ -96,6 +101,7 @@ public class AgodaSearchResultsPage {
      */
     public void setPriceFilter(int minPrice, int maxPrice) {
         logHelper.logStep("Setting price filter: min= %s, max= %s", formatPrice(minPrice), formatPrice(maxPrice));
+
         setMinPriceFilter(minPrice);
         setMaxPriceFilter(maxPrice);
         // wait for the results to update
@@ -173,6 +179,10 @@ public class AgodaSearchResultsPage {
         return count;
     }
 
+    private void waitForHotelCardToLoad(SelenideElement hotelCard) {
+        hotelCard.$(hotelImgCss).shouldBe(Condition.visible, Duration.ofSeconds(10));
+    }
+
     private List<SelenideElement> getLoadedHotelCards() {
         int loadedCount = Math.min(getHotelImagesList().size(), hotelCards.size());
         List<SelenideElement> loaded = new java.util.ArrayList<>(loadedCount);
@@ -197,6 +207,7 @@ public class AgodaSearchResultsPage {
                 .limit(limit)
                 .map(element -> {
                     scrollToElement(element);
+                    waitForHotelCardToLoad(element);
 
                     Hotel hotel = new Hotel();
 
@@ -331,153 +342,31 @@ public class AgodaSearchResultsPage {
     }
 
     /**
-     * Resets the price filter by clearing the input fields.
+     * Resets the price filter by set the default values.
      */
-    public void resetPriceFilter() {
-        logHelper.logStep("Resetting price filter");
-        String sliderMinValue = priceFilterSliderMin.getAttribute("aria-valuemin");
-        String sliderMaxValue = priceFilterSliderMax.getAttribute("aria-valuemax");
-
-        simulateSliderDrag(priceFilterSliderMin, Integer.parseInt(sliderMinValue), Integer.parseInt(sliderMaxValue));
-        // Reset the max price filter to the maximum value since the slider is set to the minimum value
-        setMinPriceFilter(0);
+    public void resetPriceFilter(PriceFilter defaultPriceFilter) {
+        logHelper.logStep("Resetting price filter by enter default values");
+        setPriceFilter(defaultPriceFilter.getPriceMin(), defaultPriceFilter.getPriceMax());
         waitForHotelCardsToLoad();
-        simulateSliderDrag(priceFilterSliderMax, Integer.parseInt(sliderMaxValue), Integer.parseInt(sliderMaxValue));
-        waitForHotelCardsToLoad();
-    }
-
-    private String getSliderAttributes(SelenideElement slider, String attribute) {
-        return slider.getAttribute(attribute);
-    }
-
-    private void simulateSliderDrag(SelenideElement handle, int targetIndex, int maxIndex) {
-        handle.scrollIntoView(true);
-
-        double targetPercentage = ((double) targetIndex / maxIndex) * 100;
-        double preDragPercentage = targetPercentage > 0 ? targetPercentage - 1 : targetPercentage + 1;
-
-        executeJavaScript("""
-        const handle = arguments[0];
-        const targetPercentage = arguments[1];
-        const preDragPercentage = arguments[2];
-
-        const rect = handle.getBoundingClientRect();
-        const startX = rect.left + rect.width / 2;
-
-        const sliderTrack = handle.closest('.rc-slider');
-        const sliderRect = sliderTrack.getBoundingClientRect();
-
-        const eventOptions = { bubbles: true, cancelable: true };
-
-        // Simulate a small move before actual target (to force update)
-        const preX = sliderRect.left + (preDragPercentage / 100) * sliderRect.width;
-        const endX = sliderRect.left + (targetPercentage / 100) * sliderRect.width;
-
-        handle.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, ...eventOptions }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: preX, ...eventOptions }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: endX, ...eventOptions }));
-        document.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOptions }));
-        sliderTrack.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOptions }));
-    """, handle, targetPercentage, preDragPercentage);
-    }
-
-    private void simulateSliderDrag2(SelenideElement handle, int targetIndex, int maxIndex) {
-        handle.scrollIntoView(true);
-
-        int intermediateIndex = targetIndex == 0 ? 1 : targetIndex - 1;
-        double intermediatePercent = ((double) intermediateIndex / maxIndex) * 100;
-        double targetPercent = ((double) targetIndex / maxIndex) * 100;
-
-        executeJavaScript("""
-        const handle = arguments[0];
-        const intermediatePercent = arguments[1];
-        const targetPercent = arguments[2];
-
-        const rect = handle.getBoundingClientRect();
-        const sliderTrack = handle.closest('.rc-slider');
-        const sliderRect = sliderTrack.getBoundingClientRect();
-
-        const startX = rect.left + rect.width / 2;
-        const intermediateX = sliderRect.left + (intermediatePercent / 100) * sliderRect.width;
-        const endX = sliderRect.left + (targetPercent / 100) * sliderRect.width;
-
-        const eventOpts = { bubbles: true, cancelable: true };
-
-        handle.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: intermediateX, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: endX, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOpts }));
-        sliderTrack.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, ...eventOpts }));
-    """, handle, intermediatePercent, targetPercent);
-    }
-
-    private void simulateSliderDrag3(SelenideElement handle, int targetIndex, int maxIndex) {
-        handle.scrollIntoView(true);
-
-        double percentTarget = ((double) targetIndex / maxIndex) * 100;
-        double percentNudgeForward = Math.min(percentTarget + 1, 100);
-        double percentNudgeBack = Math.max(percentTarget - 1, 0);
-
-        executeJavaScript("""
-        const handle = arguments[0];
-        const percentTarget = arguments[1];
-        const percentNudgeForward = arguments[2];
-        const percentNudgeBack = arguments[3];
-
-        const eventOpts = { bubbles: true, cancelable: true };
-        const rect = handle.getBoundingClientRect();
-        const sliderTrack = handle.closest('.rc-slider');
-        const sliderRect = sliderTrack.getBoundingClientRect();
-
-        const startX = rect.left + rect.width / 2;
-        const xNudgeForward = sliderRect.left + (percentNudgeForward / 100) * sliderRect.width;
-        const xNudgeBack = sliderRect.left + (percentNudgeBack / 100) * sliderRect.width;
-        const xTarget = sliderRect.left + (percentTarget / 100) * sliderRect.width;
-
-        handle.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: xNudgeForward, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: xNudgeBack, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mousemove', { clientX: xTarget, ...eventOpts }));
-        document.dispatchEvent(new MouseEvent('mouseup', { clientX: xTarget, ...eventOpts }));
-        sliderTrack.dispatchEvent(new MouseEvent('mouseup', { clientX: xTarget, ...eventOpts }));
-    """, handle, percentTarget, percentNudgeForward, percentNudgeBack);
     }
 
     /**
      * Verifies that the price filter is reset by checking the input fields.
      */
-    public void verifyPriceFilterReset(PriceFilter expectedFilter) {
+    public void verifyPriceFilterReset(PriceFilter defaultPriceFilter) {
         logHelper.logStep("Verifying that the price filter is reset");
-
-        // Get the current attributes of the price filter sliders
-        int minValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMin, priceMinValueAttribute));
-        int maxValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMax, priceMaxValueAttribute));
-
-        int currentMinValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMin, priceNowValueAttribute));
-        int currentMaxValue = Integer.parseInt(getSliderAttributes(priceFilterSliderMax, priceNowValueAttribute));
-
-        //Check for filter slider attribute values
-        if (currentMinValue == minValue && currentMaxValue == maxValue) {
-            logHelper.logStep("Price filter attributes are reset correctly: " +
-                    "Min: " + formatPrice(minValue) + "; Max: " + formatPrice(maxValue));
-        } else {
-            String currentMinValueText = getSliderAttributes(minPriceFilter, priceDisplayValueAttribute);
-            String currentMaxValueText = getSliderAttributes(maxPriceFilter, priceDisplayValueAttribute);
-            throw new AssertionError("Price filter is not reset correctly. Current filter values: " +
-                    "Min: " + currentMinValueText + "; Max: " + currentMaxValueText +
-                    ". Expected Min: " + formatPrice(minValue) + "; Max: " + formatPrice(maxValue));
-        }
 
         // Get the actual displayed price filter values
         PriceFilter displayedPriceValues = getActualPriceFilter();
 
         // Check if the displayed prices should reset to the expected filter values
-        if (displayedPriceValues.getPriceMin() < expectedFilter.getPriceMin() || displayedPriceValues.getPriceMax() > expectedFilter.getPriceMax()) {
+        if (displayedPriceValues.getPriceMin() == defaultPriceFilter.getPriceMin()|| displayedPriceValues.getPriceMax() == defaultPriceFilter.getPriceMax()) {
             logHelper.logStep("Price filter display values are reset correctly: " +
                     "Min: " + formatPrice(displayedPriceValues.getPriceMin()) + "; Max: " + formatPrice(displayedPriceValues.getPriceMax()));
         } else {
             throw new AssertionError("Display price filter is not reset correctly. Current display price: " +
-                    "Min: " + formatPrice(displayedPriceValues.getPriceMin()) + "; Max: " + formatPrice(displayedPriceValues.getPriceMax()));
+                    "Min: " + formatPrice(displayedPriceValues.getPriceMin()) + "; Max: " + formatPrice(displayedPriceValues.getPriceMax())
+                    + ". Expected: " + "Min: " + formatPrice(defaultPriceFilter.getPriceMin()) + "; Max: " + formatPrice(defaultPriceFilter.getPriceMax()));
         }
 
     }

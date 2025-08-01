@@ -2,8 +2,6 @@
   "AG_TC01_SearchAndSortHotel": [
     {
       "place": "Da Nang",
-      "checkInDay": "FRIDAY",
-      "stayDurationDays": "3",
       "occupancy": {
         "roomCount": 2,
         "adultCount": 4,
@@ -15,8 +13,6 @@
   "AG_TC02_SearchAndFilterHotel": [
     {
       "place": "Da Nang",
-      "checkInDay": "FRIDAY",
-      "stayDurationDays": "3",
       "occupancy": {
         "roomCount": 2,
         "adultCount": 4,
@@ -33,8 +29,6 @@
   "AG_TC03_AddHotelIntoFavourite": [
     {
       "place": "Da Nang",
-      "checkInDay": "FRIDAY",
-      "stayDurationDays": "3",
       "occupancy": {
         "roomCount": 2,
         "adultCount": 4,

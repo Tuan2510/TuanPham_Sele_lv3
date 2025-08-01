@@ -8,23 +8,25 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 
+import static com.codeborne.selenide.Selenide.$;
+
 public class DatePickerHelper {
 
     private final SelenideElement calendar;
     private final SelenideElement nextMonthButton;
     private final SelenideElement prevMonthButton;
-    private final SelenideElement targetDate;
+    private final String targetDateCssSelector;
 
-    public DatePickerHelper(SelenideElement calendar, SelenideElement nextMonthButton, SelenideElement prevMonthButton, SelenideElement targetDate) {
+    public DatePickerHelper(SelenideElement calendar, SelenideElement nextMonthButton, SelenideElement prevMonthButton, String targetDate) {
         this.calendar = calendar;
         this.nextMonthButton = nextMonthButton;
         this.prevMonthButton = prevMonthButton;
-        this.targetDate = targetDate;
+        this.targetDateCssSelector = targetDate;
     }
 
-    public void selectDate(LocalDate date) {
+    public void selectDateCss(LocalDate date) {
         alignDatePickerToMonth(date);
-        targetDate.click();
+        $(targetDateCssSelector.formatted(date)).click();
     }
 
     private void alignDatePickerToMonth(LocalDate targetDate) {
