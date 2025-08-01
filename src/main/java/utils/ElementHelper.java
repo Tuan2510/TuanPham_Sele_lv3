@@ -86,12 +86,12 @@ public class ElementHelper {
      */
     public static void scrollToElement(SelenideElement element) {
         try {
-            element.scrollIntoView("{behavior: \"smooth\", block: \"center\"}");
+            element.scrollIntoView("{block: 'center', inline: 'nearest', behavior: 'auto'}");
             element.shouldBe(Condition.visible, Duration.ofSeconds(5));
         } catch (Exception e) {
             // Fallback to JavaScript scroll if standard scroll fails
             logger.warn("Failed to scroll to element: {}. Reason: {}", element, e.getMessage());
-            executeJavaScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
+            executeJavaScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest', behavior: 'auto'});", element);
         }
     }
 

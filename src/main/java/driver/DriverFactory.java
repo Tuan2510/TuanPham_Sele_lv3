@@ -1,5 +1,6 @@
 package driver;
 
+import com.codeborne.selenide.Configuration;
 import utils.LanguageManager;
 import utils.RunConfigReader;
 import static com.codeborne.selenide.Selenide.open;
@@ -9,6 +10,7 @@ import static com.codeborne.selenide.Selenide.closeWebDriver;
 public class DriverFactory {
 
     public static void initDriver() {
+
     }
 
     public static void quitDriver() {
@@ -16,6 +18,7 @@ public class DriverFactory {
     }
 
     public static void openHomePage() {
+        initDriver();
         String url = RunConfigReader.getBaseUrl();
 
         if (url == null || url.isBlank()) {
@@ -25,7 +28,12 @@ public class DriverFactory {
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
-        open(url + LanguageManager.getLanguagePath());
+
+        if(RunConfigReader.get("env").equalsIgnoreCase("stg")){
+            url = url + LanguageManager.getLanguagePath();
+        }
+
+        open(url);
     }
 
 }

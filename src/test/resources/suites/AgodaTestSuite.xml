@@ -1,0 +1,25 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Agoda Test Suite" parallel="methods" thread-count="3">
+    <listeners>
+        <listener class-name="utils.TestListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="Agoda EN Test Suite">
+        <parameter name="browser" value="chrome"/>
+        <parameter name="language" value="en-us"/>
+        <parameter name="env" value="dev"/>
+        <groups>
+            <run>
+                <include name="AG_Regression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="testcases.AGTest.AGTestSel3">
+                <methods>
+                    <include name="AG_TC01_SearchAndSortHotel"/>
+                    <include name="AG_TC02_SearchAndFilterHotel"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
