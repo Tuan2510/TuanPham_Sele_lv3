@@ -21,7 +21,7 @@ public class Occupancy {
             occupancyString.append("s");
         }
         if (childCount > 0) {
-            occupancyString.append(", ").append(childCount).append(" Children");
+            occupancyString.append(", ").append(childCount).append(" Child");
             if (childCount > 1) {
                 occupancyString.append("ren");
             }
