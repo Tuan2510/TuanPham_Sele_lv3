@@ -12,11 +12,11 @@ public class Occupancy {
 
     public String toString() {
         StringBuilder occupancyString = new StringBuilder();
-        occupancyString.append(roomCount).append(" Rooms");
+        occupancyString.append(roomCount).append(" Room");
         if (roomCount > 1) {
             occupancyString.append("s");
         }
-        occupancyString.append(", ").append(adultCount).append(" Adults");
+        occupancyString.append(", ").append(adultCount).append(" Adult");
         if (adultCount > 1) {
             occupancyString.append("s");
         }
