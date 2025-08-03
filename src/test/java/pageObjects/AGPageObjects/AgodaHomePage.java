@@ -136,14 +136,20 @@ public class AgodaHomePage {
      * @param occupancy     The occupancy details including room count, adult count, and child count.
      */
     public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, Occupancy occupancy) {
+        logHelper.logStep("Change currency to VND");
         changeLanguageAndCurrencyToVND();
 
+        logHelper.logStep("Set destination: %s", place);
         setDestination(place);
 
+        logHelper.logStep("Set check-in date: %s, check-out date: %s", checkInDate, checkOutDate);
         setTravelDate(checkInDate, checkOutDate);
 
+        logHelper.logStep("Set occupancy: %d rooms, %d adults, %d children",
+                occupancy.getRoomCount(), occupancy.getAdultCount(), occupancy.getChildCount());
         setOccupancy(occupancy);
 
+        logHelper.logStep("Click search button");
         searchButton.click();
     }
 
