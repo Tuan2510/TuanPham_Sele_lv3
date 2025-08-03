@@ -1,0 +1,40 @@
+{
+  "AG_TC01_SearchAndSortHotel": [
+    {
+      "place": "Da Nang",
+      "occupancy": {
+        "roomCount": 2,
+        "adultCount": 4,
+        "childCount": 0
+      },
+      "resultCount": "5"
+    }
+  ],
+  "AG_TC02_SearchAndFilterHotel": [
+    {
+      "place": "Da Nang",
+      "occupancy": {
+        "roomCount": 2,
+        "adultCount": 4,
+        "childCount": 0
+      },
+      "resultCount": "5",
+      "rating": "3",
+      "priceFilter": {
+        "priceMin": "500000",
+        "priceMax": "1000000"
+      }
+    }
+  ],
+  "AG_TC03_AddHotelIntoFavourite": [
+    {
+      "place": "Da Nang",
+      "occupancy": {
+        "roomCount": 2,
+        "adultCount": 4,
+        "childCount": 0
+      },
+      "resultCount": "5"
+    }
+  ]
+}
