@@ -40,8 +40,7 @@ public class AGTestSel3 extends TestBase {
         logHelper.logStep("Step #1: Navigate to Agoda site");
         DriverFactory.openHomePage();
 
-        logHelper.logStep("Step #2: Search hotel with test case information: place=%s, checkInDayOfWeek=%s, stayDurationDays=%d, Rooms=%d, Adults=%d, Children=%d",
-                data.getPlace(), checkInDayOfWeek, stayDurationDays, data.getOccupancy().getRoomCount(), data.getOccupancy().getAdultCount(), data.getOccupancy().getChildCount());
+        logHelper.logStep("Step #2: Search hotel with test case information");
         LocalDate checkInDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.valueOf(checkInDayOfWeek)));
         LocalDate checkOutDate = checkInDate.plusDays(stayDurationDays);
 
