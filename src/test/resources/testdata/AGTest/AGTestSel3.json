@@ -26,7 +26,7 @@
       }
     }
   ],
-  "AG_TC03_AddHotelIntoFavourite": [
+  "AG_TC03_SearchAndAddVerifyHotelInfo": [
     {
       "place": "Da Nang",
       "occupancy": {
@@ -34,7 +34,15 @@
         "adultCount": 4,
         "childCount": 0
       },
-      "resultCount": "5"
+      "resultCount": "5",
+      "facilities": "SWIMMING_POOL",
+      "reviewCategories": [
+        "Cleanliness",
+        "Facilities",
+        "Service",
+        "Location",
+        "Value for money"
+      ]
     }
   ]
 }
