@@ -138,16 +138,12 @@ public class AgodaHomePage {
     public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, Occupancy occupancy) {
         changeLanguageAndCurrencyToVND();
 
-        logHelper.logStep("Setting destination: %s", place);
         setDestination(place);
 
-        logHelper.logStep("Setting check-in date: %s, check-out date: %s", checkInDate, checkOutDate);
         setTravelDate(checkInDate, checkOutDate);
 
-        logHelper.logStep("Setting occupancy: %s", occupancy.toString());
         setOccupancy(occupancy);
 
-        logHelper.logStep("Clicking search button");
         searchButton.click();
     }
 
