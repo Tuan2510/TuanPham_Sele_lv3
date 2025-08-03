@@ -10,10 +10,11 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Test retry: test failed ⇒ retry (1, 2)
 - [x] Parallel/distributed testing
 - [x] Cross browsers testing: Chrome, Edge
-- [ ] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, TBD (only 2/6 done)
+- [x] Selenium Grid/Shard
+- [ ] Test cases: VJ, Agoda, Books-pwakit
   - [x] VJ: [vj.com](https://www.vj.com/)
-  - [ ] Agoda: [agoda.com](https://www.agoda.com/)
+  - [x] Agoda: [agoda.com](https://www.agoda.com/)
+  - [ ] books-pwakit: [books-pwakit.appspot.com](https://books-pwakit.appspot.com/)
 - [ ] CI: Schedule test, send email notification result with summary
 
 ### User Cases
@@ -22,7 +23,7 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Group tests by purposes: regression, smoke/sanity test
 - [x] Source control practice: branch
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
-- [ ] Wrap custom controls
+- [x] Wrap custom controls
 - [ ] Data driven testing: test data is in excel file
 - [ ] Working with Shadow DOM
 - [ ] Compare with another FW e.g. Playwright
@@ -57,12 +58,15 @@ Runtime configuration is controlled through `src/main/resources/config/RunConfig
 
 - `retry.count` – maximum retry attempts for failed tests
 - `retry.mode` – `immediate` or `afterDone`
+- `browser` – browser to run tests in (e.g., `chrome`, `edge`)
 - `env` – decide which environment test
+- `language` – language for the test (e.g., `en`, `fr`, `de`)
+- `remoteUrl` – URL of the Selenium Grid (if running remotely)
 
 You can override any property via system properties, for example:
 
 ```bash
-mvn clean test -Dretry.count=2 -Dretry.mode=afterDone -Denv=dev
+mvn clean test -Dretry.count=1 -Dretry.mode=afterDone -Denv=dev
 ```
 
 ### Reports
