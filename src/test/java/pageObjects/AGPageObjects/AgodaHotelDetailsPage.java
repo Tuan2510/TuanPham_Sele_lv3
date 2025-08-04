@@ -71,14 +71,14 @@ public class AgodaHotelDetailsPage {
     /**
      * Verifies the hotel information and facilities on the hotel details page.
      *
-     * @param fifthHotel The hotel object containing the hotel name and address.
+     * @param hotel The hotel object containing the hotel name and address.
      * @param facilities The facilities object containing the facility to verify.
      */
-    public void verifyHotelInfoAndFacilities(Hotel fifthHotel, Facilities facilities) {
+    public void verifyHotelInfoAndFacilities(Hotel hotel, Facilities facilities) {
         logHelper.logStep("Verifying hotel information and facilities for hotel name: %s, address: %s, facility: %s",
-                fifthHotel.getName(), fifthHotel.getAddress(), facilities.getFacility());
-        verifyHotelName(fifthHotel.getName());
-        verifyHotelDestination(fifthHotel.getAddress());
+                hotel.getName(), hotel.getAddress(), facilities.getFacility());
+        verifyHotelName(hotel.getName());
+        verifyHotelDestination(hotel.getAddress());
         verifyHasFacility(facilities);
     }
 

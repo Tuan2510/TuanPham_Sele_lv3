@@ -58,8 +58,8 @@ public class AgodaSearchResultsPage {
     private final String sortByOption = "//button[div/span[text()='%s']]";
     private final String filterOption = "//div[@id='SideBarLocationFilters']//span[text()='%s']";
 
-    private final String hotelRating = ".//div[@data-element-name='property-card-review']/div/div";
-    private final String hotelRatingReview = "//li[span[text()='%s']]/strong";
+    private final String hotelCategoryRating = ".//div[@data-element-name='property-card-review']/div/div";
+    private final String hotelCategoryScore = "//li[span[text()='%s']]/strong";
 
     //Methods
     /**
@@ -384,10 +384,10 @@ public class AgodaSearchResultsPage {
     }
 
     /**
-     * Filters the hotel results by the swimming pool facility.
+     * Filters the hotel results by the facility.
      */
     public void filterByFacilities(Facilities facility) {
-        logHelper.logStep("Filtering results by swimming pool facility");
+        logHelper.logStep("Filtering results by %s facility", facility.getFacility());
         SelenideElement targetFilter = $x(String.format(filterOption, facility.getFacility()));
         targetFilter.scrollIntoView(true).shouldBe(Condition.visible).click();
         scrollToPageTop();
@@ -430,14 +430,14 @@ public class AgodaSearchResultsPage {
             throw new IllegalArgumentException("Hotel index is out of bounds");
         }
         SelenideElement card = loadedCards.get(index - 1);
-        SelenideElement hotelRatingScore = card.$x(hotelRating);
+        SelenideElement hotelRatingScore = card.$x(hotelCategoryRating);
         scrollToElement(hotelRatingScore);
         hotelRatingScore.hover();
         logHelper.logStep("Retrieving review scores for hotel [%s]", getSafeText(card, hotelNameCss));
 
         Map<String, String> scores = new HashMap<>();
         for (String category : categories) {
-            SelenideElement scoreElement = $x(String.format(hotelRatingReview, category));
+            SelenideElement scoreElement = $x(String.format(this.hotelCategoryScore, category));
             String value = scoreElement.shouldBe(Condition.visible, Duration.ofSeconds(5)).getText();
             scores.put(category, value);
         }
