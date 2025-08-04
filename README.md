@@ -11,14 +11,14 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Parallel/distributed testing
 - [x] Cross browsers testing: Chrome, Edge
 - [x] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, Books-pwakit
+- [x] Test cases: VJ, Agoda
   - [x] VJ: [vj.com](https://www.vj.com/)
   - [x] Agoda: [agoda.com](https://www.agoda.com/)
-  - [ ] books-pwakit: [books-pwakit.appspot.com](https://books-pwakit.appspot.com/)
 - [ ] CI: Schedule test, send email notification result with summary
 
 ### User Cases
 - [x] Content testing
+  - [x] LeapFrog: [leapfrog.com](https://store.leapfrog.com/en-us/apps/c?p=1&platforms=197&product_list_dir=asc&product_list_order=name)
 - [x] Multiple languages testing
 - [x] Group tests by purposes: regression, smoke/sanity test
 - [x] Source control practice: branch
@@ -26,6 +26,7 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Wrap custom controls
 - [ ] Data driven testing: test data is in excel file
 - [ ] Working with Shadow DOM
+  - [ ] books-pwakit: [books-pwakit.appspot.com](https://books-pwakit.appspot.com/)
 - [ ] Compare with another FW e.g. Playwright
 
 
