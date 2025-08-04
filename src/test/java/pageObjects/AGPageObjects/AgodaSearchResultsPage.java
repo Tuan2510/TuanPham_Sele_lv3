@@ -440,8 +440,8 @@ public class AgodaSearchResultsPage {
             SelenideElement scoreElement = $x(String.format(hotelRatingReview, category));
             String value = scoreElement.shouldBe(Condition.visible, Duration.ofSeconds(5)).getText();
             scores.put(category, value);
-            logHelper.logStep("Retrieved review scores: %s - %s", category, scores);
         }
+        logHelper.logStep("Retrieved review scores: %s", scores);
 
         return scores;
     }

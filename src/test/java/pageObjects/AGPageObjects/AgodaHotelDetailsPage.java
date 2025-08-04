@@ -52,11 +52,11 @@ public class AgodaHotelDetailsPage {
      */
     public void verifyReviewScores(Map<String, String> expectedScores) {
         logHelper.logStep("Verifying review scores for hotel [%s]", hotelName.getText());
+        logHelper.logStep("Expected review scores: %s", expectedScores);
         scrollToElement(hotelRating);
         hotelRating.hover();
 
         for (Map.Entry<String, String> entry : expectedScores.entrySet()) {
-            logHelper.logStep("Verifying review score for category: %s, expected score: %s", entry.getKey(), entry.getValue());
             SelenideElement score = $x(String.format(reviewCategoryScore, entry.getKey()));
             try {
                 score.shouldBe(Condition.visible).shouldHave(Condition.text(entry.getValue()));
