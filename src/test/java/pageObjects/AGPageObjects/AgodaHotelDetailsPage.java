@@ -61,7 +61,7 @@ public class AgodaHotelDetailsPage {
             SelenideElement score = $x(String.format(reviewCategoryScore, entry.getKey().getCategory()));
             try {
                 score.shouldBe(Condition.visible).shouldHave(Condition.text(entry.getValue()));
-            } catch (Exception e) {
+            } catch (AssertionError e) {
                 throw new AssertionError(
                         String.format("Review score for category '%s' does not match. Expected: '%s', Found: '%s'",
                                 entry.getKey().getCategory(), entry.getValue(), score.getText()), e);
