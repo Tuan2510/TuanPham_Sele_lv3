@@ -7,19 +7,22 @@ import com.codeborne.selenide.SelenideElement;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import testDataObject.AGTest.Facilities;
 import testDataObject.AGTest.Hotel;
 import testDataObject.AGTest.PriceFilter;
+import testDataObject.AGTest.ReviewCategory;
 import utils.LanguageManager;
 import utils.LogHelper;
 import utils.TestListener;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static com.codeborne.selenide.Selenide.$x;
-import static com.codeborne.selenide.Selenide.executeJavaScript;
 import static com.codeborne.selenide.Selenide.switchTo;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
@@ -54,6 +57,10 @@ public class AgodaSearchResultsPage {
     //Dynamic locators
     private final String starRatingFilter = "//fieldset[legend[@id='filter-menu-StarRatingWithLuxury']]//label[@data-element-index='%s']//input";
     private final String sortByOption = "//button[div/span[text()='%s']]";
+    private final String filterOption = "//div[@id='SideBarLocationFilters']//span[text()='%s']";
+
+    private final String hotelCategoryRating = ".//div[@data-element-name='property-card-review']/div/div";
+    private final String hotelCategoryScore = "//li[span[text()='%s']]/strong";
 
     //Methods
     /**
@@ -83,6 +90,11 @@ public class AgodaSearchResultsPage {
         maxPriceFilter.setValue(String.valueOf(maxPrice)).pressEnter();
     }
 
+    /**
+     * Gets the current price filter values from the search results page.
+     *
+     * @return PriceFilter object containing the minimum and maximum price values.
+     */
     public PriceFilter getFilterValues() {
         logHelper.logStep("Getting current price filter values");
         scrollToPageTop();
@@ -103,8 +115,9 @@ public class AgodaSearchResultsPage {
         logHelper.logStep("Setting price filter: min= %s, max= %s", formatPrice(minPrice), formatPrice(maxPrice));
 
         setMinPriceFilter(minPrice);
+        waitForHotelCardsToLoad();
+
         setMaxPriceFilter(maxPrice);
-        // wait for the results to update
         waitForHotelCardsToLoad();
     }
 
@@ -370,4 +383,69 @@ public class AgodaSearchResultsPage {
         }
 
     }
+
+    /**
+     * Filters the hotel results by the facility.
+     */
+    public void filterByFacilities(Facilities facility) {
+        logHelper.logStep("Filtering results by %s facility", facility.getFacility());
+        SelenideElement targetFilter = $x(String.format(filterOption, facility.getFacility()));
+        targetFilter.scrollIntoView(true).shouldBe(Condition.visible).click();
+        scrollToPageTop();
+        waitForHotelCardsToLoad();
+    }
+
+    /**
+     * Opens the hotel details page of the hotel at the given index.
+     *
+     * @param index index of the hotel (1-based)
+     * @return Hotel object containing basic information of the selected hotel
+     */
+    public Hotel openHotelDetailsByIndex(int index) {
+        loadHotelResults(index);
+        List<SelenideElement> loadedCards = getLoadedHotelCards();
+        if (index <= 0 || index > loadedCards.size()) {
+            throw new IllegalArgumentException("Hotel index is out of bounds");
+        }
+        SelenideElement card = loadedCards.get(index - 1);
+        card.scrollIntoView(true);
+        Hotel hotel = new Hotel();
+        hotel.setName(getSafeText(card, hotelNameCss));
+        hotel.setAddress(getSafeText(card, hotelAddressCss));
+        card.click();
+        switchTo().window(2);
+        return hotel;
+    }
+
+    /**
+     * Retrieves review scores for a hotel by hovering on its rating element.
+     *
+     * @param index index of the hotel (1-based)
+     * @param categories list of review categories to capture
+     * @return map of review category to its score text
+     */
+    public Map<ReviewCategory, Float> getHotelReviewScores(int index, List<ReviewCategory> categories) {
+        loadHotelResults(index);
+        List<SelenideElement> loadedCards = getLoadedHotelCards();
+        if (index <= 0 || index > loadedCards.size()) {
+            throw new IllegalArgumentException("Hotel index is out of bounds");
+        }
+        SelenideElement card = loadedCards.get(index - 1);
+        SelenideElement hotelRatingScore = card.$x(hotelCategoryRating);
+        scrollToElement(hotelRatingScore);
+        hotelRatingScore.hover();
+        logHelper.logStep("Retrieving review scores for hotel [%s]", getSafeText(card, hotelNameCss));
+
+        Map<ReviewCategory, Float> scores = new HashMap<>();
+        for (ReviewCategory category : categories) {
+            SelenideElement scoreElement = $x(String.format(this.hotelCategoryScore, category.getCategory()));
+            Float value = scoreElement.shouldBe(Condition.visible, Duration.ofSeconds(5))
+                    .getText().isEmpty() ? 0f : Float.parseFloat(scoreElement.getText());
+            scores.put(category, value);
+        }
+        logHelper.logStep("Retrieved review scores: %s", scores);
+
+        return scores;
+    }
+
 }

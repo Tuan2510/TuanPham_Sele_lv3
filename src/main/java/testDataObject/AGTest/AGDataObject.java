@@ -4,6 +4,8 @@ package testDataObject.AGTest;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 public class AGDataObject {
@@ -13,4 +15,6 @@ public class AGDataObject {
     private PriceFilter priceFilter;
     private int rating;
     private int resultCount;
+    private Facilities facilities;
+    private List<ReviewCategory> reviewCategories;
 }

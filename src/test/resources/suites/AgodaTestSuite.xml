@@ -18,6 +18,7 @@
                 <methods>
                     <include name="AG_TC01_SearchAndSortHotel"/>
                     <include name="AG_TC02_SearchAndFilterHotel"/>
+                    <include name="AG_TC03_SearchAndVerifyHotelDetails"/>
                 </methods>
             </class>
         </classes>

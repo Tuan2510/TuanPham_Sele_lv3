@@ -7,9 +7,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pageObjects.AGPageObjects.AgodaHomePage;
+import pageObjects.AGPageObjects.AgodaHotelDetailsPage;
 import pageObjects.AGPageObjects.AgodaSearchResultsPage;
 import testDataObject.AGTest.AGDataObject;
+import testDataObject.AGTest.Hotel;
 import testDataObject.AGTest.PriceFilter;
+import testDataObject.AGTest.ReviewCategory;
 import testcases.TestBase;
 import utils.RetryAnalyzer;
 import utils.TestListener;
@@ -17,13 +20,17 @@ import utils.TestListener;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Map;
 
 @Listeners({TestListener.class})
 public class AGTestSel3 extends TestBase {
     AgodaHomePage agodaHomePage;
     AgodaSearchResultsPage agodaSearchResultsPage;
-    String checkInDayOfWeek = "FRIDAY";
-    int stayDurationDays = 3;
+    AgodaHotelDetailsPage agodaHotelDetailsPage;
+    LocalDate checkInDate;
+    LocalDate checkOutDate;
+    PriceFilter defaultPriceFilter;
+    Hotel hotel;
 
     @Override
     @BeforeMethod(alwaysRun = true)
@@ -31,6 +38,9 @@ public class AGTestSel3 extends TestBase {
         super.beforeMethod(testArgs, context);
         agodaHomePage = new AgodaHomePage();
         agodaSearchResultsPage = new AgodaSearchResultsPage();
+        agodaHotelDetailsPage = new AgodaHotelDetailsPage();
+        checkInDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.FRIDAY));
+        checkOutDate = checkInDate.plusDays(3);
     }
 
     @Description("Search and sort hotel successfully")
@@ -41,8 +51,6 @@ public class AGTestSel3 extends TestBase {
         DriverFactory.openHomePage();
 
         logHelper.logStep("Step #2: Search hotel with test case information");
-        LocalDate checkInDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.valueOf(checkInDayOfWeek)));
-        LocalDate checkOutDate = checkInDate.plusDays(stayDurationDays);
 
         agodaHomePage.searchHotel(
                 data.getPlace(),
@@ -70,8 +78,6 @@ public class AGTestSel3 extends TestBase {
         DriverFactory.openHomePage();
 
         logHelper.logStep("Step #2: Search hotel with test case information");
-        LocalDate checkInDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.valueOf(checkInDayOfWeek)));
-        LocalDate checkOutDate = checkInDate.plusDays(stayDurationDays);
 
         agodaHomePage.searchHotel(
                 data.getPlace(),
@@ -84,7 +90,7 @@ public class AGTestSel3 extends TestBase {
         agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
 
         logHelper.logStep("Step #4: Filter results by price range and star rating");
-        PriceFilter defaultPriceFilter = agodaSearchResultsPage.getFilterValues();
+        defaultPriceFilter = agodaSearchResultsPage.getFilterValues();
         agodaSearchResultsPage.setPriceFilter(data.getPriceFilter().getPriceMin(), data.getPriceFilter().getPriceMax());
         agodaSearchResultsPage.filterByStarRating(data.getRating());
 
@@ -98,4 +104,41 @@ public class AGTestSel3 extends TestBase {
         agodaSearchResultsPage.resetPriceFilter(defaultPriceFilter);
         agodaSearchResultsPage.verifyPriceFilterReset(defaultPriceFilter);
     }
+
+    @Description("Search, filter and verify hotel details successfully")
+    @Test(dataProvider = "getData", description = "Search, filter and verify hotel details successfully",
+            retryAnalyzer = RetryAnalyzer.class, groups = {"AG_Regression", "FullRegression"})
+    public void AG_TC03_SearchAndVerifyHotelDetails(AGDataObject data) {
+        logHelper.logStep("Step #1: Navigate to Agoda site");
+        DriverFactory.openHomePage();
+
+        logHelper.logStep("Step #2: Search hotel with test case information");
+
+        agodaHomePage.searchHotel(
+                data.getPlace(),
+                checkInDate,
+                checkOutDate,
+                data.getOccupancy());
+
+        logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
+        agodaSearchResultsPage.verifyPageIsDisplayed();
+        agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
+
+        logHelper.logStep("Step #4: Filter the swimming hotels and choose the 5th hotel in the list");
+        agodaSearchResultsPage.filterByFacilities(data.getFacilities());
+        hotel = agodaSearchResultsPage.openHotelDetailsByIndex(5);
+        agodaHotelDetailsPage.verifyHotelInfoAndFacilities(hotel, data.getFacilities());
+
+        logHelper.logStep("Step #5: Back to the filter page");
+        agodaHotelDetailsPage.goBackToSearchResultsPage();
+
+        logHelper.logStep("Step #6: Move mouse to the point of the 1st hotel to show detailed review points");
+        Map<ReviewCategory, Float> reviewScores = agodaSearchResultsPage.getHotelReviewScores(1, data.getReviewCategories());
+
+        logHelper.logStep("Step #7: Choose the first hotel The hotel detailed page is displayed with correct info");
+        hotel = agodaSearchResultsPage.openHotelDetailsByIndex(1);
+        agodaHotelDetailsPage.verifyHotelInfoAndFacilities(hotel, data.getFacilities());
+        agodaHotelDetailsPage.verifyReviewScores(reviewScores);
+    }
+
 }
