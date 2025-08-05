@@ -51,16 +51,16 @@ public class AgodaHotelDetailsPage {
      *
      * @param expectedScores A map of expected review scores where the key is the category name and the value is the score.
      */
-    public void verifyReviewScores(Map<ReviewCategory, String> expectedScores) {
+    public void verifyReviewScores(Map<ReviewCategory, Float> expectedScores) {
         logHelper.logStep("Verifying review scores for hotel [%s]", hotelName.getText());
         logHelper.logStep("Expected review scores: %s", expectedScores);
         scrollToElement(hotelRating);
         hotelRating.hover();
 
-        for (Map.Entry<ReviewCategory, String> entry : expectedScores.entrySet()) {
+        for (Map.Entry<ReviewCategory, Float> entry : expectedScores.entrySet()) {
             SelenideElement score = $x(String.format(reviewCategoryScore, entry.getKey().getCategory()));
             try {
-                score.shouldBe(Condition.visible).shouldHave(Condition.text(entry.getValue()));
+                score.shouldBe(Condition.visible).shouldHave(Condition.text(String.valueOf(entry.getValue())));
             } catch (AssertionError e) {
                 throw new AssertionError(
                         String.format("Review score for category '%s' does not match. Expected: '%s', Found: '%s'",

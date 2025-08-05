@@ -133,7 +133,7 @@ public class AGTestSel3 extends TestBase {
         agodaHotelDetailsPage.goBackToSearchResultsPage();
 
         logHelper.logStep("Step #6: Move mouse to the point of the 1st hotel to show detailed review points");
-        Map<ReviewCategory, String> reviewScores = agodaSearchResultsPage.getHotelReviewScores(1, data.getReviewCategories());
+        Map<ReviewCategory, Float> reviewScores = agodaSearchResultsPage.getHotelReviewScores(1, data.getReviewCategories());
 
         logHelper.logStep("Step #7: Choose the first hotel The hotel detailed page is displayed with correct info");
         hotel = agodaSearchResultsPage.openHotelDetailsByIndex(1);

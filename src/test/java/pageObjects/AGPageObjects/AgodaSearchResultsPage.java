@@ -424,7 +424,7 @@ public class AgodaSearchResultsPage {
      * @param categories list of review categories to capture
      * @return map of review category to its score text
      */
-    public Map<ReviewCategory, String> getHotelReviewScores(int index, List<ReviewCategory> categories) {
+    public Map<ReviewCategory, Float> getHotelReviewScores(int index, List<ReviewCategory> categories) {
         loadHotelResults(index);
         List<SelenideElement> loadedCards = getLoadedHotelCards();
         if (index <= 0 || index > loadedCards.size()) {
@@ -436,10 +436,11 @@ public class AgodaSearchResultsPage {
         hotelRatingScore.hover();
         logHelper.logStep("Retrieving review scores for hotel [%s]", getSafeText(card, hotelNameCss));
 
-        Map<ReviewCategory, String> scores = new HashMap<>();
+        Map<ReviewCategory, Float> scores = new HashMap<>();
         for (ReviewCategory category : categories) {
             SelenideElement scoreElement = $x(String.format(this.hotelCategoryScore, category.getCategory()));
-            String value = scoreElement.shouldBe(Condition.visible, Duration.ofSeconds(5)).getText();
+            Float value = scoreElement.shouldBe(Condition.visible, Duration.ofSeconds(5))
+                    .getText().isEmpty() ? 0f : Float.parseFloat(scoreElement.getText());
             scores.put(category, value);
         }
         logHelper.logStep("Retrieved review scores: %s", scores);
