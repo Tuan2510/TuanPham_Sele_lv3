@@ -2,12 +2,19 @@ package utils;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
 import com.codeborne.selenide.ex.UIAssertionError;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.lang.model.util.ElementKindVisitor7;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -121,4 +128,27 @@ public class ElementHelper {
         return isElementDisplayed(element, 10);
     }
 
+    public SelenideElement getShadowElementBySelenium(SelenideElement hostElement, String shadowSelector) {
+        String[] shadowParts = shadowSelector.split(">>>");
+        WebDriver driver = WebDriverRunner.getWebDriver();
+        WebElement shadowHost = hostElement.toWebElement();
+        WebElement currentElement = shadowHost;
+
+        for (String part : shadowParts) {
+            if (part.isEmpty()) continue;
+            try {
+                currentElement = (WebElement) ((JavascriptExecutor) driver)
+                        .executeScript("return arguments[0].shadowRoot.querySelector(arguments[1]);",
+                                currentElement, part);
+                if (currentElement == null) {
+                    logger.error("Shadow element part not found: {}", part);
+                    return null;
+                }
+            } catch (Exception e) {
+                logger.error("Failed to get shadow element '{}': {}", part, e.getMessage());
+                return null;
+            }
+        }
+        return $(currentElement);
+    }
 }
