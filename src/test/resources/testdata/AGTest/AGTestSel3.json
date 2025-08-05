@@ -37,11 +37,11 @@
       "resultCount": "5",
       "facilities": "SWIMMING_POOL",
       "reviewCategories": [
-        "Cleanliness",
-        "Facilities",
-        "Service",
-        "Location",
-        "Value for money"
+        "CLEANLINESS",
+        "FACILITIES",
+        "SERVICE",
+        "LOCATION",
+        "VALUE_FOR_MONEY"
       ]
     }
   ]

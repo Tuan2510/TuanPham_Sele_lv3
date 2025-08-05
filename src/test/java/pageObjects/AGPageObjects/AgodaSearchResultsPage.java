@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import testDataObject.AGTest.Facilities;
 import testDataObject.AGTest.Hotel;
 import testDataObject.AGTest.PriceFilter;
+import testDataObject.AGTest.ReviewCategory;
 import utils.LanguageManager;
 import utils.LogHelper;
 import utils.TestListener;
@@ -423,7 +424,7 @@ public class AgodaSearchResultsPage {
      * @param categories list of review categories to capture
      * @return map of review category to its score text
      */
-    public Map<String, String> getHotelReviewScores(int index, List<String> categories) {
+    public Map<ReviewCategory, String> getHotelReviewScores(int index, List<ReviewCategory> categories) {
         loadHotelResults(index);
         List<SelenideElement> loadedCards = getLoadedHotelCards();
         if (index <= 0 || index > loadedCards.size()) {
@@ -435,9 +436,9 @@ public class AgodaSearchResultsPage {
         hotelRatingScore.hover();
         logHelper.logStep("Retrieving review scores for hotel [%s]", getSafeText(card, hotelNameCss));
 
-        Map<String, String> scores = new HashMap<>();
-        for (String category : categories) {
-            SelenideElement scoreElement = $x(String.format(this.hotelCategoryScore, category));
+        Map<ReviewCategory, String> scores = new HashMap<>();
+        for (ReviewCategory category : categories) {
+            SelenideElement scoreElement = $x(String.format(this.hotelCategoryScore, category.getCategory()));
             String value = scoreElement.shouldBe(Condition.visible, Duration.ofSeconds(5)).getText();
             scores.put(category, value);
         }

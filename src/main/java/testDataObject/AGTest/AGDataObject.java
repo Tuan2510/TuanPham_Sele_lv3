@@ -16,5 +16,5 @@ public class AGDataObject {
     private int rating;
     private int resultCount;
     private Facilities facilities;
-    private List<String> reviewCategories;
+    private List<ReviewCategory> reviewCategories;
 }
