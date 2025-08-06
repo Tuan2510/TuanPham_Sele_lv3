@@ -128,20 +128,41 @@ public class ElementHelper {
         return isElementDisplayed(element, 10);
     }
 
-    public static SelenideElement getShadowElementBySelenium(SelenideElement root, String shadowPath) {
-        String[] shadowParts = shadowPath.split(">>>");
-        WebElement shadowElement = root.toWebElement();
+    /**
+     * Retrieves a shadow DOM element using Selenium WebDriver.
+     * @param root The root element of the shadow DOM
+     * @param selectorChain A list of selectors to traverse the shadow DOM layers
+     * @return The WebElement found in the shadow DOM
+     */
+    public static WebElement getShadowElementBySelenium(WebElement root, List<String> selectorChain) {
+        if (selectorChain == null || selectorChain.isEmpty()) {
+            throw new IllegalArgumentException("Selector chain must not be empty.");
+        }
+        WebDriver driver = WebDriverRunner.getWebDriver();
+        WebElement currentElement = root;
 
-        for (String part : shadowParts) {
-            if (part.isEmpty()) continue;
+        // Traverse each shadow layer
+        for (String s : selectorChain) {
+            String selector = s.trim();
+            currentElement = queryInsideShadowRoot(currentElement, selector, driver);
 
-            shadowElement = (WebElement) ((JavascriptExecutor) WebDriverRunner.getWebDriver())
-                    .executeScript("return arguments[0].shadowRoot.querySelector(arguments[1]);", shadowElement, part);
-
-            if (shadowElement == null) {
-                throw new NoSuchElementException("Could not find shadow element part: " + part);
+            if (currentElement == null) {
+                throw new RuntimeException("Failed to find element in shadow root with selector: " + selector);
             }
         }
-        return $(shadowElement);
+
+        return currentElement;
+    }
+
+    /**
+     * Executes JS to query a selector inside a shadow root.
+     */
+    private static WebElement queryInsideShadowRoot(WebElement hostElement, String selector, WebDriver driver) {
+        String script =
+                "const shadow = arguments[0].shadowRoot;" +
+                        "if (!shadow) return null;" +
+                        "return shadow.querySelector(arguments[1]);";
+
+        return (WebElement) ((JavascriptExecutor) driver).executeScript(script, hostElement, selector);
     }
 }
