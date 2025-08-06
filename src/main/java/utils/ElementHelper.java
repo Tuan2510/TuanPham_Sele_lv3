@@ -128,27 +128,20 @@ public class ElementHelper {
         return isElementDisplayed(element, 10);
     }
 
-    public static SelenideElement getShadowElementBySelenium(SelenideElement hostElement, String shadowSelector) {
-        String[] shadowParts = shadowSelector.split(">>>");
-        WebDriver driver = WebDriverRunner.getWebDriver();
-        WebElement shadowHost = hostElement.toWebElement();
-        WebElement currentElement = shadowHost;
+    public static SelenideElement getShadowElementBySelenium(SelenideElement root, String shadowPath) {
+        String[] shadowParts = shadowPath.split(">>>");
+        WebElement shadowElement = root.toWebElement();
 
         for (String part : shadowParts) {
             if (part.isEmpty()) continue;
-            try {
-                currentElement = (WebElement) ((JavascriptExecutor) driver)
-                        .executeScript("return arguments[0].shadowRoot.querySelector(arguments[1]);",
-                                currentElement, part);
-                if (currentElement == null) {
-                    logger.error("Shadow element part not found: {}", part);
-                    return null;
-                }
-            } catch (Exception e) {
-                logger.error("Failed to get shadow element '{}': {}", part, e.getMessage());
-                return null;
+
+            shadowElement = (WebElement) ((JavascriptExecutor) WebDriverRunner.getWebDriver())
+                    .executeScript("return arguments[0].shadowRoot.querySelector(arguments[1]);", shadowElement, part);
+
+            if (shadowElement == null) {
+                throw new NoSuchElementException("Could not find shadow element part: " + part);
             }
         }
-        return $(currentElement);
+        return $(shadowElement);
     }
 }

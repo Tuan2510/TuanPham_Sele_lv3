@@ -1,14 +1,17 @@
 package testcases.BookTest;
 
 import io.qameta.allure.Description;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pageObjects.BooksPageObjects.BooksHomePage;
 import pageObjects.BooksPageObjects.BooksSearchResultPage;
 import testcases.TestBase;
 import utils.RetryAnalyzer;
+import utils.TestListener;
 
-import static com.codeborne.selenide.Selenide.open;
+import static driver.DriverFactory.openHomePage;
 
+@Listeners({TestListener.class})
 public class BooksShadowDomTest extends TestBase {
     private static final String QUERY = "playwright";
     BooksHomePage booksHomePage = new BooksHomePage();
@@ -19,7 +22,7 @@ public class BooksShadowDomTest extends TestBase {
             retryAnalyzer = RetryAnalyzer.class, groups = {"Book_Regression", "FullRegression"})
     public void searchBooksUsingSelenideAPI() {
         logHelper.logStep("Step #1: Navigate to Books PWA");
-        booksHomePage.openHomePage();
+        openHomePage();
 
         logHelper.logStep("Step #2: Search using Selenide shadowRoot");
         booksHomePage.searchBookUsingSelenideAPI(QUERY);
@@ -34,7 +37,7 @@ public class BooksShadowDomTest extends TestBase {
             retryAnalyzer = RetryAnalyzer.class, groups = {"Book_Regression", "FullRegression"})
     public void searchBooksUsingSeleniumAPI() {
         logHelper.logStep("Step #1: Navigate to Books PWA");
-        booksHomePage.openHomePage();
+        openHomePage();
 
         logHelper.logStep("Step #2: Search using Selenide shadowRoot");
         booksHomePage.searchBookUsingSeleniumAPI(QUERY);

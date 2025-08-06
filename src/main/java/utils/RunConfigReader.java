@@ -60,6 +60,7 @@ public class RunConfigReader {
         return switch (env.toLowerCase()) {
             case "test" -> get("test.baseUrl");
             case "stg" -> get("stg.baseUrl");
+            case "books" -> get("books.baseUrl");
             default -> get("dev.baseUrl");
         };
     }
