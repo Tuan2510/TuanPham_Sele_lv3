@@ -128,7 +128,7 @@ public class ElementHelper {
         return isElementDisplayed(element, 10);
     }
 
-    public SelenideElement getShadowElementBySelenium(SelenideElement hostElement, String shadowSelector) {
+    public static SelenideElement getShadowElementBySelenium(SelenideElement hostElement, String shadowSelector) {
         String[] shadowParts = shadowSelector.split(">>>");
         WebDriver driver = WebDriverRunner.getWebDriver();
         WebElement shadowHost = hostElement.toWebElement();
