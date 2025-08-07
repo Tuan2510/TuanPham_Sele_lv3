@@ -131,7 +131,7 @@ public class ElementHelper {
     /**
      * Retrieves a shadow DOM element using Selenium WebDriver.
      * @param root The root element of the shadow DOM
-     * @param selectorChain A list of selectors to traverse the shadow DOM layers
+     * @param selectorChain A list of selectors to traverse the shadow DOM layers, each item represents a shadow DOM level
      * @return The WebElement found in the shadow DOM
      */
     public static WebElement getShadowElementBySelenium(WebElement root, List<String> selectorChain) {
@@ -152,6 +152,11 @@ public class ElementHelper {
         }
 
         return currentElement;
+    }
+
+    public static List<WebElement> getAllShadowElementBySelenium(WebElement root, String selector) {
+        //TODO
+        return null;
     }
 
     /**

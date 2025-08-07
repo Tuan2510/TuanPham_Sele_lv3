@@ -28,8 +28,7 @@ public class BooksShadowDomTest extends TestBase {
         booksHomePage.searchBookUsingSelenideAPI(QUERY);
 
         logHelper.logStep("Step #3: Verify all book titles contain query");
-//        ElementsCollection titles = root.findAll("ul li .title");
-//        titles.forEach(title -> title.shouldHave(text(QUERY)));
+        booksSearchResultPage.verifyBookTitlesWithSelenideAPI(QUERY);
     }
 
     @Description("Search book using Selenium API and verify results")
@@ -43,11 +42,7 @@ public class BooksShadowDomTest extends TestBase {
         booksHomePage.searchBookUsingSeleniumAPI(QUERY);
 
         logHelper.logStep("Step #3: Verify all book titles contain query");
-//        List<WebElement> titles = root.findElements(By.cssSelector("ul li .title"));
-//        for (WebElement title : titles) {
-//            Assert.assertTrue(title.getText().toLowerCase().contains(QUERY.toLowerCase()),
-//                    String.format("Title '%s' does not contain '%s'", title.getText(), QUERY));
-//        }
+        booksSearchResultPage.verifyBookTitlesWithSeleniumAPI(QUERY);
     }
 
 

@@ -15,7 +15,7 @@ public class BooksHomePage {
 
     private static final SelenideElement rootHost = $("book-app");
     private static final List<String> SeleniumSelectorChain = Arrays.asList(
-            "app-header app-toolbar.toolbar-bottom book-input-decorator input#input"
+            "input#input"
     ); // List of chain selectors to find the shadow DOM element, each item represents a shadow DOM level
 
     //methods
