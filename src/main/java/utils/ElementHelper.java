@@ -10,10 +10,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import testDataObject.ShadowStep;
 
-import javax.lang.model.util.ElementKindVisitor7;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.codeborne.selenide.Selenide.*;
@@ -134,40 +135,61 @@ public class ElementHelper {
      * @param selectorChain A list of selectors to traverse the shadow DOM layers, each item represents a shadow DOM level
      * @return The WebElement found in the shadow DOM
      */
-    public static WebElement getShadowElementBySelenium(WebElement root, List<String> selectorChain) {
+    public static WebElement getShadowElementBySelenium(WebElement root, List<ShadowStep> selectorChain) {
+        List<WebElement> result = getAllShadowElementsBySelenium(root, selectorChain);
+        if (result.isEmpty()) {
+            throw new RuntimeException("Shadow element not found for final selector.");
+        }
+        return result.getFirst();
+    }
+
+    public static List<WebElement> getAllShadowElementsBySelenium(WebElement root, List<ShadowStep> selectorChain) {
         if (selectorChain == null || selectorChain.isEmpty()) {
             throw new IllegalArgumentException("Selector chain must not be empty.");
         }
+
         WebDriver driver = WebDriverRunner.getWebDriver();
-        WebElement currentElement = root;
+        List<WebElement> currentElements = List.of(root); // Start with a single root
 
-        // Traverse each shadow layer
-        for (String s : selectorChain) {
-            String selector = s.trim();
-            currentElement = queryInsideShadowRoot(currentElement, selector, driver);
+        for (int i = 0; i < selectorChain.size(); i++) {
+            ShadowStep step = selectorChain.get(i);
+            String selector = step.getSelector();
 
-            if (currentElement == null) {
-                throw new RuntimeException("Failed to find element in shadow root with selector: " + selector);
+            boolean isLast = i == selectorChain.size() - 1;
+            boolean returnAll = step.isMulti() || isLast;
+
+            List<WebElement> nextElements = new ArrayList<>();
+
+            for (WebElement element : currentElements) {
+                List<WebElement> matches = queryInsideShadowRoot(element, selector, driver, returnAll);
+                nextElements.addAll(matches);
             }
+
+            if (nextElements.isEmpty()) {
+                throw new RuntimeException("Failed to find elements with selector: " + selector);
+            }
+
+            currentElements = nextElements;
         }
 
-        return currentElement;
-    }
-
-    public static List<WebElement> getAllShadowElementBySelenium(WebElement root, String selector) {
-        //TODO
-        return null;
+        return currentElements;
     }
 
     /**
      * Executes JS to query a selector inside a shadow root.
      */
-    private static WebElement queryInsideShadowRoot(WebElement hostElement, String selector, WebDriver driver) {
-        String script =
-                "const shadow = arguments[0].shadowRoot;" +
-                        "if (!shadow) return null;" +
-                        "return shadow.querySelector(arguments[1]);";
+    @SuppressWarnings("unchecked")
+    private static List<WebElement> queryInsideShadowRoot(WebElement hostElement, String selector, WebDriver driver, boolean returnAll) {
+        String script = returnAll
+                ? "const shadow = arguments[0].shadowRoot;" +
+                "if (!shadow) return [];" +
+                "return Array.from(shadow.querySelectorAll(arguments[1]));"
+                : "const shadow = arguments[0].shadowRoot;" +
+                "if (!shadow) return null;" +
+                "const el = shadow.querySelector(arguments[1]);" +
+                "return el ? [el] : [];";
 
-        return (WebElement) ((JavascriptExecutor) driver).executeScript(script, hostElement, selector);
+        Object result = ((JavascriptExecutor) driver).executeScript(script, hostElement, selector);
+        return (List<WebElement>) result;
     }
 }

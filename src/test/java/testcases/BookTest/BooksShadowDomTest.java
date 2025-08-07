@@ -27,7 +27,7 @@ public class BooksShadowDomTest extends TestBase {
         logHelper.logStep("Step #2: Search using Selenide shadowRoot");
         booksHomePage.searchBookUsingSelenideAPI(QUERY);
 
-        logHelper.logStep("Step #3: Verify all book titles contain query");
+        logHelper.logStep("Step #3: Verify all book titles contain query: %s", QUERY);
         booksSearchResultPage.verifyBookTitlesWithSelenideAPI(QUERY);
     }
 
@@ -41,7 +41,7 @@ public class BooksShadowDomTest extends TestBase {
         logHelper.logStep("Step #2: Search using Selenide shadowRoot");
         booksHomePage.searchBookUsingSeleniumAPI(QUERY);
 
-        logHelper.logStep("Step #3: Verify all book titles contain query");
+        logHelper.logStep("Step #3: Verify all book titles contain query: %s", QUERY);
         booksSearchResultPage.verifyBookTitlesWithSeleniumAPI(QUERY);
     }
 
