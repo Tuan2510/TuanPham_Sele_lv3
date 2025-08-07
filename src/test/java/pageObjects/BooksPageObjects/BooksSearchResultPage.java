@@ -19,6 +19,7 @@ import java.util.List;
 import static com.codeborne.selenide.Selectors.shadowDeepCss;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static commons.Constants.DEFAULT_SCROLL_STEPS;
 import static utils.ElementHelper.scrollToBottomWithSteps;
 import static utils.ElementHelper.scrollToPageTop;
 
@@ -38,7 +39,7 @@ public class BooksSearchResultPage {
 
     // Methods
     private void waitBookItemsToLoad() {
-        scrollToBottomWithSteps(10);
+        scrollToBottomWithSteps(DEFAULT_SCROLL_STEPS);
         $$(shadowDeepCss(loadedBookItem)).shouldBe(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
         scrollToPageTop();
     }
