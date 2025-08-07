@@ -80,12 +80,12 @@ public class BooksSearchResultPage {
         }
 
         logHelper.logStep("Number of book titles found: %s", titles.size());
-        for (WebElement title : titles) {
+        titles.forEach( title -> {
             logHelper.logStep(String.format("Verifying title: '%s'", title.getText()));
             if (!title.getText().toLowerCase().contains(query.toLowerCase())) {
                 throw new AssertionError(String.format("Title '%s' does not contain '%s'", title.getText(), query));
             }
-        }
+        });
     }
 
 }

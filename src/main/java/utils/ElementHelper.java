@@ -105,15 +105,33 @@ public class ElementHelper {
 
     /**
      * Scroll to bottom gradually (useful for infinite scroll pages).
+     * Scroll can stop early if no new content is loaded.
+     *
      * @param steps Number of scroll steps
      * @param pixelsPerStep Number of pixels to scroll per step
      * @param delayMillis Delay between scroll steps
      */
     public static void scrollToBottomWithSteps(int steps, int pixelsPerStep, int delayMillis) {
+        logger.info("Try to scroll to bottom after {} steps", steps);
+        long previousHeight = getScrollHeight();
+
         for (int i = 0; i < steps; i++) {
             scrollBy(0, pixelsPerStep);
             sleep(delayMillis);
+
+            long currentHeight = getScrollHeight();
+
+            if (currentHeight == previousHeight) {
+                logger.info("Scrolling stopped: No more content loaded. Total steps: {}", i + 1);
+                break;
+            }
+
+            previousHeight = currentHeight;
         }
+    }
+
+    private static long getScrollHeight() {
+        return executeJavaScript("return document.body.scrollHeight");
     }
 
     public static void scrollToBottomWithSteps(int steps){

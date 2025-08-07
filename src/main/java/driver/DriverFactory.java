@@ -1,7 +1,5 @@
 package driver;
 
-import com.codeborne.selenide.Configuration;
-import org.openqa.selenium.WebDriver;
 import utils.LanguageManager;
 import utils.RunConfigReader;
 import static com.codeborne.selenide.Selenide.open;
@@ -37,7 +35,4 @@ public class DriverFactory {
         open(url);
     }
 
-    public static WebDriver getDriver() {
-        return com.codeborne.selenide.WebDriverRunner.getWebDriver();
-    }
 }
