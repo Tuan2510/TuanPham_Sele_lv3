@@ -45,5 +45,4 @@ public class BooksShadowDomTest extends TestBase {
         booksSearchResultPage.verifyBookTitlesWithSeleniumAPI(QUERY);
     }
 
-
 }

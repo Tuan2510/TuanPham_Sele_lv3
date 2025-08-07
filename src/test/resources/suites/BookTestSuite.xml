@@ -1,0 +1,25 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Books Shadow DOM Test Suite" parallel="methods" thread-count="2">
+    <listeners>
+        <listener class-name="utils.TestListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="Books Test Suite">
+        <parameter name="browser" value="chrome"/>
+        <parameter name="language" value="en-us"/>
+        <parameter name="env" value="books"/>
+        <groups>
+            <run>
+                <include name="Book_Regression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="testcases.BookTest.BooksShadowDomTest">
+                <methods>
+                    <include name="searchBooksUsingSelenideAPI"/>
+                    <include name="searchBooksUsingSeleniumAPI"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

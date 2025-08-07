@@ -116,6 +116,10 @@ public class ElementHelper {
         }
     }
 
+    public static void scrollToBottomWithSteps(int steps){
+        scrollToBottomWithSteps(steps, 1000, 1000);
+    }
+
     public static boolean isElementDisplayed(SelenideElement element, int timeoutSeconds) {
         try {
             element.shouldBe(Condition.visible, Duration.ofSeconds(timeoutSeconds));

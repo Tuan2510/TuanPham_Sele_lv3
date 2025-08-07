@@ -19,14 +19,14 @@ import java.util.List;
 import static com.codeborne.selenide.Selectors.shadowDeepCss;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
-import static utils.ElementHelper.scrollToPageBottom;
+import static utils.ElementHelper.scrollToBottomWithSteps;
 import static utils.ElementHelper.scrollToPageTop;
 
 public class BooksSearchResultPage {
     private static final Logger logger = LoggerFactory.getLogger(BooksSearchResultPage.class);
     private final LogHelper logHelper = new LogHelper(logger, TestListener.INSTANCE);
 
-    private static final String loadedBookItem = ".books li .placeholder";
+    private static final String loadedBookItem = "ul.books li div.placeholder";
     private static final String SelenideBookTitleQuery = ".title-container";
 
     private static final SelenideElement rootHost = $("book-app");
@@ -38,9 +38,9 @@ public class BooksSearchResultPage {
 
     // Methods
     private void waitBookItemsToLoad() {
-        scrollToPageBottom();
-        scrollToPageTop();
+        scrollToBottomWithSteps(10);
         $$(shadowDeepCss(loadedBookItem)).shouldBe(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
+        scrollToPageTop();
     }
 
     private ElementsCollection getBookTitlesUsingSelenideAPI() {
