@@ -1,6 +1,5 @@
 package driver;
 
-import com.codeborne.selenide.Configuration;
 import utils.LanguageManager;
 import utils.RunConfigReader;
 import static com.codeborne.selenide.Selenide.open;

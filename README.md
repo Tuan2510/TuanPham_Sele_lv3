@@ -25,8 +25,8 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
 - [x] Wrap custom controls
 - [ ] Data driven testing: test data is in excel file
-- [ ] Working with Shadow DOM
-  - [ ] books-pwakit: [books-pwakit.appspot.com](https://books-pwakit.appspot.com/)
+- [x] Working with Shadow DOM
+  - [x] books-pwakit: [books-pwakit.appspot.com](https://books-pwakit.appspot.com/)
 - [ ] Compare with another FW e.g. Playwright
 
 

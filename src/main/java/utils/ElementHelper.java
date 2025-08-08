@@ -2,12 +2,20 @@ package utils;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
 import com.codeborne.selenide.ex.UIAssertionError;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import testDataObject.ShadowStep;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -97,15 +105,37 @@ public class ElementHelper {
 
     /**
      * Scroll to bottom gradually (useful for infinite scroll pages).
+     * Scroll can stop early if no new content is loaded.
+     *
      * @param steps Number of scroll steps
      * @param pixelsPerStep Number of pixels to scroll per step
      * @param delayMillis Delay between scroll steps
      */
     public static void scrollToBottomWithSteps(int steps, int pixelsPerStep, int delayMillis) {
+        logger.info("Try to scroll to bottom after {} steps", steps);
+        long previousHeight = getScrollHeight();
+
         for (int i = 0; i < steps; i++) {
             scrollBy(0, pixelsPerStep);
             sleep(delayMillis);
+
+            long currentHeight = getScrollHeight();
+
+            if (currentHeight == previousHeight) {
+                logger.info("Scrolling stopped: No more content loaded. Total steps: {}", i + 1);
+                break;
+            }
+
+            previousHeight = currentHeight;
         }
+    }
+
+    private static long getScrollHeight() {
+        return executeJavaScript("return document.body.scrollHeight");
+    }
+
+    public static void scrollToBottomWithSteps(int steps){
+        scrollToBottomWithSteps(steps, 1000, 1000);
     }
 
     public static boolean isElementDisplayed(SelenideElement element, int timeoutSeconds) {
@@ -121,4 +151,67 @@ public class ElementHelper {
         return isElementDisplayed(element, 10);
     }
 
+    /**
+     * Retrieves a shadow DOM element using Selenium WebDriver.
+     * @param root The root element of the shadow DOM
+     * @param selectorChain A list of selectors to traverse the shadow DOM layers, each item represents a shadow DOM level
+     * @return The WebElement found in the shadow DOM
+     */
+    public static WebElement getShadowElementBySelenium(WebElement root, List<ShadowStep> selectorChain) {
+        List<WebElement> result = getAllShadowElementsBySelenium(root, selectorChain);
+        if (result.isEmpty()) {
+            throw new RuntimeException("Shadow element not found for final selector.");
+        }
+        return result.getFirst();
+    }
+
+    public static List<WebElement> getAllShadowElementsBySelenium(WebElement root, List<ShadowStep> selectorChain) {
+        if (selectorChain == null || selectorChain.isEmpty()) {
+            throw new IllegalArgumentException("Selector chain must not be empty.");
+        }
+
+        WebDriver driver = WebDriverRunner.getWebDriver();
+        List<WebElement> currentElements = List.of(root); // Start with a single root
+
+        for (int i = 0; i < selectorChain.size(); i++) {
+            ShadowStep step = selectorChain.get(i);
+            String selector = step.getSelector();
+
+            boolean isLast = i == selectorChain.size() - 1;
+            boolean returnAll = step.isMulti() || isLast;
+
+            List<WebElement> nextElements = new ArrayList<>();
+
+            for (WebElement element : currentElements) {
+                List<WebElement> matches = queryInsideShadowRoot(element, selector, driver, returnAll);
+                nextElements.addAll(matches);
+            }
+
+            if (nextElements.isEmpty()) {
+                throw new RuntimeException("Failed to find elements with selector: " + selector);
+            }
+
+            currentElements = nextElements;
+        }
+
+        return currentElements;
+    }
+
+    /**
+     * Executes JS to query a selector inside a shadow root.
+     */
+    @SuppressWarnings("unchecked")
+    private static List<WebElement> queryInsideShadowRoot(WebElement hostElement, String selector, WebDriver driver, boolean returnAll) {
+        String script = returnAll
+                ? "const shadow = arguments[0].shadowRoot;" +
+                "if (!shadow) return [];" +
+                "return Array.from(shadow.querySelectorAll(arguments[1]));"
+                : "const shadow = arguments[0].shadowRoot;" +
+                "if (!shadow) return null;" +
+                "const el = shadow.querySelector(arguments[1]);" +
+                "return el ? [el] : [];";
+
+        Object result = ((JavascriptExecutor) driver).executeScript(script, hostElement, selector);
+        return (List<WebElement>) result;
+    }
 }
