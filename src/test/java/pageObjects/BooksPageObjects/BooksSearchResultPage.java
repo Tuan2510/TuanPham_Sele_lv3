@@ -1,7 +1,6 @@
 package pageObjects.BooksPageObjects;
 
 import com.codeborne.selenide.CollectionCondition;
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.WebElement;
@@ -35,7 +34,7 @@ public class BooksSearchResultPage {
             new ShadowStep("book-explore", false),
             new ShadowStep("book-item", true),
             new ShadowStep(".title-container", false)
-    );
+    ); // List of chain selectors to find the shadow DOM element, each item represents a shadow DOM level
 
     // Methods
     private void waitBookItemsToLoad() {
@@ -62,17 +61,35 @@ public class BooksSearchResultPage {
         return titles;
     }
 
+    /**
+     * Verifies that all book titles found on the search result page using the Selenide API.
+     * Logs the number of book titles found and each title being verified.
+     * Throws an AssertionError if no titles are found or if any title does not contain the query.
+     *
+     @param query the string that each book title should contain (case-insensitive)
+     */
     public void verifyBookTitlesWithSelenideAPI(String query) {
         ElementsCollection titles = getBookTitlesUsingSelenideAPI();
         titles.shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
 
         logHelper.logStep("Number of book titles found: %s", titles.size());
-        titles.forEach(title -> {
-            logHelper.logStep(String.format("Verifying title: '%s'", title.getText()));
-            title.shouldHave(Condition.text(query));
-        });
+
+        if (!titles.stream()
+                .map(SelenideElement::getText)
+                .peek(text -> logHelper.logStep(String.format("Verifying title: '%s'", text)))
+                .allMatch(text -> text.toLowerCase()
+                        .contains(query.toLowerCase())) ) {
+            throw new AssertionError("Not all book titles contain: " + query);
+        }
     }
 
+    /**
+     * Verifies that all book titles found on the search result page using the Selenium API.
+     * Logs the number of book titles found and each title being verified.
+     * Throws an AssertionError if no titles are found or if any title does not contain the query.
+     *
+     * @param query the string that each book title should contain (case-insensitive)
+     */
     public void verifyBookTitlesWithSeleniumAPI(String query) {
         List<WebElement> titles = getBookTitlesUsingSeleniumAPI();
         if (titles.isEmpty()) {
@@ -80,12 +97,14 @@ public class BooksSearchResultPage {
         }
 
         logHelper.logStep("Number of book titles found: %s", titles.size());
-        titles.forEach( title -> {
-            logHelper.logStep(String.format("Verifying title: '%s'", title.getText()));
-            if (!title.getText().toLowerCase().contains(query.toLowerCase())) {
-                throw new AssertionError(String.format("Title '%s' does not contain '%s'", title.getText(), query));
-            }
-        });
+
+        if (!titles.stream()
+                .map(WebElement::getText)
+                .peek(text -> logHelper.logStep(String.format("Verifying title: '%s'", text)))
+                .allMatch(text -> text.toLowerCase()
+                        .contains(query.toLowerCase())) ) {
+            throw new AssertionError("Not all book titles contain: " + query);
+        }
     }
 
 }
