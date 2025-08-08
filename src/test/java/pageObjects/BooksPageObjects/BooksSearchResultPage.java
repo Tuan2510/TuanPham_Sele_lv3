@@ -14,12 +14,13 @@ import utils.TestListener;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.codeborne.selenide.Condition.attributeMatching;
 import static com.codeborne.selenide.Selectors.shadowDeepCss;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
-import static commons.Constants.DEFAULT_SCROLL_STEPS;
-import static utils.ElementHelper.scrollToBottomWithSteps;
+import static utils.ElementHelper.scrollToPageBottom;
 import static utils.ElementHelper.scrollToPageTop;
 
 public class BooksSearchResultPage {
@@ -38,8 +39,11 @@ public class BooksSearchResultPage {
 
     // Methods
     private void waitBookItemsToLoad() {
-        scrollToBottomWithSteps(DEFAULT_SCROLL_STEPS);
-        $$(shadowDeepCss(loadedBookItem)).shouldBe(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
+        ElementsCollection booksImg = $$(shadowDeepCss("div#placeholder img"));
+        //wait book image to load
+        booksImg.get(booksImg.size())
+                .shouldHave(attributeMatching("src", "^https?://.+"), Duration.ofSeconds(10));
+        scrollToPageBottom();
         scrollToPageTop();
     }
 
@@ -71,16 +75,13 @@ public class BooksSearchResultPage {
     public void verifyBookTitlesWithSelenideAPI(String query) {
         ElementsCollection titles = getBookTitlesUsingSelenideAPI();
         titles.shouldHave(CollectionCondition.sizeGreaterThan(0), Duration.ofSeconds(10));
-
         logHelper.logStep("Number of book titles found: %s", titles.size());
 
-        if (!titles.stream()
-                .map(SelenideElement::getText)
-                .peek(text -> logHelper.logStep(String.format("Verifying title: '%s'", text)))
-                .allMatch(text -> text.toLowerCase()
-                        .contains(query.toLowerCase())) ) {
-            throw new AssertionError("Not all book titles contain: " + query);
-        }
+        titles.shouldHave(CollectionCondition.allMatch(
+                "contain query: " + query,
+                el -> el.getText().toLowerCase().contains(query.toLowerCase())
+        ));
+        logHelper.logStep("All book titles contains keyword [%s]", query); // log if all contains
     }
 
     /**
@@ -95,16 +96,29 @@ public class BooksSearchResultPage {
         if (titles.isEmpty()) {
             throw new AssertionError("Book titles not found in shadow DOM using Selenium API");
         }
-
         logHelper.logStep("Number of book titles found: %s", titles.size());
 
-        if (!titles.stream()
+        List<String> failedTitles = titles.stream()
                 .map(WebElement::getText)
-                .peek(text -> logHelper.logStep(String.format("Verifying title: '%s'", text)))
-                .allMatch(text -> text.toLowerCase()
-                        .contains(query.toLowerCase())) ) {
-            throw new AssertionError("Not all book titles contain: " + query);
+                .filter(text -> !text.toLowerCase().contains(query.toLowerCase()))
+                .toList(); // only failed ones collected
+
+        if (!failedTitles.isEmpty()) {
+            logBooksAssertError(failedTitles, query);
+        } else {
+            logHelper.logStep("All book titles contains keyword [%s]", query);
         }
+    }
+
+    private void logBooksAssertError(List<String> failedTitles, String query) {
+        String failedList = failedTitles.stream()
+                .map(title -> "[" + title + "]")
+                .collect(Collectors.joining(System.lineSeparator()));
+
+        throw new AssertionError(String.format(
+                "Not all book titles contain: [%s].%nNumber of non-matching titles: %d%n%s",
+                query, failedTitles.size(), failedList
+        ));
     }
 
 }
