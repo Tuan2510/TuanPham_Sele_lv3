@@ -1,0 +1,18 @@
+[server]
+max-threads = 3
+session-retry-interval = 2
+
+[sessionqueue]
+session-request-timeout = 500
+
+[node]
+selenium-manager = false
+detect-drivers = false
+drivers = ["chrome", "edge"]
+max-sessions = 5
+hub = "http://localhost:4444"
+
+[[node.driver-configuration]]
+display-name = "Chrome"
+max-sessions = 5
+stereotype = "{\"browserName\": \"chrome\"}"

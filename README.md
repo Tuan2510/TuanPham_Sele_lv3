@@ -42,6 +42,7 @@ This repository contains a sample automation framework built with **Selenide** a
 Clone the repository and install the Maven dependencies:
 
 ```bash
+
 mvn -q verify -DskipTests
 ```
 
@@ -50,8 +51,24 @@ mvn -q verify -DskipTests
 Execute the sample TestNG suite with Maven:
 
 ```bash
+
 mvn clean test
 ```
+
+## Running Tests in grid mode
+To run tests on a Selenium Grid, ensure the grid is set up and running.
+
+Download the Selenium Grid server, then update the file name if necessary in `startGrid.bat`.
+
+Update the `GridConfiguration.toml` file in `src/test/resources/grid` for custom configurations like hub IP, browser versions, etc.
+
+To start executing tests on the grid, use the following command:
+
+```bash
+
+mvn clean test -DremoteUrl=http://localhost:4444/wd/hub
+```
+
 
 ### Configuration
 
@@ -67,6 +84,7 @@ Runtime configuration is controlled through `src/main/resources/config/RunConfig
 You can override any property via system properties, for example:
 
 ```bash
+
 mvn clean test -Dretry.count=1 -Dretry.mode=afterDone -Denv=dev
 ```
 
