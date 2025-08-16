@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: 'SUITE', choices: ['VietJet_Suite', 'Agoda_Suite', 'LeapFrog_Suite', 'Book_Suite'], description: 'Select the test suite')
+        choice(name: 'SUITE', choices: ['Agoda_Suite', 'Book_Suite', 'LeapFrog_Suite', 'VietJet_Suite'], description: 'Select the test suite')
         choice(name: 'BROWSER', choices: ['chrome', 'edge'], description: 'Select the browser')
-        choice(name: 'ENV', choices: ['stg', 'dev', 'leapfrog', 'book'], description: 'Select the environment')
-        choice(name: 'GROUP', choices: ['AGRegression', 'VJRegression','LeapFrogTest', 'BookRegression'], description: 'Select the TestNG group')
+        choice(name: 'ENV', choices: ['dev', 'book', 'leapfrog', 'stg'], description: 'Select the environment')
+        choice(name: 'GROUP', choices: ['AGRegression', 'BookRegression','LeapFrogTest', 'VJRegression'], description: 'Select the TestNG group')
         choice(name: 'PARALLEL_MODE', choices: ['methods', 'tests'], description: 'TestNG parallel mode')
         choice(name: 'LANGUAGE', choices: ['en-us', 'vi-vn'], description: 'Select the language')
         string(name: 'GRID_URL', defaultValue: '', description: 'Selenium Grid URL (leave empty to run local)')

@@ -14,7 +14,7 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Test cases: VJ, Agoda
   - [x] VJ: [vj.com](https://www.vj.com/)
   - [x] Agoda: [agoda.com](https://www.agoda.com/)
-- [ ] CI: Schedule test, send email notification result with summary
+- [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
 - [x] Content testing
