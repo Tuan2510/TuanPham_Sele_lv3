@@ -126,6 +126,7 @@ pipeline {
                 }
 
                 emailext(
+                    from: '"[no-reply] Selenide CI" <jenkinscisele3@gmail.com>',
                     subject: "[Automation Report] ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
                     body: """<!DOCTYPE html>
                             <html>
@@ -134,15 +135,15 @@ pipeline {
                             <p>Hi Team,</p>
                             <p>The automated test execution has been completed. Below is the summary report:</p>
                             <table border='1'>
-                            <tr><th>Project</th><td>${env.JOB_NAME}</td></tr>
+                            <tr><th>Job Name</th><td>${env.JOB_NAME}</td></tr>
                             <tr><th>Build Number</th><td>${env.BUILD_NUMBER}</td></tr>
-                            <tr><th>Total</th><td>${total}</td></tr>
+                            <tr><th>Total Test Case</th><td>${total}</td></tr>
                             <tr><th>Passed</th><td style='color:green'>${passed}</td></tr>
                             <tr><th>Failed</th><td style='color:red'>${failed}</td></tr>
                             <tr><th>Skipped</th><td>${skipped}</td></tr>
                             </table>
-                            <p>The report is attached as .html file. Please download and open it in your browser to see detail.</p>
-                            <p>Best regards,<br/>Jenkins CI</p>
+                            <p>Please check the attachment for more detailed reports.</p>
+                            <p>Best regards,<br/>Selenide CI</p>
                             </body>
                             </html>""",
                     mimeType: 'text/html',
