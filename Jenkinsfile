@@ -11,6 +11,7 @@ pipeline {
         string(name: 'GRID_URL', defaultValue: '', description: 'Selenium Grid URL (leave empty to run local)')
         string(name: 'MAX_RETRY', defaultValue: '0', description: 'Max retry count')
         string(name: 'EMAIL_RECIPIENT', defaultValue: '', description: 'Email recipients separated by comma')
+        booleanParam(name: 'ARCHIVE_REPORTS', defaultValue: true, description: 'Generate and archive Allure report')
     }
 
     environment {
