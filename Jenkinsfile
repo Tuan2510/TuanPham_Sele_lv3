@@ -115,7 +115,7 @@ pipeline {
                 int fi = toInt(failed)
                 int si = toInt(skipped)
 
-                String pct = { int part, int whole -> whole > 0 ? String.format('%.1f%%', (part * 100.0) / whole) : '0.0%' }
+                def pct = { int part, int whole -> whole > 0 ? String.format('%.1f%%', (part * 100.0) / whole) : '0.0%' }
                 def passPct = pct(pi, ti)
                 def failPct = pct(fi, ti)
                 def skipPct = pct(si, ti)
