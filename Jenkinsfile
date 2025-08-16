@@ -65,6 +65,37 @@ pipeline {
                 }
             }
         }
+
+        stage('Check & Archive Artifacts') {
+              when { expression { return params.ARCHIVE_REPORTS } }
+              steps {
+                  script {
+                      // regenerate Allure if allure-results exist and report file missing
+                      if (fileExists('allure-results') && !fileExists('allure-report/index.html')) {
+                        echo 'Allure report missing, generating single-file report...'
+                        try {
+                          def cmd = 'allure generate allure-results --clean --single-file -o allure-report'
+                          isUnix() ? sh(cmd) : bat(cmd)
+                        } catch (e) {
+                          echo "⚠️ Allure report generation failed: ${e.message}"
+                        }
+                      }
+
+                      // Check presence
+                      def hasAllureIndex = fileExists('allure-report/index.html')
+                      if (hasAllureIndex) {
+                        // Archive so BUILD_URL/artifact/... works
+                        archiveArtifacts artifacts: 'allure-report/index.html', allowEmptyArchive: false
+                        env.ALLURE_LINK = "${env.BUILD_URL}artifact/allure-report/index.html"
+                        env.ALLURE_ARCHIVED = 'true'
+                        echo "Allure archived at: ${env.ALLURE_LINK}"
+                      } else {
+                        env.ALLURE_ARCHIVED = 'false'
+                        echo '⚠️ allure-report/index.html not found; skipping archive.'
+                      }
+                  }
+              }
+            }
     }
 
     post {
