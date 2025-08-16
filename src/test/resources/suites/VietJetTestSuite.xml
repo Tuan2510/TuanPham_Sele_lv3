@@ -5,7 +5,7 @@
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
     </listeners>
     <test name="VietJet EN Test Suite">
-<!--        <parameter name="browser" value="chrome"/>-->
+        <parameter name="browser" value="chrome"/>
         <parameter name="language" value="en-us"/>
         <parameter name="env" value="stg"/>
         <groups>
@@ -22,7 +22,7 @@
         </classes>
     </test>
     <test name="VietJet VI Test Suite">
-<!--        <parameter name="browser" value="chrome"/>-->
+        <parameter name="browser" value="chrome"/>
         <parameter name="language" value="vi-vn"/>
         <parameter name="env" value="stg"/>
         <groups>
