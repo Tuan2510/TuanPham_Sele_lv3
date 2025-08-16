@@ -12,6 +12,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <allure.version>2.24.0</allure.version>
+        <suiteXmlFile>src/test/resources/suites/SampleTest.xml</suiteXmlFile>
     </properties>
     <dependencies>
         <!-- Selenide -->
@@ -131,6 +132,9 @@
                 <configuration>
                     <testFailureIgnore>true</testFailureIgnore>
                     <useFile>false</useFile>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                    </suiteXmlFiles>
                     <properties>
                         <property>
                             <name>listener</name>
