@@ -22,24 +22,22 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Build and Test with Maven') {
             steps {
                 script {
-                    // Define the mapping of suite names to their XML files
+                    // Map suite -> xml
                     def suiteMap = [
-                        'VietJet_Suite': 'src/test/resources/suites/VietJetTestSuite.xml',
-                        'Agoda_Suite'  : 'src/test/resources/suites/AgodaTestSuite.xml',
+                        'VietJet_Suite' : 'src/test/resources/suites/VietJetTestSuite.xml',
+                        'Agoda_Suite'   : 'src/test/resources/suites/AgodaTestSuite.xml',
                         'LeapFrog_Suite': 'src/test/resources/suites/LeapFrogTest.xml',
-                        'Book_Suite'   : 'src/test/resources/suites/BookTestSuite.xml'
+                        'Book_Suite'    : 'src/test/resources/suites/BookTestSuite.xml'
                     ]
                     def suiteFile = suiteMap[params.SUITE]
 
-                    // Remove previous results
+                    // Clean old reports
                     if (isUnix()) {
                         sh '''
                             rm -rf allure-results
@@ -52,7 +50,7 @@ pipeline {
                         '''
                     }
 
-                    // Run Maven command with parameters
+                    // Maven cmd
                     def mvnCmd = "mvn clean test " +
                         "-DsuiteXmlFile=${suiteFile} " +
                         "-Dbrowser=${params.BROWSER} " +
@@ -63,11 +61,7 @@ pipeline {
                         "-DgridUrl=${params.GRID_URL} " +
                         "-DmaxRetry=${params.MAX_RETRY}"
 
-                    if (isUnix()) {
-                        sh mvnCmd
-                    } else {
-                        bat mvnCmd
-                    }
+                    isUnix() ? sh(mvnCmd) : bat(mvnCmd)
                 }
             }
         }
@@ -76,10 +70,10 @@ pipeline {
     post {
         always {
             script {
-                def total = 'N/A'
-                def passed = 'N/A'
-                def failed = 'N/A'
-                def skipped = 'N/A'
+                def total = '0'
+                def passed = '0'
+                def failed = '0'
+                def skipped = '0'
 
                 // Generate Allure HTML (single file)
                 if (fileExists('allure-results')) {
@@ -93,21 +87,23 @@ pipeline {
                     echo 'No Allure results found.'
                 }
 
-                // Parse TestNG results
+                // Parse TestNG using a regex to avoid sandbox issues with XmlSlurper
                 def reportPath = isUnix()
                     ? 'target/surefire-reports/testng-results.xml'
                     : 'target\\surefire-reports\\testng-results.xml'
 
                 if (fileExists(reportPath)) {
                     def content = readFile(reportPath)
-                    def xml = new XmlSlurper().parseText(content)
-
-                    total   = (xml.@total as String) ?: '0'
-                    passed  = (xml.@passed as String) ?: '0'
-                    failed  = (xml.@failed as String) ?: '0'
-                    skipped = (xml.@skipped as String) ?: '0'
-
-                    echo "Parsed values → total=${total}, passed=${passed}, failed=${failed}, skipped=${skipped}"
+                    // Matches attributes on the <testng-results ...> root element
+                    def m = content =~ /<testng-results\b[^>]*\btotal="(\d+)"[^>]*\bpassed="(\d+)"[^>]*\bfailed="(\d+)"[^>]*\bskipped="(\d+)"/
+                    if (m.find()) {
+                        total   = m.group(1)
+                        passed  = m.group(2)
+                        failed  = m.group(3)
+                        skipped = m.group(4)
+                    } else {
+                        echo '⚠️ Unable to parse totals from testng-results.xml'
+                    }
                 } else {
                     echo '⚠️ testng-results.xml not found.'
                 }
@@ -119,16 +115,12 @@ pipeline {
                 int fi = toInt(failed)
                 int si = toInt(skipped)
 
-                String pct = { int part, int whole ->
-                    whole > 0 ? String.format('%.1f%%', (part * 100.0) / whole) : '0.0%'
-                }
-
+                String pct = { int part, int whole -> whole > 0 ? String.format('%.1f%%', (part * 100.0) / whole) : '0.0%' }
                 def passPct = pct(pi, ti)
                 def failPct = pct(fi, ti)
                 def skipPct = pct(si, ti)
 
-                // Build param summary (horizontal table)
-                // Also surface a human-friendly run mode
+                // Build param table
                 def runMode = (params.GRID_URL?.trim()) ? 'Grid' : 'Local'
                 def paramMap = [
                     'Suite'         : params.SUITE,
@@ -141,13 +133,10 @@ pipeline {
                     'Grid URL'      : (params.GRID_URL ?: '(local)'),
                     'Max Retry'     : params.MAX_RETRY
                 ]
-
-                // Create horizontal headers/values for params
                 def paramHeaders = paramMap.keySet().collect { "<th>${it}</th>" }.join('')
                 def paramValues  = paramMap.values().collect { "<td>${it}</td>" }.join('')
 
-                // Allure link (artifacts)
-                // NOTE: index.html is generated by --single-file
+                // Allure link (artifact path)
                 def allureLink = "${env.BUILD_URL}artifact/allure-report/index.html"
 
                 emailext(
@@ -171,7 +160,6 @@ pipeline {
                             <p>Hi Team,</p>
                             <p>The automated test execution has been completed. Below is the summary report:</p>
 
-                            <!-- Build Parameters (Horizontal) -->
                             <h3>Build Parameters</h3>
                             <table>
                                 <tr>${paramHeaders}</tr>
@@ -180,13 +168,11 @@ pipeline {
 
                             <br/>
 
-                            <!-- Execution Summary (Horizontal) -->
                             <h3>Execution Summary</h3>
                             <table>
                                 <tr>
                                     <th>Job Name</th>
                                     <th>Build Number</th>
-                                    <th>Suite Name</th>
                                     <th>Total</th>
                                     <th>Passed</th>
                                     <th>Failed</th>
@@ -198,7 +184,6 @@ pipeline {
                                 <tr>
                                     <td>${env.JOB_NAME}</td>
                                     <td>${env.BUILD_NUMBER}</td>
-                                    <td>${params.SUITE}</td>
                                     <td>${ti}</td>
                                     <td class='green'>${pi}</td>
                                     <td class='red'>${fi}</td>
