@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         choice(name: 'SUITE', choices: ['Agoda_Suite', 'Book_Suite', 'LeapFrog_Suite', 'VietJet_Suite'], description: 'Select the test suite')
-        choice(name: 'BROWSER', choices: ['chrome', 'edge'], description: 'Select the browser')
+        choice(name: 'BROWSER', choices: ['chrome', 'chrome-headless', 'edge'], description: 'Select the browser')
         choice(name: 'ENV', choices: ['dev', 'book', 'leapfrog', 'stg'], description: 'Select the environment')
         choice(name: 'GROUP', choices: ['AGRegression', 'BookRegression','LeapFrogTest', 'VJRegression'], description: 'Select the TestNG group')
         choice(name: 'PARALLEL_MODE', choices: ['methods', 'tests'], description: 'TestNG parallel mode')
