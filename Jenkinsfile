@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    triggers {
+        // Run tests once a day, Monday to Friday, around 12:00 (noon).
+        cron('H 12 * * 1-5')
+    }
+    
     parameters {
         choice(name: 'SUITE', choices: ['Agoda_Suite', 'Book_Suite', 'LeapFrog_Suite', 'VietJet_Suite'], description: 'Select the test suite')
         choice(name: 'BROWSER', choices: ['chrome', 'edge'], description: 'Select the browser')
