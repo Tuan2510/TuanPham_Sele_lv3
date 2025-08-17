@@ -66,7 +66,7 @@ To start executing tests on the grid, use the following command:
 
 ```bash
 
-mvn clean test -DgridUrl==http://localhost:4444/wd/hub
+mvn clean test -DgridUrl=http://localhost:4444/wd/hub
 ```
 
 
