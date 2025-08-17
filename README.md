@@ -66,7 +66,7 @@ To start executing tests on the grid, use the following command:
 
 ```bash
 
-mvn clean test -DgridUrl=http://localhost:4444/wd/hub
+mvn clean test -Dselenide.remote=http://localhost:4444
 ```
 
 
@@ -79,7 +79,7 @@ Runtime configuration is controlled through `src/main/resources/config/RunConfig
 - `browser` – browser to run tests in (e.g., `chrome`, `edge`)
 - `env` – decide which environment test
 - `language` – language for the test (e.g., `en`, `fr`, `de`)
-- `gridUrl` – URL of the Selenium Grid (if running remotely)
+- `selenide.remote` – URL of the Selenium Grid (if running remotely)
 
 You can override any property via system properties, for example:
 

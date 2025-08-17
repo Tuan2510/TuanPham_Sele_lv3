@@ -8,7 +8,7 @@ pipeline {
         choice(name: 'GROUP', choices: ['AGRegression', 'BookRegression','LeapFrogTest', 'VJRegression'], description: 'Select the TestNG group')
         choice(name: 'PARALLEL_MODE', choices: ['methods', 'tests'], description: 'TestNG parallel mode')
         choice(name: 'LANGUAGE', choices: ['en-us', 'vi-vn'], description: 'Select the language')
-        string(name: 'GRID_URL', defaultValue: '', description: 'Selenium Grid URL (leave empty to run local)')
+        choice(name: 'GRID_URL', choices: ['local', 'grid'], description: 'Select run mode')
         string(name: 'MAX_RETRY', defaultValue: '0', description: 'Max retry count')
         string(name: 'EMAIL_RECIPIENT', defaultValue: '', description: 'Email recipients separated by comma')
         booleanParam(name: 'ARCHIVE_REPORTS', defaultValue: true, description: 'Generate and archive Allure report')
@@ -52,6 +52,7 @@ pipeline {
                     }
 
                     // Maven cmd
+                    def remoteFlag = params.GRID_URL == 'grid' ? '-Dselenide.remote="http://localhost:4444" ' : ''
                     def mvnCmd = "mvn clean test " +
                         "-DsuiteXmlFile=${suiteFile} " +
                         "-Dbrowser=${params.BROWSER} " +
@@ -59,7 +60,7 @@ pipeline {
                         "-Dgroup=${params.GROUP} " +
                         "-Dparallel=${params.PARALLEL_MODE} " +
                         "-Dlanguage=${params.LANGUAGE} " +
-                        "-DgridUrl=${params.GRID_URL} " +
+                        remoteFlag +
                         "-DmaxRetry=${params.MAX_RETRY}"
 
                     isUnix() ? sh(mvnCmd) : bat(mvnCmd)
@@ -153,7 +154,8 @@ pipeline {
                 def skipPct = pct(si, ti)
 
                 // Build param table
-                def runMode = (params.GRID_URL?.trim()) ? 'Grid' : 'Local'
+                def isGrid = params.GRID_URL == 'grid'
+                def runMode = isGrid ? 'Grid' : 'Local'
                 def paramMap = [
                     'Suite'         : params.SUITE,
                     'Browser'       : params.BROWSER,
@@ -162,7 +164,7 @@ pipeline {
                     'Parallel Mode' : params.PARALLEL_MODE,
                     'Language'      : params.LANGUAGE,
                     'Run Mode'      : runMode,
-                    'Grid URL'      : (params.GRID_URL ?: '(local)'),
+                    'Grid URL'      : (isGrid ? 'http://localhost:4444' : '(local)'),
                     'Max Retry'     : params.MAX_RETRY
                 ]
                 def paramHeaders = paramMap.keySet().collect { "<th>${it}</th>" }.join('')
