@@ -14,7 +14,7 @@ This repository contains a sample automation framework built with **Selenide** a
 - [x] Test cases: VJ, Agoda
   - [x] VJ: [vj.com](https://www.vj.com/)
   - [x] Agoda: [agoda.com](https://www.agoda.com/)
-- [ ] CI: Schedule test, send email notification result with summary
+- [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
 - [x] Content testing
@@ -42,6 +42,7 @@ This repository contains a sample automation framework built with **Selenide** a
 Clone the repository and install the Maven dependencies:
 
 ```bash
+
 mvn -q verify -DskipTests
 ```
 
@@ -50,8 +51,24 @@ mvn -q verify -DskipTests
 Execute the sample TestNG suite with Maven:
 
 ```bash
+
 mvn clean test
 ```
+
+## Running Tests in grid mode
+To run tests on a Selenium Grid, ensure the grid is set up and running.
+
+Download the Selenium Grid server, then update the file name if necessary in `startGrid.bat`.
+
+Update the `GridConfiguration.toml` file in `src/test/resources/grid` for custom configurations like hub IP, browser versions, etc.
+
+To start executing tests on the grid, use the following command:
+
+```bash
+
+mvn clean test -Dselenide.remote=http://localhost:4444
+```
+
 
 ### Configuration
 
@@ -62,11 +79,12 @@ Runtime configuration is controlled through `src/main/resources/config/RunConfig
 - `browser` – browser to run tests in (e.g., `chrome`, `edge`)
 - `env` – decide which environment test
 - `language` – language for the test (e.g., `en`, `fr`, `de`)
-- `remoteUrl` – URL of the Selenium Grid (if running remotely)
+- `selenide.remote` – URL of the Selenium Grid (if running remotely)
 
 You can override any property via system properties, for example:
 
 ```bash
+
 mvn clean test -Dretry.count=1 -Dretry.mode=afterDone -Denv=dev
 ```
 
