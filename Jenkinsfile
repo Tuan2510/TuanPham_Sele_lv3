@@ -7,10 +7,10 @@ pipeline {
     }
     
     parameters {
-        choice(name: 'SUITE', choices: ['Agoda_Suite', 'Book_Suite', 'LeapFrog_Suite', 'VietJet_Suite'], description: 'Select the test suite')
+        choice(name: 'SUITE', choices: ['Agoda_Suite'], description: 'Select the test suite')
         choice(name: 'BROWSER', choices: ['chrome', 'edge'], description: 'Select the browser')
-        choice(name: 'ENV', choices: ['dev', 'book', 'leapfrog', 'stg'], description: 'Select the environment')
-        choice(name: 'GROUP', choices: ['AGRegression', 'BookRegression','LeapFrogTest', 'VJRegression'], description: 'Select the TestNG group')
+        choice(name: 'ENV', choices: ['dev'], description: 'Select the environment')
+        choice(name: 'GROUP', choices: ['AGRegression'], description: 'Select the TestNG group')
         choice(name: 'PARALLEL_MODE', choices: ['methods', 'tests'], description: 'TestNG parallel mode')
         choice(name: 'LANGUAGE', choices: ['en-us', 'vi-vn'], description: 'Select the language')
         choice(name: 'GRID_URL', choices: ['local', 'grid'], description: 'Select run mode')
@@ -36,10 +36,7 @@ pipeline {
                 script {
                     // Map suite -> xml
                     def suiteMap = [
-                        'VietJet_Suite' : 'src/test/resources/suites/VietJetTestSuite.xml',
-                        'Agoda_Suite'   : 'src/test/resources/suites/AgodaTestSuite.xml',
-                        'LeapFrog_Suite': 'src/test/resources/suites/LeapFrogTest.xml',
-                        'Book_Suite'    : 'src/test/resources/suites/BookTestSuite.xml'
+                        'Agoda_Suite'   : 'src/test/resources/suites/AgodaTestSuite.xml'
                     ]
                     def suiteFile = suiteMap[params.SUITE]
 
