@@ -8,7 +8,8 @@ import utils.LanguageManager;
 @AllArgsConstructor
 public enum Facilities {
     SWIMMING_POOL("swimming_pool"),
-    NON_SMOKING("non_smoking");
+    NON_SMOKING("non_smoking"),
+    BREAKFAST_INCLUDED("breakfast_included");
 
 
     private final String key;

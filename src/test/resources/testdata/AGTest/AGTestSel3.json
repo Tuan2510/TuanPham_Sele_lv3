@@ -1,48 +1,27 @@
 {
-  "AG_TC01_SearchAndSortHotel": [
+  "AG_TC01_SearchAndFilterHotelsWithBreakfast": [
     {
-      "place": "Da Nang",
+      "place": "Dalat",
       "occupancy": {
-        "roomCount": 2,
-        "adultCount": 4,
-        "childCount": 0
-      },
-      "resultCount": "5"
-    }
-  ],
-  "AG_TC02_SearchAndFilterHotel": [
-    {
-      "place": "Da Nang",
-      "occupancy": {
-        "roomCount": 2,
-        "adultCount": 4,
+        "roomCount": 1,
+        "adultCount": 2,
         "childCount": 0
       },
       "resultCount": "5",
-      "rating": "3",
-      "priceFilter": {
-        "priceMin": "500000",
-        "priceMax": "1000000"
-      }
+      "facilities": "BREAKFAST_INCLUDED"
     }
   ],
-  "AG_TC03_SearchAndVerifyHotelDetails": [
+  "AG_TC02_SearchAndAddFlightToCart": [
     {
-      "place": "Da Nang",
-      "occupancy": {
-        "roomCount": 2,
-        "adultCount": 4,
-        "childCount": 0
+      "flightOrigin": "Da Nang",
+      "flightDestination": "Ho Chi Minh City",
+      "flightOccupancy": {
+        "adultCount": 1,
+        "childCount": 0,
+        "infantCount": 0
       },
-      "resultCount": "5",
-      "facilities": "SWIMMING_POOL",
-      "reviewCategories": [
-        "CLEANLINESS",
-        "FACILITIES",
-        "SERVICE",
-        "LOCATION",
-        "VALUE_FOR_MONEY"
-      ]
+      "flightClass": "PREMIUM_ECONOMY",
+      "resultCount": 20
     }
   ]
 }

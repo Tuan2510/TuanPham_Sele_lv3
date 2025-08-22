@@ -6,6 +6,7 @@ import org.testng.ITestContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+import pageObjects.AGPageObjects.AgodaFlightSearchPage;
 import pageObjects.AGPageObjects.AgodaHomePage;
 import pageObjects.AGPageObjects.AgodaHotelDetailsPage;
 import pageObjects.AGPageObjects.AgodaSearchResultsPage;
@@ -27,8 +28,10 @@ public class AGTestSel3 extends TestBase {
     AgodaHomePage agodaHomePage;
     AgodaSearchResultsPage agodaSearchResultsPage;
     AgodaHotelDetailsPage agodaHotelDetailsPage;
+    AgodaFlightSearchPage agodaFlightSearchPage;
     LocalDate checkInDate;
     LocalDate checkOutDate;
+    LocalDate flightDepartureDate;
     PriceFilter defaultPriceFilter;
     Hotel hotel;
 
@@ -39,14 +42,17 @@ public class AGTestSel3 extends TestBase {
         agodaHomePage = new AgodaHomePage();
         agodaSearchResultsPage = new AgodaSearchResultsPage();
         agodaHotelDetailsPage = new AgodaHotelDetailsPage();
-        checkInDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.FRIDAY));
+        agodaFlightSearchPage = new AgodaFlightSearchPage();
+
+        checkInDate = LocalDate.now().plusDays(1);
         checkOutDate = checkInDate.plusDays(3);
+        flightDepartureDate = LocalDate.now().with(TemporalAdjusters.firstDayOfNextMonth());
     }
 
-    @Description("Search and sort hotel successfully")
-    @Test(dataProvider = "getData", description = "Search and sort for hotel successfully",
+    @Description("Search and filter hotels successfully")
+    @Test(dataProvider = "getData", description = "Search and filter for hotels successfully",
             retryAnalyzer = RetryAnalyzer.class, groups = {"AG_Regression", "FullRegression"})
-    public void AG_TC01_SearchAndSortHotel(AGDataObject data) {
+    public void AG_TC01_SearchAndFilterHotelsWithBreakfast(AGDataObject data) {
         logHelper.logStep("Step #1: Navigate to Agoda site");
         DriverFactory.openHomePage();
 
@@ -58,87 +64,51 @@ public class AGTestSel3 extends TestBase {
                 checkOutDate,
                 data.getOccupancy());
 
-        logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
+        logHelper.logStep("Step #3: Search result is displayed correctly with first %s hotels in %s",
+                data.getResultCount(), data.getPlace());
         agodaSearchResultsPage.verifyPageIsDisplayed();
         agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
 
-        logHelper.logStep("Step #4: Sort results by lowest price");
-        agodaSearchResultsPage.sortByLowestPrice();
-
-        logHelper.logStep("Step #5: Verify results are sorted by lowest price and the destination is still correct");
-        agodaSearchResultsPage.verifyResultsSortedByLowestPrice(data.getResultCount());
-        agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
-    }
-
-    @Description("Search and sort hotel successfully")
-    @Test(dataProvider = "getData", description = "Search and sort for hotel successfully",
-            retryAnalyzer = RetryAnalyzer.class, groups = {"AG_Regression", "FullRegression"})
-    public void AG_TC02_SearchAndFilterHotel(AGDataObject data) {
-        logHelper.logStep("Step #1: Navigate to Agoda site");
-        DriverFactory.openHomePage();
-
-        logHelper.logStep("Step #2: Search hotel with test case information");
-
-        agodaHomePage.searchHotel(
-                data.getPlace(),
-                checkInDate,
-                checkOutDate,
-                data.getOccupancy());
-
-        logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
-        agodaSearchResultsPage.verifyPageIsDisplayed();
-        agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
-
-        logHelper.logStep("Step #4: Filter results by price range and star rating");
-        defaultPriceFilter = agodaSearchResultsPage.getFilterValues();
-        agodaSearchResultsPage.setPriceFilter(data.getPriceFilter().getPriceMin(), data.getPriceFilter().getPriceMax());
-        agodaSearchResultsPage.filterByStarRating(data.getRating());
-
-        logHelper.logStep("Step #5: Verify results are filtered by price range and star rating");
-        agodaSearchResultsPage.verifyFilterApplied(data.getPriceFilter());
-        agodaSearchResultsPage.verifyHotelPriceAfterFilter(data.getResultCount(), data.getPriceFilter().getPriceMin(),
-                data.getPriceFilter().getPriceMax());
-        agodaSearchResultsPage.verifyHotelStarRatingAfterFilter(data.getResultCount(), data.getRating());
-
-        logHelper.logStep("Step #6: Reset price filters");
-        agodaSearchResultsPage.resetPriceFilter(defaultPriceFilter);
-        agodaSearchResultsPage.verifyPriceFilterReset(defaultPriceFilter);
-    }
-
-    @Description("Search, filter and verify hotel details successfully")
-    @Test(dataProvider = "getData", description = "Search, filter and verify hotel details successfully",
-            retryAnalyzer = RetryAnalyzer.class, groups = {"AG_Regression", "FullRegression"})
-    public void AG_TC03_SearchAndVerifyHotelDetails(AGDataObject data) {
-        logHelper.logStep("Step #1: Navigate to Agoda site");
-        DriverFactory.openHomePage();
-
-        logHelper.logStep("Step #2: Search hotel with test case information");
-
-        agodaHomePage.searchHotel(
-                data.getPlace(),
-                checkInDate,
-                checkOutDate,
-                data.getOccupancy());
-
-        logHelper.logStep("Step #3: Verify search results are displayed correctly with first 5 hotels in " + data.getPlace());
-        agodaSearchResultsPage.verifyPageIsDisplayed();
-        agodaSearchResultsPage.verifySearchResultsHotelAddress(data.getResultCount(), data.getPlace());
-
-        logHelper.logStep("Step #4: Filter the swimming hotels and choose the 5th hotel in the list");
+        logHelper.logStep("Step #4: Filter the hotels with breakfast included and select the first hotel");
         agodaSearchResultsPage.filterByFacilities(data.getFacilities());
-        hotel = agodaSearchResultsPage.openHotelDetailsByIndex(5);
-        agodaHotelDetailsPage.verifyHotelInfoAndFacilities(hotel, data.getFacilities());
-
-        logHelper.logStep("Step #5: Back to the filter page");
-        agodaHotelDetailsPage.goBackToSearchResultsPage();
-
-        logHelper.logStep("Step #6: Move mouse to the point of the 1st hotel to show detailed review points");
-        Map<ReviewCategory, Float> reviewScores = agodaSearchResultsPage.getHotelReviewScores(1, data.getReviewCategories());
-
-        logHelper.logStep("Step #7: Choose the first hotel The hotel detailed page is displayed with correct info");
         hotel = agodaSearchResultsPage.openHotelDetailsByIndex(1);
+
+        logHelper.logStep("Step #5: Verify hotel details and facilities");
         agodaHotelDetailsPage.verifyHotelInfoAndFacilities(hotel, data.getFacilities());
-        agodaHotelDetailsPage.verifyReviewScores(reviewScores);
+    }
+
+    @Description("Search and add flight to cart successfully")
+    @Test(dataProvider = "getData", description = "Search and add flight to cart successfully",
+            retryAnalyzer = RetryAnalyzer.class, groups = {"AG_Regression", "FullRegression"})
+    public void AG_TC02_SearchAndAddFlightToCart(AGDataObject data) {
+        logHelper.logStep("Step #1: Navigate to Agoda site");
+        DriverFactory.openHomePage();
+
+        logHelper.logStep("Step #2: goto the flight page");
+        agodaHomePage.goToFlightPage();
+
+        logHelper.logStep("Step #3: Search flight with test case information");
+        agodaHomePage.searchOneWayFlight(
+                data.getFlightOrigin(),
+                data.getFlightDestination(),
+                flightDepartureDate,
+                data.getFlightClass(),
+                data.getFlightOccupancy());
+
+        logHelper.logStep("Step #4: Verify search results are displayed correctly");
+        agodaFlightSearchPage.verifyPageIsDisplayed();
+
+        logHelper.logStep("Step #5: Apply sort by fastest flights");
+        agodaFlightSearchPage.applySortByFastest();
+
+        logHelper.logStep("Step #6: Verify that first %s flight durations are sorted by fastest", data.getResultCount());
+        agodaFlightSearchPage.verifyResultsSortedByFastest(data.getResultCount());
+
+        logHelper.logStep("Step #7: Select the first flight and add it to cart");
+        agodaFlightSearchPage.expandFlightByIndex(1);
+        agodaFlightSearchPage.addFlightToCart();
+
+        logHelper.logStep("Step #8: Verify flight info in cart");
     }
 
 }

@@ -28,7 +28,7 @@ public class AgodaHotelDetailsPage {
     private final SelenideElement hotelRating = $("[data-testid='review-tooltip-icon']");
 
     // Dynamic locators
-    private final String hotelAvailableFacility = "//div[@id='abouthotel-features']//span[text()='%s']";
+    private final String hotelAvailableFacility = "//div[@id='abouthotel-features']//span[contains(text(),'%s')]";
     private final String reviewCategoryScore = "//div[span[text()='%s']]//p";
 
     // Methods

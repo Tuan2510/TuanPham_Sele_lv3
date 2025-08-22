@@ -72,4 +72,22 @@ public class ValueHelper {
         return 0f; // Default if no match
     }
 
+    /**
+     * Parse a duration string to minutes
+     * Example input: "0h 55m", "1h 20m", "2h 5m"
+     */
+    public static int parseDurationToMinutes(String text) {
+        int hours = 0, mins = 0;
+
+        if (text.contains("h")) {
+            hours = Integer.parseInt(text.split("h")[0].trim());
+            text = text.split("h")[1];
+        }
+        if (text.contains("m")) {
+            mins = Integer.parseInt(text.replace("m", "").trim());
+        }
+
+        return hours * 60 + mins;
+    }
+
 }
